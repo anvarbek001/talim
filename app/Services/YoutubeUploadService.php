@@ -2,22 +2,24 @@
 
 namespace App\Services;
 
+use Google\Client as GoogleClient;
+use Google\Http\MediaFileUpload;
+use Google\Service\YouTube as GoogleYouTube;
 use Google\Service\YouTube\Video as YoutubeVideo;
 use Google\Service\YouTube\VideoSnippet;
 use Google\Service\YouTube\VideoStatus;
-use Google\Service\YouTube as GoogleYouTube;
-use Google\Client as GoogleClient;
 use Illuminate\Http\UploadedFile;
 use RuntimeException;
 
 class YoutubeUploadService
 {
     protected GoogleClient $client;
+
     protected GoogleYouTube $youtube;
 
     public function __construct()
     {
-        $this->client = new GoogleClient();
+        $this->client = new GoogleClient;
         $this->client->setClientId(config('services.youtube.client_id'));
         $this->client->setClientSecret(config('services.youtube.client_secret'));
         $this->client->setRedirectUri(config('services.youtube.redirect_uri'));
@@ -25,7 +27,7 @@ class YoutubeUploadService
 
         $refreshToken = config('services.youtube.refresh_token');
 
-        if (!$refreshToken) {
+        if (! $refreshToken) {
             throw new RuntimeException("YOUTUBE_REFRESH_TOKEN .env faylida topilmadi. Avval /youtube/authorize orqali avtorizatsiyadan o'ting.");
         }
 
@@ -43,16 +45,16 @@ class YoutubeUploadService
      */
     public function upload(UploadedFile $file, string $title, string $description = ''): string
     {
-        $snippet = new VideoSnippet();
+        $snippet = new VideoSnippet;
         $snippet->setTitle($title);
         $snippet->setDescription($description);
         $snippet->setCategoryId('27');  // 27 = "Education" toifasi
 
-        $status = new VideoStatus();
+        $status = new VideoStatus;
         $status->setPrivacyStatus('unlisted');  // ASOSIY QATOR — shu tufayli havola bilan ko'radi
         $status->setEmbeddable(true);  // saytga kichik oynachada joylash uchun shart
 
-        $video = new YoutubeVideo();
+        $video = new YoutubeVideo;
         $video->setSnippet($snippet);
         $video->setStatus($status);
 
@@ -60,7 +62,7 @@ class YoutubeUploadService
         // haqiqiy so'rov emas, PHP_Service_Request qaytadi)
         $insertRequest = $this->youtube->videos->insert('snippet,status', $video);
 
-        $media = new \Google\Http\MediaFileUpload(
+        $media = new MediaFileUpload(
             $this->client,
             $insertRequest,
             'video/*',
@@ -73,7 +75,7 @@ class YoutubeUploadService
         $status = false;
         $handle = fopen($file->getRealPath(), 'rb');
 
-        while (!$status && !feof($handle)) {
+        while (! $status && ! feof($handle)) {
             $chunk = fread($handle, 1024 * 1024 * 5);
             $status = $media->nextChunk($chunk);
         }
@@ -90,6 +92,6 @@ class YoutubeUploadService
      */
     public function embedUrl(string $videoId): string
     {
-        return "https://www.youtube-nocookie.com/embed/{$videoId}";
+        return "https://www.youtube.com/embed/{$videoId}";
     }
 }

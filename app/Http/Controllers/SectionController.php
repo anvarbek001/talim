@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\SectionLessonRequest;
 use App\Models\Section;
+use App\Models\Topic;
 use App\Services\SectionService;
 use App\Services\TopicService;
 use Illuminate\Http\Request;
@@ -13,7 +14,7 @@ class SectionController extends Controller
 {
     public function __construct(
         protected SectionService $sectionServ,
-        protected TopicService $topicServ
+        protected TopicService $topicServ,
     ) {}
 
     public function store(SectionLessonRequest $request)

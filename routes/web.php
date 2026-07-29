@@ -36,7 +36,7 @@ Route::controller(SectionController::class)->group(function () {
 });
 
 Route::controller(TopicController::class)->group(function () {
-    //
+    Route::put('/topic/update/{id}', 'update')->name('topic.update');
 });
 
 require __DIR__ . '/auth.php';

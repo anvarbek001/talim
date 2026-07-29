@@ -140,5 +140,5 @@ test('my lessons page only shows the authenticated user\'s own lessons with a yo
     $response->assertOk();
     $response->assertSee('Foydalanuvchi A darsi');
     $response->assertDontSee('Foydalanuvchi B darsi');
-    $response->assertSee('https://www.youtube-nocookie.com/embed/AAA111', false);
+    $response->assertSee('https://www.youtube.com/embed/AAA111', false);
 });

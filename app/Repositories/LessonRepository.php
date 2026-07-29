@@ -5,6 +5,7 @@ namespace App\Repositories;
 use App\Models\Lesson;
 use App\Repositories\Contracts\LessonRepositoryInterface;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\Auth;
 use Override;
 
 class LessonRepository implements LessonRepositoryInterface
@@ -28,13 +29,14 @@ class LessonRepository implements LessonRepositoryInterface
     #[Override]
     public function find(int $id)
     {
-        return $this->model->where('id', $id)->with(['user', 'science', 'grade', 'section', 'topic', 'lessonfiles'])->first();
+        return $this->model->where(['user_id' => Auth::id(), 'id' => $id])->with(['user', 'science', 'grade', 'section', 'topic', 'lessonfiles'])->first();
     }
 
     #[Override]
     public function forUser(int $userId): Collection
     {
-        return $this->model
+        return $this
+            ->model
             ->where('user_id', $userId)
             ->with(['science', 'grade', 'section', 'topic', 'lessonfiles'])
             ->latest()

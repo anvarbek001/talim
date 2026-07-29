@@ -94,8 +94,8 @@
                                     <option value="{{ $section->id }}" data-science="{{ $section->science_id }}"
                                         data-grade="{{ $section->grade_id }}"
                                         {{ old('section_id') == $section->id ? 'selected' : '' }}>
-                                        {{ $section->title }} | {{ $section->science->title }} |
-                                        {{ $section->grade->title }}</option>
+                                        {{ $section->science->title }} |
+                                        {{ $section->grade->title }} | {{ $section->title }}</option>
                                 @endforeach
                             </select>
                             @error('section_id')
@@ -163,7 +163,10 @@
                         <select name="topic_id" class="select-control" required>
                             <option value="" disabled selected>Mavzu tanlang</option>
                             @foreach ($topics as $topic)
-                                <option value="{{ $topic->id }}">{{ $topic->title }}</option>
+                                <option value="{{ $topic->id }}">{{ $topic->science->title }} |
+                                    {{ $topic->grade->title }} |
+                                    {{ $topic->section->title }} | {{ $topic->title }}
+                                </option>
                             @endforeach
                         </select>
                     @else
@@ -210,7 +213,147 @@
                 </button>
             </div>
         </form>
+    </div>
 
+    <div class="page">
+        {{-- ========================================================= --}}
+        {{-- MAVZULAR RO'YXATI — tahrirlash/o'chirish tugmalari uchun    --}}
+        {{-- backend (route/controller) qo'lda ulanadi.                 --}}
+        {{-- ========================================================= --}}
+        <div class="card fade-up" style="animation-delay:.15s;">
+            <div class="card-head">
+                <div class="step-badge step-badge-alt"><i class="bi bi-list-check"></i></div>
+                <div>
+                    <div class="card-title">Mavzular ro'yxati</div>
+                    <div class="card-sub-text">Yaratilgan barcha bo'lim va mavzularni shu yerdan boshqaring</div>
+                </div>
+            </div>
+
+            @if ($topics->count())
+                <div class="table-wrap">
+                    <table class="topics-table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Fan</th>
+                                <th>Sinf</th>
+                                <th>Bo'lim</th>
+                                <th>Mavzu</th>
+                                <th>Tavsif</th>
+                                <th class="text-end">Amallar</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($topics as $topic)
+                                <tr data-topic-id="{{ $topic->id }}">
+                                    <td>{{ $loop->iteration }}</td>
+                                    <td><span class="topic-chip">{{ $topic->science->title }}</span></td>
+                                    <td>{{ $topic->grade->title }}</td>
+                                    <td>{{ $topic->section->title }}</td>
+                                    <td class="topic-title-cell">{{ $topic->title }}</td>
+                                    <td class="topic-desc-cell">
+                                        {{ $topic->description ? \Illuminate\Support\Str::limit($topic->description, 60) : '—' }}
+                                    </td>
+                                    <td class="text-end">
+                                        <div class="row-actions">
+                                            <button type="button" class="icon-btn icon-btn-edit" title="Tahrirlash"
+                                                data-action="edit-topic" data-topic-id="{{ $topic->id }}"
+                                                data-topic-title="{{ $topic->title }}"
+                                                data-topic-description="{{ $topic->description }}"
+                                                data-science-id="{{ $topic->science_id }}"
+                                                data-grade-id="{{ $topic->grade_id }}"
+                                                data-section-id="{{ $topic->section_id }}">
+                                                <i class="bi bi-pencil-square"></i>
+                                            </button>
+                                            <button type="button" class="icon-btn icon-btn-delete" title="O'chirish"
+                                                data-action="delete-topic" data-topic-id="{{ $topic->id }}">
+                                                <i class="bi bi-trash3"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            @else
+                <div class="empty-hint">
+                    <i class="bi bi-info-circle"></i>
+                    Hali mavzu yaratilmagan — <a href="#sectionTopicForm">yuqoridagi forma orqali qo'shing</a>
+                </div>
+            @endif
+        </div>
+    </div>
+
+    {{-- ========================================================= --}}
+    {{-- MAVZUNI TAHRIRLASH MODALI                                   --}}
+    {{-- Forma action/method hozircha qo'yilmagan — backend tayyor    --}}
+    {{-- bo'lgach shu formaning action="" qismiga route qo'ying va    --}}
+    {{-- pastdagi skriptdagi preventDefault() qatorini olib tashlang. --}}
+    {{-- ========================================================= --}}
+    <div class="modal-overlay" id="editTopicModal">
+        <div class="modal-box">
+            <form action="{{ route('topic.update', $topic->id) }}" method="POST">
+                @csrf
+                @method('PUT')
+                <input type="hidden" name="topic_id" id="edit_topic_id">
+
+                <div class="modal-head">
+                    <div class="modal-title"><i class="bi bi-pencil-square"></i> Mavzuni tahrirlash</div>
+                    <button type="button" class="modal-close" id="editTopicClose">
+                        <i class="bi bi-x-lg"></i>
+                    </button>
+                </div>
+
+                <div class="modal-body">
+                    <div class="form-grid form-grid-2 mb-16">
+                        <div class="field">
+                            <label class="field-label">Fan</label>
+                            <select name="science_id" id="edit_science_id" class="select-control" required>
+                                @foreach ($sciences as $science)
+                                    <option value="{{ $science->id }}">{{ $science->title }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <div class="field">
+                            <label class="field-label">Sinf</label>
+                            <select name="grade_id" id="edit_grade_id" class="select-control" required>
+                                @foreach ($grades as $grade)
+                                    <option value="{{ $grade->id }}">{{ $grade->title }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="field mb-16">
+                        <label class="field-label">Bo'lim</label>
+                        <select name="section_id" id="edit_section_id" class="select-control" required>
+                            @foreach ($sections as $section)
+                                <option value="{{ $section->id }}">{{ $section->title }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div class="field mb-16">
+                        <label class="field-label">Mavzu nomi</label>
+                        <input type="text" name="topic_title" id="edit_topic_title" class="text-control" required>
+                    </div>
+
+                    <div class="field">
+                        <label class="field-label">Mavzu tavsifi</label>
+                        <textarea name="topic_description" id="edit_topic_description" class="text-control" rows="3"></textarea>
+                    </div>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn-ghost" id="editTopicCancel">Bekor qilish</button>
+                    <button type="submit" class="btn-primary">
+                        <i class="bi bi-check-circle"></i> Saqlash
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
 
     <style>
@@ -676,6 +819,208 @@
             color: #fff;
         }
 
+        /* ===== MAVZULAR JADVALI ===== */
+        .table-wrap {
+            overflow-x: auto;
+        }
+
+        .topics-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: .86rem;
+        }
+
+        .topics-table th,
+        .topics-table td {
+            padding: 12px 14px;
+            text-align: left;
+            white-space: nowrap;
+        }
+
+        .topics-table th {
+            color: var(--muted);
+            font-size: .74rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .03em;
+            border-bottom: 1.5px solid var(--line);
+        }
+
+        .topics-table tbody tr {
+            border-bottom: 1px solid var(--line);
+            transition: background .15s;
+        }
+
+        .topics-table tbody tr:last-child {
+            border-bottom: none;
+        }
+
+        .topics-table tbody tr:hover {
+            background: var(--bg-soft);
+        }
+
+        .topics-table td {
+            color: var(--text);
+        }
+
+        .topic-title-cell {
+            font-weight: 700;
+        }
+
+        .topic-desc-cell {
+            color: var(--muted);
+            white-space: normal;
+            max-width: 260px;
+        }
+
+        .topic-chip {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 20px;
+            background: var(--primary-soft);
+            color: var(--primary);
+            font-size: .74rem;
+            font-weight: 700;
+        }
+
+        .text-end {
+            text-align: right;
+        }
+
+        .row-actions {
+            display: inline-flex;
+            gap: 6px;
+            justify-content: flex-end;
+        }
+
+        .icon-btn {
+            width: 34px;
+            height: 34px;
+            border-radius: 9px;
+            border: 1.5px solid var(--line);
+            background: var(--card);
+            color: var(--muted);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: .95rem;
+            transition: .15s;
+        }
+
+        .icon-btn-edit:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+            background: var(--primary-soft);
+        }
+
+        .icon-btn-delete:hover {
+            border-color: var(--coral);
+            color: var(--coral);
+            background: var(--coral-soft);
+        }
+
+        /* ===== TAHRIRLASH MODALI ===== */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(20, 18, 35, .5);
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            z-index: 1000;
+        }
+
+        .modal-overlay.show {
+            display: flex;
+        }
+
+        .modal-box {
+            background: var(--card);
+            border-radius: 18px;
+            box-shadow: var(--shadow);
+            width: 100%;
+            max-width: 560px;
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: modalPop .2s ease;
+        }
+
+        @keyframes modalPop {
+            from {
+                transform: scale(.96);
+                opacity: 0;
+            }
+
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .modal-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 20px 22px;
+            border-bottom: 1px solid var(--line);
+        }
+
+        .modal-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 700;
+            font-size: 1.02rem;
+        }
+
+        .modal-title i {
+            color: var(--primary);
+        }
+
+        .modal-close {
+            width: 32px;
+            height: 32px;
+            border-radius: 9px;
+            border: none;
+            background: var(--bg-soft);
+            color: var(--muted);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .modal-close:hover {
+            background: var(--coral-soft);
+            color: var(--coral);
+        }
+
+        .modal-body {
+            padding: 22px;
+        }
+
+        .modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            padding: 18px 22px;
+            border-top: 1px solid var(--line);
+        }
+
+        @media (max-width:640px) {
+            .modal-actions {
+                flex-direction: column-reverse;
+            }
+
+            .modal-actions .btn-ghost,
+            .modal-actions .btn-primary {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+
         /* ===== RESPONSIVE ===== */
         @media (max-width:900px) {
             .form-grid-3 {
@@ -947,6 +1292,57 @@
                 const btn = document.getElementById('submitBtn');
                 btn.disabled = true;
                 btn.innerHTML = '<i class="bi bi-arrow-repeat"></i> Yuklanmoqda...';
+            });
+        })();
+    </script>
+
+    {{-- ============================================================ --}}
+    {{-- MAVZUNI TAHRIRLASH MODALI — ochish/yopish va maydonlarni       --}}
+    {{-- to'ldirish. Forma yuborilishi hozircha to'xtatilgan (backend   --}}
+    {{-- tayyor bo'lgach quyidagi preventDefault() qatorini o'chiring). --}}
+    {{-- ============================================================ --}}
+    <script>
+        (function() {
+            const modal = document.getElementById('editTopicModal');
+            const form = document.getElementById('editTopicForm');
+            const closeBtn = document.getElementById('editTopicClose');
+            const cancelBtn = document.getElementById('editTopicCancel');
+
+            function openModal(btn) {
+                document.getElementById('edit_topic_id').value = btn.dataset.topicId;
+                document.getElementById('edit_topic_title').value = btn.dataset.topicTitle;
+                document.getElementById('edit_topic_description').value = btn.dataset.topicDescription;
+                document.getElementById('edit_science_id').value = btn.dataset.scienceId;
+                document.getElementById('edit_grade_id').value = btn.dataset.gradeId;
+                document.getElementById('edit_section_id').value = btn.dataset.sectionId;
+
+                modal.classList.add('show');
+            }
+
+            function closeModal() {
+                modal.classList.remove('show');
+                form.reset();
+            }
+
+            document.querySelectorAll('[data-action="edit-topic"]').forEach(btn => {
+                btn.addEventListener('click', () => openModal(btn));
+            });
+
+            closeBtn.addEventListener('click', closeModal);
+            cancelBtn.addEventListener('click', closeModal);
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) closeModal();
+            });
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && modal.classList.contains('show')) closeModal();
+            });
+
+            // TODO: backend route tayyor bo'lgach, formaning action="" ni
+            // route('topics.update', ':id') kabi to'g'ri manzilga o'zgartiring
+            // va shu preventDefault() qatorini olib tashlang.
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                showToast('Backend hali ulanmagan — saqlash funksiyasi tez orada qo\'shiladi', 'error');
             });
         })();
     </script>
