@@ -265,13 +265,99 @@
                                                 data-section-id="{{ $topic->section_id }}">
                                                 <i class="bi bi-pencil-square"></i>
                                             </button>
-                                            <button type="button" class="icon-btn icon-btn-delete" title="O'chirish"
-                                                data-action="delete-topic" data-topic-id="{{ $topic->id }}">
-                                                <i class="bi bi-trash3"></i>
-                                            </button>
+                                            <form action="{{ route('topic.delete', $topic) }}"
+                                                onsubmit="return confirm('Mavzu o\'chirilsinmi?')" method="POST">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="icon-btn icon-btn-delete" title="O'chirish"
+                                                    data-action="delete-topic" data-topic-id="{{ $topic->id }}">
+                                                    <i class="bi bi-trash3"></i>
+                                                </button>
+                                            </form>
                                         </div>
                                     </td>
                                 </tr>
+
+                                {{-- ========================================================= --}}
+                                {{-- MAVZUNI TAHRIRLASH MODALI                                   --}}
+                                {{-- Forma action/method hozircha qo'yilmagan — backend tayyor    --}}
+                                {{-- bo'lgach shu formaning action="" qismiga route qo'ying va    --}}
+                                {{-- pastdagi skriptdagi preventDefault() qatorini olib tashlang. --}}
+                                {{-- ========================================================= --}}
+
+                                <div class="modal-overlay" id="editTopicModal">
+                                    <div class="modal-box">
+                                        <form action="{{ route('topic.update', $topic->id) }}" method="POST">
+                                            @csrf
+                                            @method('PUT')
+                                            <input type="hidden" name="topic_id" id="edit_topic_id">
+
+                                            <div class="modal-head">
+                                                <div class="modal-title"><i class="bi bi-pencil-square"></i>
+                                                    Mavzuni tahrirlash</div>
+                                                <button type="button" class="modal-close" id="editTopicClose">
+                                                    <i class="bi bi-x-lg"></i>
+                                                </button>
+                                            </div>
+
+                                            <div class="modal-body">
+                                                <div class="form-grid form-grid-2 mb-16">
+                                                    <div class="field">
+                                                        <label class="field-label">Fan</label>
+                                                        <select name="science_id" id="edit_science_id"
+                                                            class="select-control" required>
+                                                            @foreach ($sciences as $science)
+                                                                <option value="{{ $science->id }}">
+                                                                    {{ $science->title }}</option>
+                                                            @endforeach
+                                                        </select>
+                                                    </div>
+
+                                                    <div class="field">
+                                                        <label class="field-label">Sinf</label>
+                                                        <select name="grade_id" id="edit_grade_id" class="select-control"
+                                                            required>
+                                                            @foreach ($grades as $grade)
+                                                                <option value="{{ $grade->id }}">
+                                                                    {{ $grade->title }}</option>
+                                                            @endforeach
+                                                        </select>
+                                                    </div>
+                                                </div>
+
+                                                <div class="field mb-16">
+                                                    <label class="field-label">Bo'lim</label>
+                                                    <select name="section_id" id="edit_section_id" class="select-control"
+                                                        required>
+                                                        @foreach ($sections as $section)
+                                                            <option value="{{ $section->id }}">
+                                                                {{ $section->title }}</option>
+                                                        @endforeach
+                                                    </select>
+                                                </div>
+
+                                                <div class="field mb-16">
+                                                    <label class="field-label">Mavzu nomi</label>
+                                                    <input type="text" name="topic_title" id="edit_topic_title"
+                                                        class="text-control" required>
+                                                </div>
+
+                                                <div class="field">
+                                                    <label class="field-label">Mavzu tavsifi</label>
+                                                    <textarea name="topic_description" id="edit_topic_description" class="text-control" rows="3"></textarea>
+                                                </div>
+                                            </div>
+
+                                            <div class="modal-actions">
+                                                <button type="button" class="btn-ghost" id="editTopicCancel">Bekor
+                                                    qilish</button>
+                                                <button type="submit" class="btn-primary">
+                                                    <i class="bi bi-check-circle"></i> Saqlash
+                                                </button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
                             @endforeach
                         </tbody>
                     </table>
@@ -285,76 +371,6 @@
         </div>
     </div>
 
-    {{-- ========================================================= --}}
-    {{-- MAVZUNI TAHRIRLASH MODALI                                   --}}
-    {{-- Forma action/method hozircha qo'yilmagan — backend tayyor    --}}
-    {{-- bo'lgach shu formaning action="" qismiga route qo'ying va    --}}
-    {{-- pastdagi skriptdagi preventDefault() qatorini olib tashlang. --}}
-    {{-- ========================================================= --}}
-    <div class="modal-overlay" id="editTopicModal">
-        <div class="modal-box">
-            <form action="{{ route('topic.update', $topic->id) }}" method="POST">
-                @csrf
-                @method('PUT')
-                <input type="hidden" name="topic_id" id="edit_topic_id">
-
-                <div class="modal-head">
-                    <div class="modal-title"><i class="bi bi-pencil-square"></i> Mavzuni tahrirlash</div>
-                    <button type="button" class="modal-close" id="editTopicClose">
-                        <i class="bi bi-x-lg"></i>
-                    </button>
-                </div>
-
-                <div class="modal-body">
-                    <div class="form-grid form-grid-2 mb-16">
-                        <div class="field">
-                            <label class="field-label">Fan</label>
-                            <select name="science_id" id="edit_science_id" class="select-control" required>
-                                @foreach ($sciences as $science)
-                                    <option value="{{ $science->id }}">{{ $science->title }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-
-                        <div class="field">
-                            <label class="field-label">Sinf</label>
-                            <select name="grade_id" id="edit_grade_id" class="select-control" required>
-                                @foreach ($grades as $grade)
-                                    <option value="{{ $grade->id }}">{{ $grade->title }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                    </div>
-
-                    <div class="field mb-16">
-                        <label class="field-label">Bo'lim</label>
-                        <select name="section_id" id="edit_section_id" class="select-control" required>
-                            @foreach ($sections as $section)
-                                <option value="{{ $section->id }}">{{ $section->title }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-
-                    <div class="field mb-16">
-                        <label class="field-label">Mavzu nomi</label>
-                        <input type="text" name="topic_title" id="edit_topic_title" class="text-control" required>
-                    </div>
-
-                    <div class="field">
-                        <label class="field-label">Mavzu tavsifi</label>
-                        <textarea name="topic_description" id="edit_topic_description" class="text-control" rows="3"></textarea>
-                    </div>
-                </div>
-
-                <div class="modal-actions">
-                    <button type="button" class="btn-ghost" id="editTopicCancel">Bekor qilish</button>
-                    <button type="submit" class="btn-primary">
-                        <i class="bi bi-check-circle"></i> Saqlash
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
 
     <style>
         .page-head {
@@ -1146,6 +1162,8 @@
             const toggle = document.getElementById('sectionModeToggle');
             const newPanel = document.getElementById('sectionNewPanel');
             const existingPanel = document.getElementById('sectionExistingPanel');
+            let science = document.getElementById('science');
+            let grade = document.getElementById('grade');
 
             const sectionTitleInput = document.getElementById('section_title');
             const sectionIdSelect = document.getElementById('section_id_select');
@@ -1160,11 +1178,17 @@
                     existingPanel.style.display = 'none';
                     sectionTitleInput.required = true;
                     sectionIdSelect.required = false;
+                    science.value = '';
+                    grade.value = '';
+                    sectionIdSelect.value = '';
                 } else {
                     newPanel.style.display = 'none';
                     existingPanel.style.display = '';
                     sectionTitleInput.required = false;
                     sectionIdSelect.required = true;
+                    science.value = '';
+                    grade.value = '';
+                    sectionIdSelect.value = '';
                 }
             }
 
@@ -1341,7 +1365,6 @@
             // route('topics.update', ':id') kabi to'g'ri manzilga o'zgartiring
             // va shu preventDefault() qatorini olib tashlang.
             form.addEventListener('submit', function(e) {
-                e.preventDefault();
                 showToast('Backend hali ulanmagan — saqlash funksiyasi tez orada qo\'shiladi', 'error');
             });
         })();

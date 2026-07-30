@@ -3,12 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\SectionLessonRequest;
-use App\Models\Section;
-use App\Models\Topic;
 use App\Services\SectionService;
 use App\Services\TopicService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 
 class SectionController extends Controller
 {
@@ -20,8 +17,13 @@ class SectionController extends Controller
     public function store(SectionLessonRequest $request)
     {
         $validated = $request->validated();
-        $section = $this->sectionServ->create($validated);
-        $topic = $this->topicServ->create($validated, $section->id);
+        if (! $request->section_id) {
+            $section = $this->sectionServ->create($validated);
+            $topic = $this->topicServ->create($validated, $section->id);
+        } else {
+            $topic = $this->topicServ->create($validated, $request->section_id);
+        }
+
         return redirect()->route('lesson')->with('success', "Bo'lim va mavzu muvaffaqiyatli yaratildi");
     }
 

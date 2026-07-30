@@ -37,4 +37,10 @@ class TopicRepository implements TopicRepositoryInterface
     {
         return $topic->update($data);
     }
+
+    #[Override]
+    public function delete(Topic $topic)
+    {
+        return $topic->delete();
+    }
 }

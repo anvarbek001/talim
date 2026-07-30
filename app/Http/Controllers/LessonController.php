@@ -18,12 +18,20 @@ class LessonController extends Controller
         protected LessonService $lessonServ,
     ) {}
 
+    public static function middleware(): array
+    {
+        return [
+            'auth',
+        ];
+    }
+
     public function index()
     {
         $sciences = Science::all();
         $grades = Grade::all();
         $sections = $this->sectionServ->all();
         $topics = $this->serviceTopic->all();
+
         return view('lessons.index', compact('sciences', 'grades', 'sections', 'topics'));
     }
 

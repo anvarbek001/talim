@@ -3,7 +3,9 @@
 namespace App\Http\Requests;
 
 use Illuminate\Contracts\Validation\ValidationRule;
+use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Http\Exceptions\HttpResponseException;
 
 class SectionLessonRequest extends FormRequest
 {
@@ -25,7 +27,7 @@ class SectionLessonRequest extends FormRequest
         return [
             'science_id' => 'required|integer|exists:sciences,id',
             'grade_id' => 'required|integer|exists:grades,id',
-            'section_title' => 'required|string|min:3|max:255',
+            'section_title' => 'nullable|string|min:3|max:255',
             'section_description' => 'nullable|string|max:2000',
             'topic_title' => 'required|string|min:3|max:255',
             'topic_description' => 'nullable|string|max:2000',
@@ -64,10 +66,10 @@ class SectionLessonRequest extends FormRequest
         ];
     }
 
-    protected function failedValidation(\Illuminate\Contracts\Validation\Validator $validator)
+    protected function failedValidation(Validator $validator)
     {
         if ($this->expectsJson() || $this->ajax()) {
-            throw new \Illuminate\Http\Exceptions\HttpResponseException(
+            throw new HttpResponseException(
                 response()->json([
                     'success' => false,
                     'message' => "Ma'lumotlarni tekshirishda xatolik yuz berdi.",

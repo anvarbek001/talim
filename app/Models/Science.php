@@ -2,12 +2,12 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Science extends Model
 {
-    protected $fillable = ['title', 'icon'];
+    protected $fillable = ['title', 'icon', 'color'];
 
     public function sections(): HasMany
     {

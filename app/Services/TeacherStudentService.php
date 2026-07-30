@@ -1,0 +1,54 @@
+<?php
+
+namespace App\Services;
+
+use App\Models\DtmTest;
+use App\Models\SertifikatTest;
+use App\Models\TestAttempt;
+use App\Models\TopicTest;
+use App\Models\User;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
+
+class TeacherStudentService
+{
+    /**
+     * Every student who has submitted an attempt on one of this teacher's
+     * tests, grouped with their attempt history and average score.
+     *
+     * @return Collection<int, array{student: User, attempts_count: int, average_percent: float, last_activity: Carbon|null, attempts: Collection<int, TestAttempt>}>
+     */
+    public function studentsForTeacher(int $teacherId): Collection
+    {
+        $topicTestIds = TopicTest::where('user_id', $teacherId)->pluck('id');
+        $dtmTestIds = DtmTest::where('user_id', $teacherId)->pluck('id');
+        $sertifikatTestIds = SertifikatTest::where('user_id', $teacherId)->pluck('id');
+
+        $attempts = TestAttempt::with(['user', 'testable'])
+            ->where('status', 'submitted')
+            ->where(function ($query) use ($topicTestIds, $dtmTestIds, $sertifikatTestIds) {
+                $query->where(fn ($q) => $q->where('testable_type', TopicTest::class)->whereIn('testable_id', $topicTestIds))
+                    ->orWhere(fn ($q) => $q->where('testable_type', DtmTest::class)->whereIn('testable_id', $dtmTestIds))
+                    ->orWhere(fn ($q) => $q->where('testable_type', SertifikatTest::class)->whereIn('testable_id', $sertifikatTestIds));
+            })
+            ->latest('submitted_at')
+            ->get();
+
+        return $attempts->groupBy('user_id')
+            ->map(function (Collection $studentAttempts) {
+                $graded = $studentAttempts->filter(fn (TestAttempt $a) => ! $a->hasPendingGrading());
+
+                return [
+                    'student' => $studentAttempts->first()->user,
+                    'attempts_count' => $studentAttempts->count(),
+                    'average_percent' => $graded->isNotEmpty()
+                        ? round($graded->avg(fn (TestAttempt $a) => $a->max_score > 0 ? ($a->score / $a->max_score * 100) : 0))
+                        : 0,
+                    'last_activity' => $studentAttempts->max('submitted_at'),
+                    'attempts' => $studentAttempts->values(),
+                ];
+            })
+            ->sortByDesc('last_activity')
+            ->values();
+    }
+}

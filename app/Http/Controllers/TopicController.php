@@ -19,4 +19,11 @@ class TopicController extends Controller
 
         return redirect()->route('lesson')->with('success', 'Mavzu tahrirlandi');
     }
+
+    public function delete(Topic $topic)
+    {
+        $this->topicServ->delete($topic);
+
+        return redirect()->route('lesson')->with('success', "Mavzu o'chirildi");
+    }
 }

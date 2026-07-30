@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Darslik — Video darslar orqali o'rganing</title>
+    <title>DarsQil — Video darslar orqali o'rganing</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link
@@ -769,7 +769,7 @@
             </div>
             <hr class="my-4" style="border-color:#2A3157;">
             <div class="d-flex justify-content-between flex-wrap gap-2 small">
-                <span>© 2026 Darslik. Barcha huquqlar himoyalangan.</span>
+                <span>© 2026 DarsQil. Barcha huquqlar himoyalangan.</span>
                 <span>Toshkent, O'zbekiston</span>
             </div>
         </div>

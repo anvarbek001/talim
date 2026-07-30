@@ -2,9 +2,10 @@
 
 namespace App\Services;
 
+use App\Models\Topic;
 use App\Repositories\Contracts\TopicRepositoryInterface;
-use Illuminate\Support\Facades\Auth;
 use Exception;
+use Illuminate\Support\Facades\Auth;
 
 class TopicService
 {
@@ -19,7 +20,7 @@ class TopicService
 
     public function create(array $data, int $section_id)
     {
-        if (!$section_id) {
+        if (! $section_id) {
             throw new Exception("Ma'lumotlarda xatolik qaytadan urunib ko'ring", 400);
         }
 
@@ -29,7 +30,7 @@ class TopicService
             'grade_id' => $data['grade_id'],
             'section_id' => $section_id,
             'title' => $data['topic_title'],
-            'description' => $data['topic_description']
+            'description' => $data['topic_description'],
         ]);
     }
 
@@ -37,8 +38,8 @@ class TopicService
     {
         $topic = $this->topicRepo->find($id);
 
-        if (!$topic) {
-            throw new \Exception('Mavzu topilmadi', 404);
+        if (! $topic) {
+            throw new Exception('Mavzu topilmadi', 404);
         }
 
         return $this->topicRepo->update($topic, [
@@ -48,5 +49,18 @@ class TopicService
             'title' => $data['topic_title'],
             'description' => $data['topic_description'],
         ]);
+    }
+
+    public function delete(Topic $topic)
+    {
+        if (! $topic) {
+            throw new Exception('Mavzu topilmadi', 404);
+        }
+
+        if ($topic->user_id != Auth::id()) {
+            throw new Exception('Bu mavzu ustida amaliyot bajara olmaysiz', 404);
+        }
+
+        return $this->topicRepo->delete($topic);
     }
 }

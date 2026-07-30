@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>O'qituvchi kabineti — Darslik</title>
+    <title>O'qituvchi kabineti — DarsQil</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
@@ -207,6 +207,15 @@
             justify-content: center;
             font-weight: 700;
             font-family: 'Sora', sans-serif;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+
+        .mini-avatar img,
+        .avatar-lg img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
         }
 
         .logout-link {
@@ -341,6 +350,8 @@
             color: #fff;
             font-weight: 700;
             font-family: 'Sora', sans-serif;
+            overflow: hidden;
+            flex-shrink: 0;
         }
 
         .page {
@@ -870,7 +881,7 @@
 
     <aside class="sidebar">
         <div class="brand">
-            <div class="dot">D</div><span>Darslik</span>
+            <div class="dot">D</div><span>DarsQil</span>
         </div>
 
         <div class="nav-eyebrow">Umumiy</div>
@@ -883,10 +894,14 @@
         <a href="{{ route('lesson') }}" class="nav-link {{ request()->routeIs('lesson') ? 'active' : '' }}">
             <i class="bi bi-cloud-upload"></i> Dars joylash
         </a>
-        <a href="#" class="nav-link"><i class="bi bi-patch-question"></i> Testlarim</a>
+        <a href="{{ route('tests.index') }}" class="nav-link {{ request()->routeIs('tests.index') ? 'active' : '' }}">
+            <i class="bi bi-patch-question"></i> Testlarim
+        </a>
 
         <div class="nav-eyebrow">Auditoriya</div>
-        <a href="#" class="nav-link"><i class="bi bi-mortarboard"></i> O'quvchilarim</a>
+        <a href="{{ route('teacher-students.index') }}" class="nav-link {{ request()->routeIs('teacher-students.*') ? 'active' : '' }}">
+            <i class="bi bi-mortarboard"></i> O'quvchilarim
+        </a>
         {{--
         <div class="nav-eyebrow">Moliya</div>
         <a href="#" class="nav-link"><i class="bi bi-wallet2"></i> Daromadim</a>
@@ -901,10 +916,16 @@
         </a>
 
         <div class="sidebar-foot">
-            <div class="mini-avatar">AK</div>
+            <div class="mini-avatar">
+                @if (auth()->user()->avatarUrl())
+                    <img src="{{ auth()->user()->avatarUrl() }}" alt="{{ auth()->user()->name }}">
+                @else
+                    {{ auth()->user()->initials() }}
+                @endif
+            </div>
             <div>
-                <div class="small fw-semibold" style="font-size:.85rem;font-weight:700;">Aziz Karimov</div>
-                <div style="font-size:.72rem;color:var(--muted);">Matematika o'qituvchisi</div>
+                <div class="small fw-semibold" style="font-size:.85rem;font-weight:700;">{{ auth()->user()->name }}</div>
+                <div style="font-size:.72rem;color:var(--muted);">O'qituvchi</div>
             </div>
             <a href="#" class="logout-icon-btn" title="Chiqish"
                 onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
@@ -928,7 +949,13 @@
                     onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
                     <i class="bi bi-box-arrow-right"></i>
                 </a>
-                <div class="avatar-lg">AK</div>
+                <div class="avatar-lg">
+                    @if (auth()->user()->avatarUrl())
+                        <img src="{{ auth()->user()->avatarUrl() }}" alt="{{ auth()->user()->name }}">
+                    @else
+                        {{ auth()->user()->initials() }}
+                    @endif
+                </div>
             </div>
         </div>
         @yield('content')
@@ -944,8 +971,12 @@
         <a href="{{ route('lesson') }}" class="bn-link {{ request()->routeIs('lesson') ? 'active' : '' }}">
             <i class="bi bi-cloud-upload"></i><span>Joylash</span>
         </a>
-        <a href="#" class="bn-link"><i class="bi bi-mortarboard"></i><span>Testlarim</span></a>
-        <a href="#" class="bn-link"><i class="bi bi-mortarboard"></i> <span>O'quvchilarim</span></a>
+        <a href="{{ route('tests.index') }}" class="bn-link {{ request()->routeIs('tests.index') ? 'active' : '' }}">
+            <i class="bi bi-mortarboard"></i><span>Testlarim</span>
+        </a>
+        <a href="{{ route('teacher-students.index') }}" class="bn-link {{ request()->routeIs('teacher-students.*') ? 'active' : '' }}">
+            <i class="bi bi-mortarboard"></i> <span>O'quvchilarim</span>
+        </a>
         {{-- <button type="button" class="bn-link" id="moreBtn"><i
                 class="bi bi-grid-3x3-gap-fill"></i><span>Ko'proq</span></button> --}}
     </nav>
