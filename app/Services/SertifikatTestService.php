@@ -29,6 +29,7 @@ class SertifikatTestService
                 'title' => $data['title'],
                 'description' => $data['description'] ?? null,
                 'duration_minutes' => $data['duration_minutes'],
+                'price' => $data['price'] ?? 0,
             ]);
 
             $this->syncQuestions($sertifikatTest, $data['questions']);
@@ -49,6 +50,7 @@ class SertifikatTestService
                 'title' => $data['title'],
                 'description' => $data['description'] ?? null,
                 'duration_minutes' => $data['duration_minutes'],
+                'price' => $data['price'] ?? 0,
             ]);
 
             $sertifikatTest->questions()->delete();

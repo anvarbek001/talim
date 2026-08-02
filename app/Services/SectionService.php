@@ -2,7 +2,9 @@
 
 namespace App\Services;
 
+use App\Models\Section;
 use App\Repositories\Contracts\SectionRepositoryInterface;
+use Exception;
 use Illuminate\Support\Facades\Auth;
 
 class SectionService
@@ -23,7 +25,19 @@ class SectionService
             'science_id' => $data['science_id'],
             'grade_id' => $data['grade_id'],
             'title' => $data['section_title'],
-            'description' => $data['section_description']
+            'description' => $data['section_description'] ?? null,
+            'price' => $data['price'] ?? 0,
+        ]);
+    }
+
+    public function update(Section $section, array $data): Section
+    {
+        if ($section->user_id !== Auth::id()) {
+            throw new Exception('Bu bo\'lim ustida amaliyot bajara olmaysiz', 403);
+        }
+
+        return $this->sectionRepo->update($section, [
+            'price' => $data['price'],
         ]);
     }
 

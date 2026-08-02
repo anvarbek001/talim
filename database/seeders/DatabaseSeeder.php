@@ -22,7 +22,6 @@ class DatabaseSeeder extends Seeder
             TestContentSeeder::class,
             TestAttemptSeeder::class,
             SavedLessonSeeder::class,
-            SubscriptionSeeder::class,
         ]);
     }
 }

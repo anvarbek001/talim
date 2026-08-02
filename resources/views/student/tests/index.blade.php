@@ -10,6 +10,9 @@
         @if (session('success'))
             <div class="alert-success fade-up"><i class="bi bi-check-circle-fill"></i> {{ session('success') }}</div>
         @endif
+        @if (session('error'))
+            <div class="alert-error fade-up"><i class="bi bi-exclamation-triangle-fill"></i> {{ session('error') }}</div>
+        @endif
 
         <div class="card fade-up" style="animation-delay:.06s;">
             <div class="card-head">
@@ -45,12 +48,24 @@
                                 <span><i class="bi bi-patch-question"></i> {{ $item['questions_count'] }} savol</span>
                                 <span><i class="bi bi-clock"></i> {{ $item['duration_minutes'] }} daq</span>
                             </div>
-                            <form action="{{ route('student-tests.start', [$item['type'], $item['id']]) }}" method="POST">
-                                @csrf
-                                <button type="submit" class="btn-primary test-card-btn">
-                                    <i class="bi bi-play-fill"></i> Testni boshlash
-                                </button>
-                            </form>
+                            <div class="test-card-price {{ $item['price'] > 0 ? '' : 'is-free' }}">
+                                {{ $item['price'] > 0 ? number_format($item['price'], 0, '.', ' ')." so'm" : 'Bepul' }}
+                            </div>
+                            @if ($item['price'] > 0 && ! $item['purchased'])
+                                <form action="{{ route('student-purchases.store', [$item['purchase_type'], $item['purchase_id']]) }}" method="POST">
+                                    @csrf
+                                    <button type="submit" class="btn-primary test-card-btn">
+                                        <i class="bi bi-bag-check"></i> Sotib olish
+                                    </button>
+                                </form>
+                            @else
+                                <form action="{{ route('student-tests.start', [$item['type'], $item['id']]) }}" method="POST">
+                                    @csrf
+                                    <button type="submit" class="btn-primary test-card-btn">
+                                        <i class="bi bi-play-fill"></i> Testni boshlash
+                                    </button>
+                                </form>
+                            @endif
                         </div>
                     @endforeach
                 </div>
@@ -139,6 +154,19 @@
             gap: 10px;
             background: var(--mint-soft);
             color: var(--mint);
+            border-radius: 12px;
+            padding: 13px 16px;
+            font-weight: 600;
+            font-size: .88rem;
+            margin-bottom: 20px;
+        }
+
+        .alert-error {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: var(--coral-soft);
+            color: var(--coral);
             border-radius: 12px;
             padding: 13px 16px;
             font-weight: 600;
@@ -251,6 +279,16 @@
             width: 100%;
             justify-content: center;
             margin-top: 4px;
+        }
+
+        .test-card-price {
+            font-weight: 700;
+            font-size: .84rem;
+            color: var(--primary);
+        }
+
+        .test-card-price.is-free {
+            color: var(--mint);
         }
 
         .btn-primary {

@@ -6,6 +6,7 @@ use App\Models\Science;
 use App\Models\Section;
 use App\Models\Topic;
 use App\Models\User;
+use App\Services\PurchaseService;
 
 function makeLessonForBrowsing(User $teacher, string $scienceTitle = 'Matematika', string $lessonTitle = 'Kvadrat tenglamalar'): Lesson
 {
@@ -91,7 +92,19 @@ test('a student can open a free-preview lesson and watch it', function () {
     $response->assertSee('youtube.com/embed/aqz-KE-bpKQ', false);
 });
 
-test('a lesson beyond the free preview limit is locked without a subscription', function () {
+test('the teacher initials are shown as an avatar on the lesson watch page', function () {
+    $teacher = User::factory()->create(['name' => 'Ismoil Rahimov']);
+    $student = User::factory()->create();
+    $lesson = makeLessonForBrowsing($teacher);
+
+    $response = $this->actingAs($student)->get(route('student-lessons.show', $lesson));
+
+    $response->assertOk();
+    $response->assertSee('teacher-chip-avatar', false);
+    $response->assertSee('IR'); // teacher initials fallback (no avatar uploaded)
+});
+
+test('a priced lesson beyond the free preview limit is locked without a purchase', function () {
     $teacher = User::factory()->create();
     $student = User::factory()->create();
 
@@ -100,30 +113,27 @@ test('a lesson beyond the free preview limit is locked without a subscription', 
         $lessons[] = makeLessonForBrowsing($teacher, lessonTitle: "Dars {$i}");
     }
     $lockedLesson = end($lessons);
+    $lockedLesson->section->update(['price' => 15000]);
 
     $response = $this->actingAs($student)->get(route('student-lessons.show', $lockedLesson));
 
     $response->assertOk();
-    $response->assertSee('obuna');
+    $response->assertSee('Sotib olish');
     $response->assertDontSee('youtube.com/embed', false);
 });
 
-test('an active subscriber can watch a lesson beyond the free preview limit', function () {
+test('a student who purchased a priced lesson can watch it beyond the free preview limit', function () {
     $teacher = User::factory()->create();
     $student = User::factory()->create();
-    $student->subscriptions()->create([
-        'plan' => 'monthly',
-        'price' => 20000,
-        'status' => 'active',
-        'starts_at' => now(),
-        'ends_at' => now()->addDays(30),
-    ]);
 
     $lessons = [];
     for ($i = 1; $i <= Lesson::FREE_PREVIEW_COUNT + 1; $i++) {
         $lessons[] = makeLessonForBrowsing($teacher, lessonTitle: "Dars {$i}");
     }
     $lockedLesson = end($lessons);
+    $lockedLesson->section->update(['price' => 15000]);
+
+    app(PurchaseService::class)->purchase($student, $lockedLesson->section);
 
     $response = $this->actingAs($student)->get(route('student-lessons.show', $lockedLesson));
 

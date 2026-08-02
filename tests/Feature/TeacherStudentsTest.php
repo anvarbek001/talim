@@ -89,3 +89,42 @@ test('a teacher does not see students from another teacher\'s tests', function (
     $response->assertOk();
     $response->assertDontSee('Zulfiya Nomozova');
 });
+
+test('a teacher can see the full question-by-question detail of a student attempt', function () {
+    $teacher = User::factory()->create();
+    $student = User::factory()->create(['name' => 'Ali Valiyev']);
+    $test = makeTeacherStudentsTopicTest($teacher, 'Batafsil test');
+
+    $this->actingAs($student)->post(route('student-tests.start', ['topic', $test->id]));
+    $attempt = TestAttempt::first();
+    $question = $test->questions()->with('options')->first();
+    $wrongOption = $question->options->firstWhere('is_correct', false);
+    $correctOption = $question->options->firstWhere('is_correct', true);
+
+    $this->actingAs($student)->post(route('student-tests.submit', $attempt), [
+        'answers' => [$question->id => $wrongOption->id],
+    ]);
+
+    $response = $this->actingAs($teacher)->get(route('teacher-students.result', $attempt));
+
+    $response->assertOk();
+    $response->assertSee('Ali Valiyev');
+    $response->assertSee($question->question);
+    $response->assertSee($wrongOption->option_text);
+    $response->assertSee($correctOption->option_text);
+});
+
+test('a teacher cannot view another teacher\'s student attempt detail', function () {
+    $teacherA = User::factory()->create();
+    $teacherB = User::factory()->create();
+    $student = User::factory()->create();
+    $test = makeTeacherStudentsTopicTest($teacherA, 'Yopiq test');
+
+    $this->actingAs($student)->post(route('student-tests.start', ['topic', $test->id]));
+    $attempt = TestAttempt::first();
+    $this->actingAs($student)->post(route('student-tests.submit', $attempt), ['answers' => []]);
+
+    $response = $this->actingAs($teacherB)->get(route('teacher-students.result', $attempt));
+
+    $response->assertForbidden();
+});

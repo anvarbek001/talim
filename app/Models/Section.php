@@ -2,18 +2,23 @@
 
 namespace App\Models;
 
+use App\Contracts\Purchasable;
+use App\Models\Concerns\IsPurchasable;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Model;
 
-class Section extends Model
+class Section extends Model implements Purchasable
 {
+    use IsPurchasable;
+
     protected $fillable = [
         'user_id',
         'science_id',
         'grade_id',
         'title',
         'description',
+        'price',
     ];
 
     public function user(): BelongsTo

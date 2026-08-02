@@ -50,8 +50,15 @@
                             <span class="lesson-chip lesson-chip-muted">
                                 <i class="bi bi-collection"></i> {{ $lesson->section->title ?? '—' }}
                             </span>
-                            <span class="lesson-chip lesson-chip-muted">
-                                <i class="bi bi-person"></i> {{ $lesson->user->name ?? "O'qituvchi" }}
+                            <span class="lesson-chip lesson-chip-muted teacher-chip">
+                                <span class="teacher-chip-avatar">
+                                    @if ($lesson->user?->avatarUrl())
+                                        <img src="{{ $lesson->user->avatarUrl() }}" alt="{{ $lesson->user->name }}">
+                                    @else
+                                        {{ $lesson->user?->initials() }}
+                                    @endif
+                                </span>
+                                {{ $lesson->user->name ?? "O'qituvchi" }}
                             </span>
                         </div>
 
@@ -228,6 +235,32 @@
         .lesson-chip-muted {
             background: var(--bg-soft);
             color: var(--muted);
+        }
+
+        .teacher-chip {
+            padding-left: 4px;
+        }
+
+        .teacher-chip-avatar {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), #9C8CFF);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: .6rem;
+            font-weight: 700;
+            font-family: 'Sora', sans-serif;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+
+        .teacher-chip-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
         }
 
         .watch-desc {

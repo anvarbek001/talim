@@ -10,7 +10,6 @@ use App\Models\TopicTest;
 use App\Services\DtmTestService;
 use App\Services\SectionService;
 use App\Services\SertifikatTestService;
-use App\Services\StudentTestService;
 use App\Services\TestQuestionExcelParser;
 use App\Services\TopicService;
 use App\Services\TopicTestService;
@@ -29,7 +28,6 @@ class TopicTestController extends Controller implements HasMiddleware
         protected SectionService $sectionServ,
         protected TopicService $topicServ,
         protected TestQuestionExcelParser $excelParser,
-        protected StudentTestService $studentTestServ,
     ) {}
 
     public static function middleware(): array
@@ -52,11 +50,10 @@ class TopicTestController extends Controller implements HasMiddleware
         $topicTests = $this->topicTestServ->myTests(Auth::id());
         $dtmTests = $this->dtmTestServ->myTests(Auth::id());
         $sertifikatTests = $this->sertifikatTestServ->myTests(Auth::id());
-        $pendingGradingCount = $this->studentTestServ->pendingWrittenAnswers(Auth::id())->count();
 
         return view('tests.index', compact(
             'sciences', 'grades', 'sections', 'topics',
-            'topicTests', 'dtmTests', 'sertifikatTests', 'pendingGradingCount'
+            'topicTests', 'dtmTests', 'sertifikatTests'
         ));
     }
 

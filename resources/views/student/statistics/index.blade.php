@@ -13,99 +13,117 @@
     <div class="page">
         <div class="page-head fade-up">
             <div>
-                <h1>Statistikam</h1>
-                <p class="page-sub">Testlar bo'yicha natijalaringiz va umumiy progressingiz shu yerda.</p>
+                <h1>Progressim</h1>
+                <p class="page-sub">Testlar bo'yicha natijalaringiz, sertifikatlaringiz va reytingingiz shu yerda.</p>
             </div>
         </div>
 
-        <div class="stats-grid fade-up" style="animation-delay:.04s;">
-            <div class="stat-card">
-                <div class="stat-icon" style="background:var(--primary-soft);color:var(--primary);"><i class="bi bi-patch-question"></i></div>
-                <div class="stat-num">{{ $stats['attempts_submitted'] }}</div>
-                <div class="stat-lbl">Topshirilgan testlar</div>
+        <div class="progress-tabs fade-up" style="animation-delay:.02s;">
+            <button type="button" class="progress-tab is-active" data-tab-btn="umumiy">
+                <i class="bi bi-graph-up"></i> Umumiy
+            </button>
+            <button type="button" class="progress-tab" data-tab-btn="sertifikat">
+                <i class="bi bi-award"></i> Sertifikatlarim
+            </button>
+            <button type="button" class="progress-tab" data-tab-btn="reyting">
+                <i class="bi bi-trophy"></i> Reyting
+            </button>
+        </div>
+
+        <div data-tab-panel="umumiy">
+            <div class="stats-grid fade-up" style="animation-delay:.04s;">
+                <div class="stat-card">
+                    <div class="stat-icon" style="background:var(--primary-soft);color:var(--primary);"><i class="bi bi-patch-question"></i></div>
+                    <div class="stat-num">{{ $stats['attempts_submitted'] }}</div>
+                    <div class="stat-lbl">Topshirilgan testlar</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon" style="background:var(--mint-soft);color:var(--mint);"><i class="bi bi-graph-up-arrow"></i></div>
+                    <div class="stat-num">{{ $stats['average_percent'] }}%</div>
+                    <div class="stat-lbl">O'rtacha ball</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon" style="background:var(--coral-soft);color:var(--coral);"><i class="bi bi-bookmark-heart"></i></div>
+                    <div class="stat-num">{{ $stats['saved_lessons_count'] }}</div>
+                    <div class="stat-lbl">Saqlangan darslar</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon" style="background:var(--amber-soft);color:#8A6100;"><i class="bi bi-camera-reels"></i></div>
+                    <div class="stat-num">{{ $stats['total_lessons'] }}</div>
+                    <div class="stat-lbl">Platformadagi darslar</div>
+                </div>
             </div>
-            <div class="stat-card">
-                <div class="stat-icon" style="background:var(--mint-soft);color:var(--mint);"><i class="bi bi-graph-up-arrow"></i></div>
-                <div class="stat-num">{{ $stats['average_percent'] }}%</div>
-                <div class="stat-lbl">O'rtacha ball</div>
+
+            <div class="card fade-up" style="animation-delay:.1s;">
+                <div class="card-head">
+                    <div class="card-title">Test turlari bo'yicha</div>
+                </div>
+                @forelse ($stats['by_type'] as $row)
+                    <div class="type-row">
+                        <div class="type-row-label">{{ $row['label'] }}</div>
+                        <div class="type-row-track">
+                            <div class="type-row-fill" style="width:{{ $row['average_percent'] }}%;"></div>
+                        </div>
+                        <div class="type-row-val">{{ $row['average_percent'] }}%</div>
+                        <div class="type-row-count">{{ $row['count'] }} ta</div>
+                    </div>
+                @empty
+                    <div class="stats-empty">Hali birorta test topshirmagansiz.</div>
+                @endforelse
             </div>
-            <div class="stat-card">
-                <div class="stat-icon" style="background:var(--coral-soft);color:var(--coral);"><i class="bi bi-bookmark-heart"></i></div>
-                <div class="stat-num">{{ $stats['saved_lessons_count'] }}</div>
-                <div class="stat-lbl">Saqlangan darslar</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon" style="background:var(--amber-soft);color:#8A6100;"><i class="bi bi-camera-reels"></i></div>
-                <div class="stat-num">{{ $stats['total_lessons'] }}</div>
-                <div class="stat-lbl">Platformadagi darslar</div>
+
+            <div class="card fade-up" style="animation-delay:.16s;">
+                <div class="card-head">
+                    <div class="card-title">So'nggi urinishlar</div>
+                    <a href="{{ route('student-tests.index') }}" class="card-link">Barcha testlar</a>
+                </div>
+                @forelse ($stats['recent_attempts'] as $attempt)
+                    @php [$label, $color] = $typeChip($attempt->testable_type); @endphp
+                    <div class="attempt-row">
+                        <span class="attempt-chip" style="background:{{ $color }}1A;color:{{ $color }};">{{ $label }}</span>
+                        <div class="attempt-title">{{ $attempt->testable->title ?? "O'chirilgan test" }}</div>
+                        <div class="attempt-score">
+                            @if ($attempt->hasPendingGrading())
+                                <span class="pending-badge">Baholanmoqda</span>
+                            @else
+                                {{ $attempt->score }} / {{ $attempt->max_score }}
+                            @endif
+                        </div>
+                        <div class="attempt-date">{{ $attempt->submitted_at?->format('d.m.Y') }}</div>
+                    </div>
+                @empty
+                    <div class="stats-empty">Hali birorta test topshirmagansiz.</div>
+                @endforelse
             </div>
         </div>
 
-        <div class="grid-main">
-            <div>
-                <div class="card fade-up" style="animation-delay:.1s;">
-                    <div class="card-head">
-                        <div class="card-title">Test turlari bo'yicha</div>
-                    </div>
-                    @forelse ($stats['by_type'] as $row)
-                        <div class="type-row">
-                            <div class="type-row-label">{{ $row['label'] }}</div>
-                            <div class="type-row-track">
-                                <div class="type-row-fill" style="width:{{ $row['average_percent'] }}%;"></div>
-                            </div>
-                            <div class="type-row-val">{{ $row['average_percent'] }}%</div>
-                            <div class="type-row-count">{{ $row['count'] }} ta</div>
-                        </div>
-                    @empty
-                        <div class="stats-empty">Hali birorta test topshirmagansiz.</div>
-                    @endforelse
-                </div>
-
-                <div class="card fade-up" style="animation-delay:.16s;">
-                    <div class="card-head">
-                        <div class="card-title">So'nggi urinishlar</div>
-                        <a href="{{ route('student-tests.index') }}" class="card-link">Barcha testlar</a>
-                    </div>
-                    @forelse ($stats['recent_attempts'] as $attempt)
-                        @php [$label, $color] = $typeChip($attempt->testable_type); @endphp
-                        <div class="attempt-row">
-                            <span class="attempt-chip" style="background:{{ $color }}1A;color:{{ $color }};">{{ $label }}</span>
-                            <div class="attempt-title">{{ $attempt->testable->title ?? "O'chirilgan test" }}</div>
-                            <div class="attempt-score">
-                                @if ($attempt->hasPendingGrading())
-                                    <span class="pending-badge">Baholanmoqda</span>
-                                @else
-                                    {{ $attempt->score }} / {{ $attempt->max_score }}
-                                @endif
-                            </div>
-                            <div class="attempt-date">{{ $attempt->submitted_at?->format('d.m.Y') }}</div>
-                        </div>
-                    @empty
-                        <div class="stats-empty">Hali birorta test topshirmagansiz.</div>
-                    @endforelse
-                </div>
+        <div data-tab-panel="sertifikat" hidden>
+            <div class="card fade-up certs-empty">
+                <div class="certs-empty-icon"><i class="bi bi-award"></i></div>
+                <div class="certs-empty-title">Hali sertifikat yo'q</div>
+                <div class="certs-empty-sub">Testlarni yakunlab, birinchi sertifikatingizga ega bo'ling!</div>
             </div>
+        </div>
 
-            <div>
-                <div class="card fade-up" style="animation-delay:.12s;">
-                    <div class="card-head">
-                        <div class="card-title">Reyting</div>
-                    </div>
-                    @forelse ($leaderboard as $index => $row)
-                        <div class="lb-row {{ $row['user']->id === auth()->id() ? 'me' : '' }}">
-                            <div class="lb-rank">{{ $index + 1 }}</div>
-                            <div class="lb-avatar" style="background:var(--primary-soft);color:var(--primary);">
-                                {{ mb_substr($row['user']->name, 0, 1) }}
-                            </div>
-                            <div class="lb-name">
-                                {{ $row['user']->id === auth()->id() ? 'Siz — '.$row['user']->name : $row['user']->name }}
-                            </div>
-                            <div class="lb-pts">{{ $row['total_score'] }}</div>
-                        </div>
-                    @empty
-                        <div class="stats-empty">Hali reyting uchun ma'lumot yo'q.</div>
-                    @endforelse
+        <div data-tab-panel="reyting" hidden>
+            <div class="card fade-up">
+                <div class="card-head">
+                    <div class="card-title">Reyting</div>
                 </div>
+                @forelse ($leaderboard as $index => $row)
+                    <div class="lb-row {{ $row['user']->id === auth()->id() ? 'me' : '' }}">
+                        <div class="lb-rank">{{ $index + 1 }}</div>
+                        <div class="lb-avatar" style="background:var(--primary-soft);color:var(--primary);">
+                            {{ mb_substr($row['user']->name, 0, 1) }}
+                        </div>
+                        <div class="lb-name">
+                            {{ $row['user']->id === auth()->id() ? 'Siz — '.$row['user']->name : $row['user']->name }}
+                        </div>
+                        <div class="lb-pts">{{ $row['total_score'] }}</div>
+                    </div>
+                @empty
+                    <div class="stats-empty">Hali reyting uchun ma'lumot yo'q.</div>
+                @endforelse
             </div>
         </div>
     </div>
@@ -166,16 +184,66 @@
             margin-top: 2px;
         }
 
-        .grid-main {
-            display: grid;
-            grid-template-columns: 1.6fr 1fr;
-            gap: 18px;
+        .progress-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 18px;
+            overflow-x: auto;
         }
 
-        @media (max-width:1100px) {
-            .grid-main {
-                grid-template-columns: 1fr;
-            }
+        .progress-tab {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            border: 1px solid var(--line);
+            background: var(--card);
+            color: var(--muted);
+            border-radius: 20px;
+            padding: 9px 16px;
+            font-size: .84rem;
+            font-weight: 700;
+            white-space: nowrap;
+            cursor: pointer;
+            transition: background .15s, color .15s, border-color .15s;
+        }
+
+        .progress-tab.is-active {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: #fff;
+        }
+
+        .certs-empty {
+            text-align: center;
+            padding: 56px 24px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .certs-empty-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 16px;
+            background: var(--amber-soft);
+            color: #8A6100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-bottom: 8px;
+        }
+
+        .certs-empty-title {
+            font-weight: 700;
+            font-size: 1.05rem;
+        }
+
+        .certs-empty-sub {
+            color: var(--muted);
+            font-size: .86rem;
+            max-width: 360px;
         }
 
         .type-row {
@@ -348,4 +416,19 @@
             }
         }
     </style>
+@endsection
+
+@section('scripts')
+    <script>
+        document.querySelectorAll('[data-tab-btn]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const tab = btn.dataset.tabBtn;
+
+                document.querySelectorAll('[data-tab-btn]').forEach(b => b.classList.toggle('is-active', b === btn));
+                document.querySelectorAll('[data-tab-panel]').forEach(panel => {
+                    panel.hidden = panel.dataset.tabPanel !== tab;
+                });
+            });
+        });
+    </script>
 @endsection

@@ -7,6 +7,7 @@ use App\Models\SertifikatTest;
 use App\Models\TestAttempt;
 use App\Models\TopicTest;
 use App\Models\User;
+use Exception;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 
@@ -50,5 +51,21 @@ class TeacherStudentService
             })
             ->sortByDesc('last_activity')
             ->values();
+    }
+
+    /**
+     * A single attempt's full question-by-question detail, for the teacher
+     * who owns the test — mirrors StudentTestService::result() but authorizes
+     * against the test's owner instead of the attempt's owner.
+     */
+    public function resultForTeacher(TestAttempt $attempt, int $teacherId): TestAttempt
+    {
+        $attempt->loadMissing('testable');
+
+        if (! $attempt->testable || $attempt->testable->user_id !== $teacherId) {
+            throw new Exception('Bu urinishga kira olmaysiz', 403);
+        }
+
+        return $attempt->load(['answers.questionable', 'testable', 'user']);
     }
 }

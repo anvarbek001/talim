@@ -2,13 +2,17 @@
 
 namespace App\Models;
 
+use App\Contracts\Purchasable;
+use App\Models\Concerns\IsPurchasable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 
-class SertifikatTest extends Model
+class SertifikatTest extends Model implements Purchasable
 {
+    use IsPurchasable;
+
     protected $fillable = [
         'user_id',
         'science_id',
@@ -16,6 +20,7 @@ class SertifikatTest extends Model
         'title',
         'description',
         'duration_minutes',
+        'price',
     ];
 
     public function user(): BelongsTo

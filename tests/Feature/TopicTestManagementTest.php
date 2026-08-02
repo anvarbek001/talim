@@ -77,6 +77,18 @@ test('a teacher can create a topic test with questions and options', function ()
     expect($options->firstWhere('is_correct', true)->option_text)->toBe('2');
 });
 
+test('a topic test\'s price comes from its section, not its own record', function () {
+    $user = User::factory()->create();
+    $topic = makeTopicTestFixture($user);
+    $topic->section->update(['price' => 25000]);
+
+    $this->actingAs($user)->post(route('topic-tests.store'), topicTestPayload($topic));
+
+    $topicTest = TopicTest::first();
+    expect($topicTest->getAttributes())->not->toHaveKey('price');
+    expect($topicTest->section->price)->toBe(25000);
+});
+
 test('creating a topic test requires at least one question', function () {
     $user = User::factory()->create();
     $topic = makeTopicTestFixture($user);

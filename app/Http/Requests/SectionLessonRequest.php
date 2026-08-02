@@ -29,6 +29,7 @@ class SectionLessonRequest extends FormRequest
             'grade_id' => 'required|integer|exists:grades,id',
             'section_title' => 'nullable|string|min:3|max:255',
             'section_description' => 'nullable|string|max:2000',
+            'price' => 'nullable|integer|min:0',
             'topic_title' => 'required|string|min:3|max:255',
             'topic_description' => 'nullable|string|max:2000',
         ];
@@ -47,6 +48,8 @@ class SectionLessonRequest extends FormRequest
             'section_title.min' => "Bo'lim nomi kamida :min ta belgidan iborat bo'lishi kerak.",
             'section_title.max' => "Bo'lim nomi :max ta belgidan oshmasligi kerak.",
             'section_description.max' => "Bo'lim tavsifi :max ta belgidan oshmasligi kerak.",
+            'price.integer' => "Narx butun son bo'lishi kerak.",
+            'price.min' => "Narx manfiy bo'lishi mumkin emas.",
             'topic_title.required' => 'Mavzu nomini kiritish majburiy.',
             'topic_title.min' => "Mavzu nomi kamida :min ta belgidan iborat bo'lishi kerak.",
             'topic_title.max' => 'Mavzu nomi :max ta belgidan oshmasligi kerak.',
@@ -61,6 +64,7 @@ class SectionLessonRequest extends FormRequest
             'grade_id' => 'sinf',
             'section_title' => "bo'lim nomi",
             'section_description' => "bo'lim tavsifi",
+            'price' => 'narx',
             'topic_title' => 'mavzu nomi',
             'topic_description' => 'mavzu tavsifi',
         ];

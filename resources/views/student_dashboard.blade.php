@@ -150,39 +150,6 @@
         color: var(--muted);
     }
 
-    .sub-card {
-        background: linear-gradient(135deg, var(--primary), #9C8CFF);
-        color: #fff;
-        border-radius: 16px;
-        padding: 20px;
-    }
-
-    .sub-plan {
-        font-weight: 800;
-        font-family: 'Sora', sans-serif;
-        font-size: 1.1rem;
-    }
-
-    .sub-sub {
-        font-size: .8rem;
-        opacity: .85;
-        margin-top: 2px;
-    }
-
-    .sub-btn {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        background: #fff;
-        color: var(--primary);
-        font-weight: 700;
-        font-size: .8rem;
-        padding: 8px 14px;
-        border-radius: 9px;
-        margin-top: 10px;
-        border: none;
-    }
-
     .grid-main {
         display: grid;
         grid-template-columns: 1.6fr 1fr;
@@ -377,20 +344,6 @@
                     @endforelse
                 </div>
 
-                <div class="sub-card fade-up" style="animation-delay:.2s;">
-                    @if ($activeSubscription)
-                        <div class="sub-plan">{{ $activeSubscription->planLabel() }} obuna</div>
-                        <div class="sub-sub">Barcha video darslarga to'liq kirish</div>
-                        <div style="font-size:.75rem;opacity:.85;margin-top:14px;">Amal qilish muddati: {{ $activeSubscription->ends_at->format('d.m.Y') }} gacha</div>
-                    @else
-                        <div class="sub-plan">Faol obuna yo'q</div>
-                        <div class="sub-sub">Bir nechta boshlang'ich dars tekin — qolganlari uchun obuna kerak</div>
-                        <div style="font-size:.75rem;opacity:.85;margin-top:14px;">Haftalik 5 000 so'mdan boshlab</div>
-                    @endif
-                    <a href="{{ route('student-subscription.index') }}" class="sub-btn">
-                        <i class="bi bi-arrow-up-circle"></i> {{ $activeSubscription ? 'Obunani uzaytirish' : 'Obuna tanlash' }}
-                    </a>
-                </div>
             </div>
         </div>
     </div>

@@ -11,7 +11,7 @@ class Lesson extends Model
 {
     /**
      * How many of the earliest lessons per science stay watchable without
-     * an active subscription.
+     * being purchased.
      */
     public const FREE_PREVIEW_COUNT = 3;
 
@@ -62,7 +62,7 @@ class Lesson extends Model
 
     /**
      * True for the earliest lessons of each science — always watchable,
-     * even without an active subscription.
+     * even if priced and not purchased.
      */
     public function isFreePreview(): bool
     {

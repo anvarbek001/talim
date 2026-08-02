@@ -26,6 +26,14 @@ class SectionRepository implements SectionRepositoryInterface
     }
 
     #[Override]
+    public function update(Section $section, array $data)
+    {
+        $section->update($data);
+
+        return $section;
+    }
+
+    #[Override]
     public function find(int $id)
     {
         return $this->model->where('id', $id)->with(['user', 'science', 'grade'])->first();

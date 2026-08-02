@@ -77,23 +77,9 @@ class User extends Authenticatable
         return $this->hasMany(TestAttempt::class);
     }
 
-    public function subscriptions(): HasMany
+    public function purchases(): HasMany
     {
-        return $this->hasMany(Subscription::class);
-    }
-
-    public function activeSubscription(): ?Subscription
-    {
-        return $this->subscriptions()
-            ->where('status', 'active')
-            ->where('ends_at', '>', now())
-            ->latest('ends_at')
-            ->first();
-    }
-
-    public function hasActiveSubscription(): bool
-    {
-        return $this->activeSubscription() !== null;
+        return $this->hasMany(Purchase::class);
     }
 
     public function avatarUrl(): ?string

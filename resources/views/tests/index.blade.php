@@ -8,12 +8,6 @@
                 <h1>Testlarim</h1>
                 <p class="page-sub">Mavzu, DTM va sertifikat testlarini shu yerdan yarating hamda boshqaring.</p>
             </div>
-            <a href="{{ route('tests.grading') }}" class="btn-ghost grading-link">
-                <i class="bi bi-pencil-square"></i> Yozma javoblarni baholash
-                @if ($pendingGradingCount > 0)
-                    <span class="grading-badge">{{ $pendingGradingCount }}</span>
-                @endif
-            </a>
         </div>
 
         {{-- ========================================================= --}}
@@ -56,6 +50,11 @@
                         <input type="hidden" name="science_id" id="topic_test_science_id">
                         <input type="hidden" name="grade_id" id="topic_test_grade_id">
                         <input type="hidden" name="section_id" id="topic_test_section_id">
+                        <div class="field-hint">
+                            <i class="bi bi-info-circle"></i>
+                            Narx tanlangan mavzuning bo'limiga bog'liq — "Video dars joylash" sahifasidagi
+                            "Mavzular ro'yxati"dan boshqariladi.
+                        </div>
                     @else
                         <div class="empty-hint">
                             <i class="bi bi-info-circle"></i>
@@ -131,6 +130,10 @@
                 </div>
             </div>
 
+            <div class="form-grid form-grid-2 mb-16">
+                @include('tests.partials.pricing-toggle', ['prefix' => 'dtm_test'])
+            </div>
+
             <div class="empty-hint mb-16">
                 <i class="bi bi-info-circle"></i>
                 3-blok majburiy fanlar (Ona tili, Matematika, Tarix) avtomatik qo'shiladi — har biridan 10 tadan savol, 1.1 balldan.
@@ -190,6 +193,10 @@
                     <input type="number" name="duration_minutes" class="text-control" min="1" max="180" value="40"
                         required>
                 </div>
+            </div>
+
+            <div class="form-grid form-grid-2 mb-16">
+                @include('tests.partials.pricing-toggle', ['prefix' => 'sertifikat_test'])
             </div>
 
             <div class="form-grid mb-16">
@@ -274,7 +281,7 @@
                         'type' => 'DTM', 'kind' => 'dtm', 'route' => 'dtm-tests.destroy', 'updateRoute' => 'dtm-tests.update',
                         'model' => $t, 'science' => $t->block1Science, 'extra' => '2-blok: '.$t->block2Science->title,
                         'edit' => [
-                            'title' => $t->title, 'description' => $t->description, 'duration_minutes' => $t->duration_minutes,
+                            'title' => $t->title, 'description' => $t->description, 'duration_minutes' => $t->duration_minutes, 'price' => $t->price,
                             'block1_science_id' => $t->block1_science_id, 'block2_science_id' => $t->block2_science_id,
                             'questions' => $questionsPayload($t),
                         ],
@@ -283,7 +290,7 @@
                         'type' => 'Sertifikat', 'kind' => 'sertifikat', 'route' => 'sertifikat-tests.destroy', 'updateRoute' => 'sertifikat-tests.update',
                         'model' => $t, 'science' => $t->science, 'extra' => $t->level ?? '—',
                         'edit' => [
-                            'title' => $t->title, 'description' => $t->description, 'duration_minutes' => $t->duration_minutes,
+                            'title' => $t->title, 'description' => $t->description, 'duration_minutes' => $t->duration_minutes, 'price' => $t->price,
                             'science_id' => $t->science_id, 'level' => $t->level,
                             'questions' => $questionsPayload($t),
                             'written_questions' => $t->writtenQuestions->map(fn ($w) => ['text' => $w->question, 'max_score' => $w->max_score])->values()->all(),
@@ -440,6 +447,10 @@
                                 id="edit_dtm_test_duration">
                         </div>
                     </div>
+
+                    <div class="form-grid form-grid-2 mb-16">
+                        @include('tests.partials.pricing-toggle', ['prefix' => 'edit_dtm_test'])
+                    </div>
                     <div class="form-grid mb-16">
                         <div class="field mb-12">
                             <label class="field-label">Test nomi</label>
@@ -498,6 +509,10 @@
                             <input type="number" name="duration_minutes" class="text-control" min="1" max="180" required
                                 id="edit_sertifikat_test_duration">
                         </div>
+                    </div>
+
+                    <div class="form-grid form-grid-2 mb-16">
+                        @include('tests.partials.pricing-toggle', ['prefix' => 'edit_sertifikat_test'])
                     </div>
                     <div class="form-grid mb-16">
                         <div class="field mb-12">
@@ -582,22 +597,6 @@
             gap: 16px;
             flex-wrap: wrap;
             margin-bottom: 22px;
-        }
-
-        .grading-link {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            flex-shrink: 0;
-        }
-
-        .grading-badge {
-            background: var(--coral);
-            color: #fff;
-            font-size: .7rem;
-            font-weight: 800;
-            padding: 1px 7px;
-            border-radius: 20px;
         }
 
         .page-head h1 {
@@ -1368,6 +1367,37 @@
 
     <script>
         // ============================================================
+        // BEPUL/PULLIK — narx ko'rsatish/yashirish (yaratish va
+        // tahrirlash formalarining barchasi uchun umumiy)
+        // ============================================================
+        function setPricingMode(prefix, mode) {
+            const toggle = document.querySelector('[data-pricing-toggle="' + prefix + '"]');
+            const panel = document.querySelector('[data-pricing-panel="' + prefix + '"]');
+            const input = document.getElementById(prefix + '_price');
+            if (!toggle || !panel || !input) return;
+
+            toggle.querySelectorAll('.mode-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.pricingMode === mode);
+            });
+            panel.style.display = mode === 'paid' ? '' : 'none';
+            if (mode === 'free') input.value = 0;
+        }
+
+        document.querySelectorAll('[data-pricing-toggle]').forEach(toggle => {
+            const prefix = toggle.dataset.pricingToggle;
+
+            toggle.addEventListener('click', (e) => {
+                const btn = e.target.closest('.mode-btn');
+                if (btn) setPricingMode(prefix, btn.dataset.pricingMode);
+            });
+
+            const input = document.getElementById(prefix + '_price');
+            setPricingMode(prefix, Number(input?.value) > 0 ? 'paid' : 'free');
+        });
+    </script>
+
+    <script>
+        // ============================================================
         // MAVZU SELECT — tanlangan mavzudan fan/sinf/bo'limni avtomatik
         // to'ldiradi (bo'lim/sinf alohida tanlanmaydi).
         // ============================================================
@@ -1793,6 +1823,8 @@
                 document.getElementById('edit_dtm_test_block1_science_id').value = payload.block1_science_id;
                 document.getElementById('edit_dtm_test_block2_science_id').value = payload.block2_science_id;
                 document.getElementById('edit_dtm_test_duration').value = payload.duration_minutes;
+                document.getElementById('edit_dtm_test_price').value = payload.price;
+                setPricingMode('edit_dtm_test', payload.price > 0 ? 'paid' : 'free');
                 document.getElementById('edit_dtm_test_title').value = payload.title;
                 document.getElementById('edit_dtm_test_description').value = payload.description || '';
                 window.TestQuestionBuilder.initForm(form, payload.questions, {
@@ -1805,6 +1837,8 @@
                 document.getElementById('edit_sertifikat_test_science_id').value = payload.science_id;
                 document.getElementById('edit_sertifikat_test_level').value = payload.level || '';
                 document.getElementById('edit_sertifikat_test_duration').value = payload.duration_minutes;
+                document.getElementById('edit_sertifikat_test_price').value = payload.price;
+                setPricingMode('edit_sertifikat_test', payload.price > 0 ? 'paid' : 'free');
                 document.getElementById('edit_sertifikat_test_title').value = payload.title;
                 document.getElementById('edit_sertifikat_test_description').value = payload.description || '';
                 window.TestQuestionBuilder.initForm(form, payload.questions);

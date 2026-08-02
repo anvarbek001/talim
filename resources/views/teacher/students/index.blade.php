@@ -7,6 +7,9 @@
         \App\Models\SertifikatTest::class => 'Sertifikat testi',
         default => 'Test',
     };
+    $pendingAttempts = $students->flatMap(fn ($row) => $row['attempts'])->filter(fn ($a) => $a->hasPendingGrading());
+    $pendingGradingCount = $pendingAttempts->count();
+    $firstPendingAttempt = $pendingAttempts->first();
 @endphp
 
 @section('content')
@@ -28,6 +31,12 @@
             <div class="students-summary fade-up">
                 <div class="summary-chip"><i class="bi bi-people"></i> {{ $students->count() }} ta o'quvchi</div>
                 <div class="summary-chip"><i class="bi bi-patch-question"></i> {{ $students->sum('attempts_count') }} ta urinish</div>
+                @if ($pendingGradingCount > 0)
+                    <a href="{{ route('teacher-students.result', $firstPendingAttempt) }}" class="summary-chip summary-chip-alert">
+                        <i class="bi bi-pencil-square"></i> {{ $pendingGradingCount }} ta yozma javob baholash kerak
+                        <i class="bi bi-arrow-right"></i>
+                    </a>
+                @endif
             </div>
 
             <div class="students-list">
@@ -36,7 +45,7 @@
                         $student = $row['student'];
                     @endphp
                     <div class="student-card fade-up" style="animation-delay:{{ min($index * 0.05, 0.3) }}s;">
-                        <div class="student-head">
+                        <div class="student-head" data-toggle-attempts>
                             <div class="student-avatar">
                                 @if ($student->avatarUrl())
                                     <img src="{{ $student->avatarUrl() }}" alt="{{ $student->name }}">
@@ -58,25 +67,26 @@
                                     <div class="student-stat-lbl">o'rtacha</div>
                                 </div>
                             </div>
-                            <button type="button" class="toggle-btn" data-toggle-attempts>
+                            <button type="button" class="toggle-btn">
                                 <i class="bi bi-chevron-down"></i>
                             </button>
                         </div>
 
                         <div class="student-attempts">
                             @foreach ($row['attempts'] as $attempt)
-                                <div class="attempt-row">
+                                <a href="{{ route('teacher-students.result', $attempt) }}" class="attempt-row">
                                     <span class="attempt-type">{{ $typeLabel($attempt->testable_type) }}</span>
                                     <div class="attempt-title">{{ $attempt->testable->title ?? "O'chirilgan test" }}</div>
                                     <div class="attempt-score">
                                         @if ($attempt->hasPendingGrading())
-                                            <span class="pending-badge">Baholanmoqda</span>
+                                            <span class="pending-badge"><i class="bi bi-pencil-square"></i> Baholash</span>
                                         @else
                                             {{ $attempt->score }} / {{ $attempt->max_score }}
                                         @endif
                                     </div>
                                     <div class="attempt-date">{{ $attempt->submitted_at?->format('d.m.Y H:i') }}</div>
-                                </div>
+                                    <i class="bi bi-chevron-right attempt-arrow"></i>
+                                </a>
                             @endforeach
                         </div>
                     </div>
@@ -151,6 +161,20 @@
             font-size: .82rem;
             font-weight: 700;
             color: var(--muted);
+        }
+
+        .summary-chip-alert {
+            background: var(--coral-soft);
+            border-color: transparent;
+            color: var(--coral);
+            text-decoration: none;
+            cursor: pointer;
+            transition: background .15s;
+        }
+
+        .summary-chip-alert:hover {
+            background: var(--coral);
+            color: #fff;
         }
 
         .students-list {
@@ -266,17 +290,31 @@
 
         .attempt-row {
             display: grid;
-            grid-template-columns: 110px 1fr 100px 130px;
+            grid-template-columns: 110px 1fr 100px 130px 18px;
             align-items: center;
             gap: 10px;
             padding: 8px 0;
             border-bottom: 1px solid var(--line);
             font-size: .84rem;
+            color: inherit;
+            text-decoration: none;
+            transition: background .15s;
+            border-radius: 8px;
+        }
+
+        .attempt-row:hover {
+            background: var(--bg-soft);
         }
 
         .attempt-row:last-child {
             border-bottom: none;
             padding-bottom: 0;
+        }
+
+        .attempt-arrow {
+            color: var(--muted);
+            font-size: .9rem;
+            justify-self: end;
         }
 
         .attempt-type {
@@ -304,9 +342,16 @@
         }
 
         .pending-badge {
-            color: var(--amber);
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            background: var(--coral);
+            color: #fff;
             font-weight: 700;
             font-size: .74rem;
+            padding: 5px 11px;
+            border-radius: 20px;
+            white-space: nowrap;
         }
 
         .attempt-date {
@@ -321,7 +366,7 @@
             }
 
             .attempt-row {
-                grid-template-columns: 1fr 90px;
+                grid-template-columns: 1fr 90px 18px;
             }
 
             .attempt-type,

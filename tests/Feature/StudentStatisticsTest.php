@@ -96,3 +96,15 @@ test('the statistics page renders even when the student role does not exist yet'
 
     $response->assertOk();
 });
+
+test('the progress page shows tabs for overview, certificates and rating', function () {
+    $student = User::factory()->create();
+
+    $response = $this->actingAs($student)->get(route('student-statistics.index'));
+
+    $response->assertOk();
+    $response->assertSee('Umumiy');
+    $response->assertSee('Sertifikatlarim');
+    $response->assertSee('Reyting');
+    $response->assertSee("Hali sertifikat yo'q", false);
+});

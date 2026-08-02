@@ -3,8 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\SectionLessonRequest;
+use App\Models\Section;
 use App\Services\SectionService;
 use App\Services\TopicService;
+use Exception;
 use Illuminate\Http\Request;
 
 class SectionController extends Controller
@@ -36,5 +38,24 @@ class SectionController extends Controller
                 'message' => 'success',
             ]);
         }
+    }
+
+    public function update(Request $request, Section $section)
+    {
+        $validated = $request->validate([
+            'price' => 'required|integer|min:0',
+        ], [
+            'price.required' => "Narxni kiritish majburiy (bepul bo'lsa 0 kiriting).",
+            'price.integer' => "Narx butun son bo'lishi kerak.",
+            'price.min' => "Narx manfiy bo'lishi mumkin emas.",
+        ]);
+
+        try {
+            $this->sectionServ->update($section, $validated);
+        } catch (Exception $e) {
+            return redirect()->route('lesson')->with('error', $e->getMessage());
+        }
+
+        return redirect()->route('lesson')->with('success', "Bo'lim narxi yangilandi");
     }
 }

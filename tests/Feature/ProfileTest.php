@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\User;
+use Database\Seeders\RolePermissionSeeder;
 
 test('profile page is displayed', function () {
     $user = User::factory()->create();
@@ -65,6 +66,33 @@ test('user can delete their account', function () {
 
     $this->assertGuest();
     $this->assertNull($user->fresh());
+});
+
+test('a teacher sees the avatar upload and delete-account sections on the settings page', function () {
+    $this->seed(RolePermissionSeeder::class);
+    $teacher = User::factory()->create();
+    $teacher->assignRole('teacher');
+
+    $response = $this->actingAs($teacher)->get(route('profile.edit'));
+
+    $response->assertOk();
+    $response->assertSee('Profil rasmi');
+    $response->assertSee(__('Delete Account'));
+    $response->assertSee(__('Update Password'));
+});
+
+test('a student only sees the password and theme sections on the settings page', function () {
+    $this->seed(RolePermissionSeeder::class);
+    $student = User::factory()->create();
+    $student->assignRole('student');
+
+    $response = $this->actingAs($student)->get(route('profile.edit'));
+
+    $response->assertOk();
+    $response->assertSee(__('Update Password'));
+    $response->assertSee("Ko'rinish rejimi");
+    $response->assertDontSee('Profil rasmi');
+    $response->assertDontSee(__('Delete Account'));
 });
 
 test('correct password must be provided to delete account', function () {

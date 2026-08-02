@@ -5,8 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Lesson;
 use App\Models\Science;
 use App\Models\User;
+use App\Services\PurchaseService;
 use App\Services\StudentLessonService;
-use App\Services\SubscriptionService;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Support\Facades\Auth;
@@ -15,7 +15,7 @@ class StudentLessonController extends Controller implements HasMiddleware
 {
     public function __construct(
         protected StudentLessonService $lessonServ,
-        protected SubscriptionService $subscriptionServ,
+        protected PurchaseService $purchaseServ,
     ) {}
 
     public static function middleware(): array
@@ -59,10 +59,17 @@ class StudentLessonController extends Controller implements HasMiddleware
     {
         $lesson = $this->lessonServ->find($lesson->id);
 
-        if (! $lesson->isFreePreview() && ! Auth::user()->hasActiveSubscription()) {
-            $plans = $this->subscriptionServ->plans();
-
-            return view('student.lessons.locked', compact('lesson', 'plans'));
+        if (! $lesson->isFreePreview() && ! $this->purchaseServ->hasAccess(Auth::user(), $lesson->section)) {
+            return view('student.partials.locked', [
+                'purchasable' => $lesson->section,
+                'type' => 'section',
+                'id' => $lesson->section_id,
+                'itemTitle' => $lesson->title,
+                'contentLabel' => 'Dars',
+                'lockDesc' => "Bu darsni ko'rish uchun bo'limni sotib olish kerak. Har bir fandan dastlabki "
+                    .Lesson::FREE_PREVIEW_COUNT.' ta dars — tekin.',
+                'backUrl' => url()->previous(),
+            ]);
         }
 
         $related = $this->lessonServ->related($lesson);

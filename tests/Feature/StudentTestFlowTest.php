@@ -175,6 +175,20 @@ test('a student can take and submit a topic test and mcq answers are auto-graded
     expect($attempt->hasPendingGrading())->toBeFalse();
 });
 
+test('the teacher who owns the test is shown while a student is taking it', function () {
+    $teacher = User::factory()->create(['name' => 'Nodira Yusupova']);
+    $student = User::factory()->create();
+    $topicTest = makeStudentFlowTopicTest($teacher);
+
+    $this->actingAs($student)->post(route('student-tests.start', ['topic', $topicTest->id]));
+    $attempt = TestAttempt::first();
+
+    $response = $this->actingAs($student)->get(route('student-tests.show', $attempt));
+
+    $response->assertOk();
+    $response->assertSee('Nodira Yusupova');
+});
+
 test('a student cannot resubmit an already submitted attempt', function () {
     $teacher = User::factory()->create();
     $student = User::factory()->create();

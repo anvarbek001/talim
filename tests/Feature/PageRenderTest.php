@@ -19,11 +19,3 @@ test('the teacher tests page renders for an authenticated teacher', function () 
     $response->assertOk();
     $response->assertSee('Testlarim');
 });
-
-test('the written grading page renders for an authenticated teacher', function () {
-    $user = User::factory()->create();
-
-    $response = $this->actingAs($user)->get(route('tests.grading'));
-
-    $response->assertOk();
-});

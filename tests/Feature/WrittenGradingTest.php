@@ -49,25 +49,25 @@ function submitSertifikatAttempt(SertifikatTest $test, User $student, string $wr
     return $attempt->fresh();
 }
 
-test('a teacher can see and grade pending written answers for their own test', function () {
+test('a teacher can see and grade a pending written answer from the student result page', function () {
     $teacher = User::factory()->create();
     $student = User::factory()->create();
     $test = makeGradingSertifikatTest($teacher);
     $attempt = submitSertifikatAttempt($test, $student);
 
-    $indexResponse = $this->actingAs($teacher)->get(route('tests.grading'));
-    $indexResponse->assertOk();
-    $indexResponse->assertSee('Mening javobim.');
+    $resultResponse = $this->actingAs($teacher)->get(route('teacher-students.result', $attempt));
+    $resultResponse->assertOk();
+    $resultResponse->assertSee('Mening javobim.');
 
     $answer = TestAttemptAnswer::where('test_attempt_id', $attempt->id)
         ->where('questionable_type', SertifikatTestWrittenQuestion::class)
         ->first();
 
-    $gradeResponse = $this->actingAs($teacher)->post(route('tests.grading.store', $answer), [
+    $gradeResponse = $this->actingAs($teacher)->post(route('teacher-students.grade', [$attempt, $answer]), [
         'score' => 8,
     ]);
 
-    $gradeResponse->assertRedirect(route('tests.grading'));
+    $gradeResponse->assertRedirect(route('teacher-students.result', $attempt));
 
     $answer->refresh();
     expect($answer->score)->toBe(8.0);
@@ -90,11 +90,11 @@ test('a teacher cannot grade written answers belonging to another teacher\'s tes
         ->where('questionable_type', SertifikatTestWrittenQuestion::class)
         ->first();
 
-    $response = $this->actingAs($intruder)->post(route('tests.grading.store', $answer), [
+    $response = $this->actingAs($intruder)->post(route('teacher-students.grade', [$attempt, $answer]), [
         'score' => 5,
     ]);
 
-    $response->assertRedirect(route('tests.grading'));
+    $response->assertRedirect(route('teacher-students.result', $attempt));
 
     $answer->refresh();
     expect($answer->score)->toBeNull();
@@ -111,10 +111,28 @@ test('a grading score cannot exceed the written question\'s max score', function
         ->where('questionable_type', SertifikatTestWrittenQuestion::class)
         ->first();
 
-    $response = $this->actingAs($teacher)->post(route('tests.grading.store', $answer), [
+    $response = $this->actingAs($teacher)->post(route('teacher-students.grade', [$attempt, $answer]), [
         'score' => 999,
     ]);
 
     $response->assertSessionHasErrors(['score']);
     expect($answer->fresh()->score)->toBeNull();
+});
+
+test('grading an answer that does not belong to the given attempt is rejected', function () {
+    $teacher = User::factory()->create();
+    $student = User::factory()->create();
+    $test = makeGradingSertifikatTest($teacher);
+    $attemptA = submitSertifikatAttempt($test, $student, 'Birinchi javob.');
+    $attemptB = submitSertifikatAttempt($test, User::factory()->create(), 'Ikkinchi javob.');
+
+    $answerForAttemptB = TestAttemptAnswer::where('test_attempt_id', $attemptB->id)
+        ->where('questionable_type', SertifikatTestWrittenQuestion::class)
+        ->first();
+
+    $response = $this->actingAs($teacher)->post(route('teacher-students.grade', [$attemptA, $answerForAttemptB]), [
+        'score' => 5,
+    ]);
+
+    $response->assertNotFound();
 });

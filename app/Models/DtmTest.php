@@ -2,13 +2,17 @@
 
 namespace App\Models;
 
+use App\Contracts\Purchasable;
+use App\Models\Concerns\IsPurchasable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 
-class DtmTest extends Model
+class DtmTest extends Model implements Purchasable
 {
+    use IsPurchasable;
+
     /**
      * The grade every DTM test is created for. DTM exams are always taken
      * by 11th graders, so grade selection is not exposed to the teacher.
@@ -41,6 +45,7 @@ class DtmTest extends Model
         'title',
         'description',
         'duration_minutes',
+        'price',
     ];
 
     public function user(): BelongsTo

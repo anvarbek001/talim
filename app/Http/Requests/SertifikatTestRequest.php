@@ -30,6 +30,7 @@ class SertifikatTestRequest extends FormRequest
             'title' => 'required|string|min:3|max:255',
             'description' => 'nullable|string|max:2000',
             'duration_minutes' => 'required|integer|min:1|max:180',
+            'price' => 'required|integer|min:0',
             'written_questions' => 'nullable|array',
             'written_questions.*.text' => 'required|string|min:3|max:2000',
             'written_questions.*.max_score' => 'nullable|integer|min:1|max:100',
@@ -71,6 +72,9 @@ class SertifikatTestRequest extends FormRequest
             'duration_minutes.integer' => 'Davomiylik butun son bo\'lishi kerak.',
             'duration_minutes.min' => 'Davomiylik kamida :min daqiqa bo\'lishi kerak.',
             'duration_minutes.max' => 'Davomiylik :max daqiqadan oshmasligi kerak.',
+            'price.required' => "Narxni kiritish majburiy (bepul bo'lsa 0 kiriting).",
+            'price.integer' => "Narx butun son bo'lishi kerak.",
+            'price.min' => "Narx manfiy bo'lishi mumkin emas.",
             'questions_file.required' => 'Excel faylni yuklang.',
             'questions_file.mimes' => 'Fayl xlsx yoki xls formatida bo\'lishi kerak.',
             'questions_file.max' => 'Fayl hajmi 5 MB dan oshmasligi kerak.',
@@ -97,6 +101,7 @@ class SertifikatTestRequest extends FormRequest
             'title' => 'test nomi',
             'description' => 'tavsif',
             'duration_minutes' => 'davomiylik',
+            'price' => 'narx',
         ];
     }
 

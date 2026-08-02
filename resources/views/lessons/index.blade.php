@@ -74,11 +74,27 @@
                                 <div class="field-error">{{ $message }}</div>
                             @enderror
                         </div>
-                        <div class="field">
+                        <div class="field mb-12">
                             <label class="field-label">Bo'lim tavsifi</label>
                             <textarea name="section_description" id="section_description" class="text-control" rows="3"
                                 placeholder="Bo'lim haqida qisqacha...">{{ old('section_description') }}</textarea>
                             @error('section_description')
+                                <div class="field-error">{{ $message }}</div>
+                            @enderror
+                        </div>
+                        <div class="field mb-12">
+                            <label class="field-label">Narx turi</label>
+                            <div class="mode-toggle" id="pricingModeToggle">
+                                <button type="button" class="mode-btn active" data-pricing-mode="free">Bepul</button>
+                                <button type="button" class="mode-btn" data-pricing-mode="paid">Pullik</button>
+                            </div>
+                            <div class="field-hint">Bu bo'lim ostidagi barcha video darslar va mavzu testlari shu narx bilan sotiladi.</div>
+                        </div>
+                        <div class="field" id="sectionPricePanel" style="display:none;">
+                            <label class="field-label">Narx (so'm)</label>
+                            <input type="number" name="price" id="section_price" class="text-control" min="1"
+                                value="{{ old('price', 0) }}">
+                            @error('price')
                                 <div class="field-error">{{ $message }}</div>
                             @enderror
                         </div>
@@ -156,7 +172,7 @@
                 </div>
             </div>
 
-            <div class="form-grid form-grid-3 mb-16">
+            <div class="form-grid mb-16">
                 <div class="field mb-16">
                     <label class="field-label">Mavzu</label>
                     @if ($topics->count())
@@ -169,6 +185,10 @@
                                 </option>
                             @endforeach
                         </select>
+                        <div class="field-hint">
+                            <i class="bi bi-info-circle"></i>
+                            Narx tanlangan bo'limga bog'liq — o'zgartirish uchun "Mavzular ro'yxati"dan foydalaning.
+                        </div>
                     @else
                         <div class="empty-hint">
                             <i class="bi bi-info-circle"></i>
@@ -238,6 +258,7 @@
                                 <th>Fan</th>
                                 <th>Sinf</th>
                                 <th>Bo'lim</th>
+                                <th>Narx</th>
                                 <th>Mavzu</th>
                                 <th>Tavsif</th>
                                 <th class="text-end">Amallar</th>
@@ -250,12 +271,19 @@
                                     <td><span class="topic-chip">{{ $topic->science->title }}</span></td>
                                     <td>{{ $topic->grade->title }}</td>
                                     <td>{{ $topic->section->title }}</td>
+                                    <td>{{ $topic->section->price > 0 ? number_format($topic->section->price, 0, '.', ' ')." so'm" : 'Bepul' }}</td>
                                     <td class="topic-title-cell">{{ $topic->title }}</td>
                                     <td class="topic-desc-cell">
                                         {{ $topic->description ? \Illuminate\Support\Str::limit($topic->description, 60) : '—' }}
                                     </td>
                                     <td class="text-end">
                                         <div class="row-actions">
+                                            <button type="button" class="icon-btn icon-btn-edit" title="Narxni tahrirlash"
+                                                data-action="edit-section-price" data-section-id="{{ $topic->section_id }}"
+                                                data-section-title="{{ $topic->section->title }}"
+                                                data-section-price="{{ $topic->section->price }}">
+                                                <i class="bi bi-cash-coin"></i>
+                                            </button>
                                             <button type="button" class="icon-btn icon-btn-edit" title="Tahrirlash"
                                                 data-action="edit-topic" data-topic-id="{{ $topic->id }}"
                                                 data-topic-title="{{ $topic->title }}"
@@ -315,7 +343,7 @@
 
                                                     <div class="field">
                                                         <label class="field-label">Sinf</label>
-                                                        <select name="grade_id" id="edit_grade_id" class="select-control"
+                                                         <select name="grade_id" id="edit_grade_id" class="select-control"
                                                             required>
                                                             @foreach ($grades as $grade)
                                                                 <option value="{{ $grade->id }}">
@@ -368,6 +396,47 @@
                     Hali mavzu yaratilmagan — <a href="#sectionTopicForm">yuqoridagi forma orqali qo'shing</a>
                 </div>
             @endif
+        </div>
+
+        {{-- ========================================================= --}}
+        {{-- BO'LIM NARXINI TAHRIRLASH MODALI --}}
+        {{-- ========================================================= --}}
+        <div class="modal-overlay" id="editSectionPriceModal">
+            <div class="modal-box">
+                <form action="" method="POST" id="editSectionPriceForm">
+                    @csrf
+                    @method('PUT')
+
+                    <div class="modal-head">
+                        <div class="modal-title"><i class="bi bi-cash-coin"></i> Bo'lim narxini tahrirlash</div>
+                        <button type="button" class="modal-close" id="editSectionPriceClose">
+                            <i class="bi bi-x-lg"></i>
+                        </button>
+                    </div>
+
+                    <div class="modal-body">
+                        <div class="field mb-16">
+                            <label class="field-label" id="editSectionPriceLabel">Bo'lim</label>
+                        </div>
+                        <div class="field mb-16">
+                            <label class="field-label">Narx turi</label>
+                            <div class="mode-toggle" id="editPricingModeToggle">
+                                <button type="button" class="mode-btn" data-pricing-mode="free">Bepul</button>
+                                <button type="button" class="mode-btn" data-pricing-mode="paid">Pullik</button>
+                            </div>
+                        </div>
+                        <div class="field" id="editSectionPricePanel">
+                            <label class="field-label">Narx (so'm)</label>
+                            <input type="number" name="price" id="edit_section_price" class="text-control" min="1">
+                        </div>
+                    </div>
+
+                    <div class="modal-actions">
+                        <button type="button" class="btn-ghost" id="editSectionPriceCancel">Bekor qilish</button>
+                        <button type="submit" class="btn-primary"><i class="bi bi-check-circle"></i> Saqlash</button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
 
@@ -1200,6 +1269,95 @@
             // Boshlang'ich holat: agar oldingi validatsiyadan qaytgan
             // "section_id" tanlangan bo'lsa, "mavjud" rejimida ochiladi.
             setMode(sectionIdSelect.value ? 'existing' : 'new');
+        })();
+    </script>
+
+    {{-- ============================================================ --}}
+    {{-- BEPUL/PULLIK — yangi bo'lim narxini belgilash                  --}}
+    {{-- ============================================================ --}}
+    <script>
+        (function() {
+            const toggle = document.getElementById('pricingModeToggle');
+            const pricePanel = document.getElementById('sectionPricePanel');
+            const priceInput = document.getElementById('section_price');
+            if (!toggle || !pricePanel || !priceInput) return;
+
+            function setPricingMode(mode) {
+                toggle.querySelectorAll('.mode-btn').forEach(btn => {
+                    btn.classList.toggle('active', btn.dataset.pricingMode === mode);
+                });
+
+                if (mode === 'free') {
+                    pricePanel.style.display = 'none';
+                    priceInput.value = 0;
+                } else {
+                    pricePanel.style.display = '';
+                    if (!Number(priceInput.value)) priceInput.value = '';
+                }
+            }
+
+            toggle.addEventListener('click', (e) => {
+                const btn = e.target.closest('.mode-btn');
+                if (btn) setPricingMode(btn.dataset.pricingMode);
+            });
+
+            setPricingMode(Number('{{ old('price', 0) }}') > 0 ? 'paid' : 'free');
+        })();
+    </script>
+
+    {{-- ============================================================ --}}
+    {{-- BO'LIM NARXINI TAHRIRLASH MODALI                               --}}
+    {{-- ============================================================ --}}
+    <script>
+        (function() {
+            const modal = document.getElementById('editSectionPriceModal');
+            const form = document.getElementById('editSectionPriceForm');
+            const label = document.getElementById('editSectionPriceLabel');
+            const toggle = document.getElementById('editPricingModeToggle');
+            const pricePanel = document.getElementById('editSectionPricePanel');
+            const priceInput = document.getElementById('edit_section_price');
+            const closeBtn = document.getElementById('editSectionPriceClose');
+            const cancelBtn = document.getElementById('editSectionPriceCancel');
+            if (!modal || !form) return;
+
+            function setPricingMode(mode) {
+                toggle.querySelectorAll('.mode-btn').forEach(btn => {
+                    btn.classList.toggle('active', btn.dataset.pricingMode === mode);
+                });
+                pricePanel.style.display = mode === 'paid' ? '' : 'none';
+                if (mode === 'free') priceInput.value = 0;
+            }
+
+            toggle.addEventListener('click', (e) => {
+                const btn = e.target.closest('.mode-btn');
+                if (btn) setPricingMode(btn.dataset.pricingMode);
+            });
+
+            function openModal(btn) {
+                form.action = '{{ url('/section') }}/' + btn.dataset.sectionId;
+                label.textContent = "Bo'lim: " + btn.dataset.sectionTitle;
+                const price = Number(btn.dataset.sectionPrice || 0);
+                priceInput.value = price > 0 ? price : '';
+                setPricingMode(price > 0 ? 'paid' : 'free');
+                modal.classList.add('show');
+            }
+
+            function closeModal() {
+                modal.classList.remove('show');
+            }
+
+            document.querySelectorAll('[data-action="edit-section-price"]').forEach(btn => {
+                btn.addEventListener('click', () => openModal(btn));
+            });
+
+            closeBtn.addEventListener('click', closeModal);
+            cancelBtn.addEventListener('click', closeModal);
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) closeModal();
+            });
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && modal.classList.contains('show')) closeModal();
+            });
         })();
     </script>
 

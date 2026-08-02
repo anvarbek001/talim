@@ -577,15 +577,8 @@
             <i class="bi bi-graph-up"></i> Progressim
         </a>
 
-        <div class="nav-eyebrow">Yutuqlar</div>
-        <a href="#" class="nav-link"><i class="bi bi-award"></i> Sertifikatlarim</a>
-        <a href="{{ route('student-statistics.index') }}" class="nav-link"><i class="bi bi-trophy"></i> Reyting</a>
-
         <div class="nav-eyebrow">Hisob</div>
-        <a href="{{ route('student-subscription.index') }}" class="nav-link {{ request()->routeIs('student-subscription.*') ? 'active' : '' }}">
-            <i class="bi bi-credit-card-2-front"></i> Obunam
-        </a>
-        <a href="#" class="nav-link"><i class="bi bi-gear"></i> Sozlamalar</a>
+        <a href="{{ route('profile.edit') }}" class="nav-link {{ request()->routeIs('profile.*') ? 'active' : '' }}"><i class="bi bi-gear"></i> Sozlamalar</a>
 
         <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display:none;">
             @csrf
@@ -654,7 +647,7 @@
             <i class="bi bi-patch-question"></i><span>Testlar</span>
         </a>
         <a href="{{ route('student-statistics.index') }}" class="bn-link {{ request()->routeIs('student-statistics.*') ? 'active' : '' }}">
-            <i class="bi bi-trophy"></i><span>Reyting</span>
+            <i class="bi bi-graph-up"></i><span>Progress</span>
         </a>
         <button type="button" class="bn-link" id="moreBtn"><i
                 class="bi bi-grid-3x3-gap-fill"></i><span>Ko'proq</span></button>
@@ -669,10 +662,7 @@
         <a href="{{ route('student-lessons.index') }}" class="sheet-link"><i class="bi bi-camera-reels"></i> Darslarim</a>
         <a href="{{ route('student-tests.index') }}" class="sheet-link"><i class="bi bi-patch-question"></i> Testlarim</a>
         <a href="{{ route('student-statistics.index') }}" class="sheet-link"><i class="bi bi-graph-up"></i> Progressim</a>
-        <a href="#" class="sheet-link"><i class="bi bi-award"></i> Sertifikatlarim</a>
-        <a href="{{ route('student-statistics.index') }}" class="sheet-link"><i class="bi bi-trophy"></i> Reyting</a>
-        <a href="{{ route('student-subscription.index') }}" class="sheet-link"><i class="bi bi-credit-card-2-front"></i> Obunam</a>
-        <a href="#" class="sheet-link"><i class="bi bi-gear"></i> Sozlamalar</a>
+        <a href="{{ route('profile.edit') }}" class="sheet-link"><i class="bi bi-gear"></i> Sozlamalar</a>
         <div class="sheet-divider"></div>
         <a href="{{ route('logout') }}" class="sheet-link logout-link"
             onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
@@ -701,13 +691,13 @@
         moreBtn?.addEventListener('click', openSheet);
         sheetOverlay?.addEventListener('click', closeSheet);
         const toggleBtn = document.getElementById('themeToggle');
-        const saved = localStorage.getItem('darslik-theme');
+        const saved = localStorage.getItem('darsqil-theme');
         if (saved) root.setAttribute('data-theme', saved);
 
         toggleBtn.addEventListener('click', () => {
             const next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
             root.setAttribute('data-theme', next);
-            localStorage.setItem('darslik-theme', next);
+            localStorage.setItem('darsqil-theme', next);
         });
     </script>
 

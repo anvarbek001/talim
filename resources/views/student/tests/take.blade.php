@@ -8,11 +8,23 @@
 
 @section('content')
     <div class="page take-page">
-        <div class="take-head fade-up" id="takeHead">
+        <div class="take-head" id="takeHead">
             <div class="take-head-top">
                 <div>
                     <div class="take-eyebrow">Test yechilmoqda</div>
                     <h1>{{ $testable->title }}</h1>
+                    @if ($testable->user)
+                        <div class="take-teacher-chip">
+                            <span class="take-teacher-avatar">
+                                @if ($testable->user->avatarUrl())
+                                    <img src="{{ $testable->user->avatarUrl() }}" alt="{{ $testable->user->name }}">
+                                @else
+                                    {{ $testable->user->initials() }}
+                                @endif
+                            </span>
+                            {{ $testable->user->name }}
+                        </div>
+                    @endif
                 </div>
                 <div class="timer-box" id="timerBox">
                     <i class="bi bi-stopwatch"></i>
@@ -24,6 +36,20 @@
                     <div class="progress-fill" id="progressFill"></div>
                 </div>
                 <span class="progress-label" id="progressLabel">0 / {{ $testable->questions->count() }} javob berildi</span>
+                <button type="button" class="qnav-toggle" id="qnavToggle">
+                    <i class="bi bi-grid-3x3-gap-fill"></i> Savollar
+                </button>
+                <button type="button" class="qnav-next-empty" id="qnavNextEmpty">
+                    <i class="bi bi-skip-forward-fill"></i> Bo'shiga o'tish
+                </button>
+            </div>
+
+            <div class="qnav-panel" id="qnavPanel">
+                <div class="qnav-legend">
+                    <span><i class="qnav-dot is-answered"></i> Javob berilgan</span>
+                    <span><i class="qnav-dot"></i> Bo'sh</span>
+                </div>
+                <div class="qnav-grid" id="qnavGrid"></div>
             </div>
         </div>
 
@@ -31,7 +57,7 @@
             @csrf
 
             @foreach ($testable->questions as $question)
-                <div class="card fade-up q-card" style="animation-delay:{{ min($loop->index * 0.03, 0.3) }}s;">
+                <div class="card fade-up q-card" id="q-{{ $loop->iteration }}" style="animation-delay:{{ min($loop->index * 0.03, 0.3) }}s;">
                     <div class="q-num">{{ $loop->iteration }}-savol / {{ $testable->questions->count() }}</div>
                     <div class="q-text">{{ $question->question }}</div>
                     <div class="q-options">
@@ -49,7 +75,7 @@
                 <div class="card fade-up q-card" style="animation-delay:.32s;">
                     <div class="q-written-head"><i class="bi bi-pencil-square"></i> Yozma qism</div>
                     @foreach ($testable->writtenQuestions as $writtenQuestion)
-                        <div class="q-written-block">
+                        <div class="q-written-block" id="wq-{{ $loop->iteration }}">
                             <div class="q-num">{{ $loop->iteration }}-yozma savol <span class="q-written-score">({{ $writtenQuestion->max_score }} ball)</span></div>
                             <div class="q-text">{{ $writtenQuestion->question }}</div>
                             <textarea name="written_answers[{{ $writtenQuestion->id }}]" class="text-control" rows="4"
@@ -73,12 +99,18 @@
         }
 
         .take-head {
-            position: sticky;
+            position: fixed;
             top: 87px;
+            left: var(--rail-w);
+            right: 0;
             z-index: 20;
             background: var(--bg);
-            padding: 6px 0 14px;
-            margin-bottom: 8px;
+            padding: 6px 32px 14px;
+            border-bottom: 1px solid var(--line);
+        }
+
+        #takeTestForm {
+            padding-top: var(--take-head-h, 130px);
         }
 
         .take-head-top {
@@ -95,6 +127,38 @@
             text-transform: uppercase;
             color: var(--primary);
             font-weight: 700;
+        }
+
+        .take-teacher-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: .78rem;
+            font-weight: 600;
+            color: var(--muted);
+            margin-top: 4px;
+        }
+
+        .take-teacher-avatar {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), #9C8CFF);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: .62rem;
+            font-weight: 700;
+            font-family: 'Sora', sans-serif;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+
+        .take-teacher-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
         }
 
         .take-head h1 {
@@ -142,6 +206,7 @@
             align-items: center;
             gap: 10px;
             margin-top: 12px;
+            flex-wrap: wrap;
         }
 
         .progress-track {
@@ -169,9 +234,131 @@
             flex-shrink: 0;
         }
 
+        .qnav-toggle,
+        .qnav-next-empty {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--bg-soft);
+            border: 1.5px solid var(--line);
+            border-radius: 20px;
+            padding: 7px 14px;
+            font-size: .76rem;
+            font-weight: 700;
+            color: var(--text);
+            flex-shrink: 0;
+            white-space: nowrap;
+        }
+
+        .qnav-toggle:hover,
+        .qnav-next-empty:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .qnav-toggle.is-open {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: #fff;
+        }
+
+        .qnav-panel {
+            display: none;
+            position: absolute;
+            top: 100%;
+            right: 0;
+            margin-top: 8px;
+            width: min(360px, 100%);
+            background: var(--card);
+            border: 1.5px solid var(--line);
+            border-radius: 14px;
+            box-shadow: var(--shadow);
+            padding: 14px;
+            z-index: 25;
+            max-height: 320px;
+            overflow-y: auto;
+        }
+
+        .qnav-panel.show {
+            display: block;
+        }
+
+        .qnav-legend {
+            display: flex;
+            gap: 16px;
+            font-size: .74rem;
+            color: var(--muted);
+            margin-bottom: 10px;
+        }
+
+        .qnav-legend span {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .qnav-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 3px;
+            background: var(--bg-soft);
+            border: 1.5px solid var(--line);
+            display: inline-block;
+        }
+
+        .qnav-dot.is-answered {
+            background: var(--mint);
+            border-color: var(--mint);
+        }
+
+        .qnav-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(38px, 1fr));
+            gap: 8px;
+        }
+
+        .qnav-chip {
+            width: 100%;
+            aspect-ratio: 1;
+            border-radius: 9px;
+            border: 1.5px solid var(--line);
+            background: var(--bg-soft);
+            color: var(--text);
+            font-size: .78rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .qnav-chip.is-answered {
+            background: var(--mint-soft);
+            border-color: var(--mint);
+            color: var(--mint);
+        }
+
+        .qnav-chip-written {
+            font-size: .68rem;
+        }
+
         .q-card {
             margin-bottom: 16px;
             scroll-margin-top: 120px;
+        }
+
+        .q-card.qnav-flash,
+        .q-written-block.qnav-flash {
+            animation: qnavFlash 1.1s ease;
+        }
+
+        @keyframes qnavFlash {
+            0% {
+                box-shadow: 0 0 0 3px var(--primary);
+            }
+
+            100% {
+                box-shadow: none;
+            }
         }
 
         .q-num {
@@ -315,7 +502,7 @@
 
             .take-head {
                 top: 70px;
-                margin: 0 -18px 8px;
+                left: 0;
                 padding: 10px 18px 12px;
                 border-bottom: 1px solid var(--line);
             }
@@ -355,6 +542,52 @@
 @endsection
 
 @section('scripts')
+    <script>
+        // ============================================================
+        // TEPADAGI PANEL — topbar balandligiga aniq moslab qotiriladi,
+        // aks holda ekran o'lchamiga qarab panel topbar ostida
+        // yashirinib, "Savollar" tugmasiga yetib bo'lmay qolardi.
+        // ============================================================
+        (function() {
+            const topbar = document.querySelector('.topbar');
+            const takeHead = document.getElementById('takeHead');
+            if (!topbar || !takeHead) return;
+
+            function syncOffset() {
+                takeHead.style.top = topbar.getBoundingClientRect().height + 'px';
+            }
+
+            syncOffset();
+            window.addEventListener('resize', syncOffset);
+            window.addEventListener('load', syncOffset);
+        })();
+    </script>
+
+    <script>
+        // ============================================================
+        // Savollar endi qattiq (fixed) qotirilgan panel ostida qolmasligi
+        // uchun, panelning haqiqiy balandligiga qarab formaga yuqoridan
+        // bo'shliq beriladi — savollar ko'p bo'lganda ham panel doim
+        // ko'rinib turadi.
+        // ============================================================
+        (function() {
+            const takeHead = document.getElementById('takeHead');
+            if (!takeHead) return;
+
+            function syncSpacing() {
+                document.documentElement.style.setProperty('--take-head-h', (takeHead.offsetHeight + 16) + 'px');
+            }
+
+            syncSpacing();
+            window.addEventListener('resize', syncSpacing);
+            window.addEventListener('load', syncSpacing);
+
+            if (window.ResizeObserver) {
+                new ResizeObserver(syncSpacing).observe(takeHead);
+            }
+        })();
+    </script>
+
     <script>
         (function() {
             let remaining = {{ $remainingSeconds }};
@@ -423,6 +656,120 @@
 
             inputs.forEach(el => el.addEventListener('change', update));
             update();
+        })();
+    </script>
+
+    <script>
+        // ============================================================
+        // SAVOLLAR NAVIGATORI — o'tkazib yuborilgan savolni tez topish
+        // ============================================================
+        (function() {
+            const toggle = document.getElementById('qnavToggle');
+            const panel = document.getElementById('qnavPanel');
+            const grid = document.getElementById('qnavGrid');
+            const nextEmptyBtn = document.getElementById('qnavNextEmpty');
+            if (!toggle || !panel || !grid) return;
+
+            function isMcqAnswered(card) {
+                return !!card.querySelector('.q-answer-input:checked');
+            }
+
+            function isWrittenAnswered(block) {
+                const textarea = block.querySelector('textarea');
+                return !!textarea && textarea.value.trim().length > 0;
+            }
+
+            const items = [];
+
+            document.querySelectorAll('.q-card[id^="q-"]').forEach(card => {
+                const num = card.id.replace('q-', '');
+                const chip = document.createElement('button');
+                chip.type = 'button';
+                chip.className = 'qnav-chip';
+                chip.textContent = num;
+                chip.addEventListener('click', () => jumpTo(card));
+                grid.appendChild(chip);
+                items.push({
+                    el: card,
+                    chip,
+                    answered: () => isMcqAnswered(card)
+                });
+
+                card.querySelectorAll('.q-answer-input').forEach(input => {
+                    input.addEventListener('change', refresh);
+                });
+            });
+
+            document.querySelectorAll('.q-written-block[id^="wq-"]').forEach(block => {
+                const num = block.id.replace('wq-', '');
+                const chip = document.createElement('button');
+                chip.type = 'button';
+                chip.className = 'qnav-chip qnav-chip-written';
+                chip.textContent = 'Y' + num;
+                chip.title = num + '-yozma savol';
+                chip.addEventListener('click', () => jumpTo(block));
+                grid.appendChild(chip);
+                items.push({
+                    el: block,
+                    chip,
+                    answered: () => isWrittenAnswered(block)
+                });
+
+                const textarea = block.querySelector('textarea');
+                if (textarea) textarea.addEventListener('input', refresh);
+            });
+
+            function refresh() {
+                items.forEach(item => {
+                    item.chip.classList.toggle('is-answered', item.answered());
+                });
+            }
+
+            function jumpTo(el) {
+                el.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'center'
+                });
+                el.classList.remove('qnav-flash');
+                // restart animation
+                void el.offsetWidth;
+                el.classList.add('qnav-flash');
+                closePanel();
+            }
+
+            function openPanel() {
+                panel.classList.add('show');
+                toggle.classList.add('is-open');
+            }
+
+            function closePanel() {
+                panel.classList.remove('show');
+                toggle.classList.remove('is-open');
+            }
+
+            toggle.addEventListener('click', () => {
+                panel.classList.contains('show') ? closePanel() : openPanel();
+            });
+
+            document.addEventListener('click', (e) => {
+                if (!panel.contains(e.target) && e.target !== toggle && !toggle.contains(e.target)) {
+                    closePanel();
+                }
+            });
+
+            nextEmptyBtn?.addEventListener('click', () => {
+                const firstEmpty = items.find(item => !item.answered());
+                if (!firstEmpty) {
+                    nextEmptyBtn.innerHTML = '<i class="bi bi-check-circle-fill"></i> Hammasi to\'ldirilgan';
+                    setTimeout(() => {
+                        nextEmptyBtn.innerHTML = '<i class="bi bi-skip-forward-fill"></i> Bo\'shiga o\'tish';
+                    }, 1800);
+                    return;
+                }
+                jumpTo(firstEmpty.el);
+            });
+
+            refresh();
         })();
     </script>
 @endsection

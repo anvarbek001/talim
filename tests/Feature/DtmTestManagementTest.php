@@ -72,6 +72,7 @@ function dtmTestPayload(Science $block1, Science $block2, array $overrides = [])
         'title' => 'DTM — 2026, 1-variant',
         'description' => 'Tavsif',
         'duration_minutes' => 30,
+        'price' => 0,
         'questions' => dtmFullQuestionSet(),
     ], $overrides);
 }
@@ -95,6 +96,15 @@ test('a teacher can create a dtm test with all 3 blocks and 90 questions', funct
     expect($dtmTest->questions->where('block', 1))->toHaveCount(30);
     expect($dtmTest->questions->where('block', 2))->toHaveCount(30);
     expect($dtmTest->questions->where('block', 3))->toHaveCount(30);
+});
+
+test('a dtm test can be created with a nonzero price', function () {
+    $user = User::factory()->create();
+    [$block1, $block2] = makeDtmSciences();
+
+    $this->actingAs($user)->post(route('dtm-tests.store'), dtmTestPayload($block1, $block2, ['price' => 30000]));
+
+    expect(DtmTest::first()->price)->toBe(30000);
 });
 
 test('creating a dtm test fails when block question counts are wrong', function () {

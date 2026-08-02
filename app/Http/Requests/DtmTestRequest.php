@@ -31,6 +31,7 @@ class DtmTestRequest extends FormRequest
             'title' => 'required|string|min:3|max:255',
             'description' => 'nullable|string|max:2000',
             'duration_minutes' => 'required|integer|min:1|max:180',
+            'price' => 'required|integer|min:0',
         ];
 
         // Excel mode: one file per block/mandatory subject. The manual-entry
@@ -73,6 +74,9 @@ class DtmTestRequest extends FormRequest
             'duration_minutes.integer' => 'Davomiylik butun son bo\'lishi kerak.',
             'duration_minutes.min' => 'Davomiylik kamida :min daqiqa bo\'lishi kerak.',
             'duration_minutes.max' => 'Davomiylik :max daqiqadan oshmasligi kerak.',
+            'price.required' => "Narxni kiritish majburiy (bepul bo'lsa 0 kiriting).",
+            'price.integer' => "Narx butun son bo'lishi kerak.",
+            'price.min' => "Narx manfiy bo'lishi mumkin emas.",
             'block1_questions_file.required' => '1-blok uchun Excel faylni yuklang.',
             'block2_questions_file.required' => '2-blok uchun Excel faylni yuklang.',
             'block3_ona_tili_questions_file.required' => 'Ona tili uchun Excel faylni yuklang.',
@@ -107,6 +111,7 @@ class DtmTestRequest extends FormRequest
             'title' => 'test nomi',
             'description' => 'tavsif',
             'duration_minutes' => 'davomiylik',
+            'price' => 'narx',
         ];
     }
 

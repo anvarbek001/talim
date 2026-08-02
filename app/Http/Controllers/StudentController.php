@@ -29,9 +29,8 @@ class StudentController extends Controller
         $savedLessons = $this->lessonServ->saved($userId)->take(8);
         $stats = $this->statisticsServ->forUser($userId);
         $leaderboard = $this->statisticsServ->leaderboard(5);
-        $activeSubscription = Auth::user()->activeSubscription();
 
-        return view('student_dashboard', compact('recentLessons', 'savedLessons', 'stats', 'leaderboard', 'activeSubscription'));
+        return view('student_dashboard', compact('recentLessons', 'savedLessons', 'stats', 'leaderboard'));
     }
 
     /**

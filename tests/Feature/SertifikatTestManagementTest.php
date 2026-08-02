@@ -21,6 +21,7 @@ function sertifikatTestPayload(Science $science, array $overrides = []): array
         'title' => 'Ingliz tili sertifikati — B1',
         'description' => 'Tavsif',
         'duration_minutes' => 40,
+        'price' => 0,
         'questions' => [
             [
                 'text' => 'Choose the correct form: She ___ to school every day.',
@@ -49,6 +50,15 @@ test('a teacher can create a sertifikat test with questions and options', functi
     expect($sertifikatTest->level)->toBe('B1');
     expect($sertifikatTest->questions)->toHaveCount(1);
     expect($sertifikatTest->questions->first()->options)->toHaveCount(2);
+});
+
+test('a sertifikat test can be created with a nonzero price', function () {
+    $user = User::factory()->create();
+    $science = makeSertifikatScience();
+
+    $this->actingAs($user)->post(route('sertifikat-tests.store'), sertifikatTestPayload($science, ['price' => 40000]));
+
+    expect(SertifikatTest::first()->price)->toBe(40000);
 });
 
 test('creating a sertifikat test requires at least one question', function () {

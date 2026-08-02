@@ -7,14 +7,13 @@ use App\Http\Controllers\SectionController;
 use App\Http\Controllers\SertifikatTestController;
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\StudentLessonController;
+use App\Http\Controllers\StudentPurchaseController;
 use App\Http\Controllers\StudentStatisticsController;
-use App\Http\Controllers\StudentSubscriptionController;
 use App\Http\Controllers\StudentTestController;
 use App\Http\Controllers\TeacherController;
 use App\Http\Controllers\TeacherStudentController;
 use App\Http\Controllers\TopicController;
 use App\Http\Controllers\TopicTestController;
-use App\Http\Controllers\WrittenGradingController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -43,6 +42,7 @@ Route::controller(LessonController::class)->group(function () {
 Route::controller(SectionController::class)->group(function () {
     Route::post('/section', 'store')->name('sections.store');
     Route::post('/section/find', 'find')->name('section.find');
+    Route::put('/section/{section}', 'update')->name('sections.update');
 });
 
 Route::controller(TopicController::class)->group(function () {
@@ -70,11 +70,6 @@ Route::controller(SertifikatTestController::class)->group(function () {
     Route::delete('/tests/sertifikat/{sertifikatTest}', 'destroy')->name('sertifikat-tests.destroy');
 });
 
-Route::controller(WrittenGradingController::class)->group(function () {
-    Route::get('/tests/grading', 'index')->name('tests.grading');
-    Route::post('/tests/grading/{answer}', 'store')->name('tests.grading.store');
-});
-
 Route::controller(StudentTestController::class)->group(function () {
     Route::get('/student/tests', 'index')->name('student-tests.index');
     Route::post('/student/tests/{type}/{id}', 'start')->name('student-tests.start');
@@ -95,13 +90,14 @@ Route::controller(StudentStatisticsController::class)->group(function () {
     Route::get('/student/statistics', 'index')->name('student-statistics.index');
 });
 
-Route::controller(StudentSubscriptionController::class)->group(function () {
-    Route::get('/student/subscription', 'index')->name('student-subscription.index');
-    Route::post('/student/subscription', 'subscribe')->name('student-subscription.subscribe');
+Route::controller(StudentPurchaseController::class)->middleware('auth')->group(function () {
+    Route::post('/student/purchases/{type}/{id}', 'store')->name('student-purchases.store');
 });
 
 Route::controller(TeacherStudentController::class)->group(function () {
     Route::get('/teacher/students', 'index')->middleware(['auth'])->name('teacher-students.index');
+    Route::get('/teacher/students/attempts/{attempt}', 'show')->middleware(['auth'])->name('teacher-students.result');
+    Route::post('/teacher/students/attempts/{attempt}/answers/{answer}/grade', 'grade')->middleware(['auth'])->name('teacher-students.grade');
 });
 
 require __DIR__.'/auth.php';

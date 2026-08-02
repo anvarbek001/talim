@@ -902,10 +902,13 @@
         <a href="{{ route('teacher-students.index') }}" class="nav-link {{ request()->routeIs('teacher-students.*') ? 'active' : '' }}">
             <i class="bi bi-mortarboard"></i> O'quvchilarim
         </a>
+
+        <div class="nav-eyebrow">Hisob</div>
+        <a href="{{ route('profile.edit') }}" class="nav-link {{ request()->routeIs('profile.*') ? 'active' : '' }}">
+            <i class="bi bi-gear"></i> Sozlamalar
+        </a>
         {{--
-        <div class="nav-eyebrow">Moliya</div>
-        <a href="#" class="nav-link"><i class="bi bi-wallet2"></i> Daromadim</a>
-        <a href="#" class="nav-link"><i class="bi bi-gear"></i> Sozlamalar</a> --}}
+        <a href="#" class="nav-link"><i class="bi bi-wallet2"></i> Daromadim</a> --}}
 
         <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display:none;">
             @csrf
@@ -985,8 +988,8 @@
     <div class="bottom-sheet" id="bottomSheet">
         <div class="sheet-handle"></div>
         <div class="sheet-title">Barcha bo'limlar</div>
-        {{-- <a href="#" class="sheet-link"><i class="bi bi-wallet2"></i> Daromadim</a>
-        <a href="#" class="sheet-link"><i class="bi bi-gear"></i> Sozlamalar</a> --}}
+        <a href="{{ route('profile.edit') }}" class="sheet-link"><i class="bi bi-gear"></i> Sozlamalar</a>
+        {{-- <a href="#" class="sheet-link"><i class="bi bi-wallet2"></i> Daromadim</a> --}}
         <div class="sheet-divider"></div>
         <a href="{{ route('logout') }}" class="sheet-link logout-link"
             onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
@@ -1027,13 +1030,13 @@
         moreBtn?.addEventListener('click', openSheet);
         sheetOverlay?.addEventListener('click', closeSheet);
         const toggleBtn = document.getElementById('themeToggle');
-        const saved = localStorage.getItem('darslik-theme');
+        const saved = localStorage.getItem('darsqil-theme');
         if (saved) root.setAttribute('data-theme', saved);
 
         toggleBtn.addEventListener('click', () => {
             const next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
             root.setAttribute('data-theme', next);
-            localStorage.setItem('darslik-theme', next);
+            localStorage.setItem('darsqil-theme', next);
         });
 
         // Animated count-up numbers

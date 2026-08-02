@@ -24,9 +24,14 @@ class StudentTestService
         'sertifikat' => SertifikatTest::class,
     ];
 
-    public function catalog(): Collection
+    public function catalog(int $userId): Collection
     {
-        $topicTests = TopicTest::with(['science', 'grade', 'section', 'topic', 'questions'])->get()
+        $purchasesFor = fn ($query) => $query->with(['purchases' => fn ($q) => $q->where('user_id', $userId)]);
+
+        $topicTests = TopicTest::with([
+            'science', 'grade', 'topic', 'questions',
+            'section' => fn ($q) => $q->with(['purchases' => fn ($pq) => $pq->where('user_id', $userId)]),
+        ])->get()
             ->map(fn (TopicTest $t) => [
                 'type' => 'topic',
                 'id' => $t->id,
@@ -36,10 +41,14 @@ class StudentTestService
                 'questions_count' => $t->questions->count(),
                 'has_written' => false,
                 'duration_minutes' => $t->duration_minutes,
+                'price' => $t->section->price,
+                'purchased' => $t->section->purchases->isNotEmpty(),
+                'purchase_type' => 'section',
+                'purchase_id' => $t->section_id,
                 'created_at' => $t->created_at,
             ]);
 
-        $dtmTests = DtmTest::with(['block1Science', 'block2Science', 'questions'])->get()
+        $dtmTests = $purchasesFor(DtmTest::with(['block1Science', 'block2Science', 'questions']))->get()
             ->map(fn (DtmTest $t) => [
                 'type' => 'dtm',
                 'id' => $t->id,
@@ -49,10 +58,14 @@ class StudentTestService
                 'questions_count' => $t->questions->count(),
                 'has_written' => false,
                 'duration_minutes' => $t->duration_minutes,
+                'price' => $t->price,
+                'purchased' => $t->purchases->isNotEmpty(),
+                'purchase_type' => 'dtm',
+                'purchase_id' => $t->id,
                 'created_at' => $t->created_at,
             ]);
 
-        $sertifikatTests = SertifikatTest::with(['science', 'questions', 'writtenQuestions'])->get()
+        $sertifikatTests = $purchasesFor(SertifikatTest::with(['science', 'questions', 'writtenQuestions']))->get()
             ->map(fn (SertifikatTest $t) => [
                 'type' => 'sertifikat',
                 'id' => $t->id,
@@ -62,6 +75,10 @@ class StudentTestService
                 'questions_count' => $t->questions->count(),
                 'has_written' => $t->writtenQuestions->isNotEmpty(),
                 'duration_minutes' => $t->duration_minutes,
+                'price' => $t->price,
+                'purchased' => $t->purchases->isNotEmpty(),
+                'purchase_type' => 'sertifikat',
+                'purchase_id' => $t->id,
                 'created_at' => $t->created_at,
             ]);
 
@@ -101,6 +118,10 @@ class StudentTestService
             $query->with('writtenQuestions');
         }
 
+        if ($class === TopicTest::class) {
+            $query->with('section');
+        }
+
         return $query->findOrFail($id);
     }
 
@@ -133,7 +154,7 @@ class StudentTestService
             throw new Exception('Bu urinish allaqachon yakunlangan', 409);
         }
 
-        $attempt->load('testable.questions.options');
+        $attempt->load(['testable.questions.options', 'testable.user']);
 
         if ($attempt->testable instanceof SertifikatTest) {
             $attempt->testable->load('writtenQuestions');
