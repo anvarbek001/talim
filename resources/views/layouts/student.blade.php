@@ -573,6 +573,9 @@
         <a href="{{ route('student-tests.index') }}" class="nav-link {{ request()->routeIs('student-tests.*') ? 'active' : '' }}">
             <i class="bi bi-patch-question"></i> Testlarim
         </a>
+        <a href="{{ route('student-books.index') }}" class="nav-link {{ request()->routeIs('student-books.*') ? 'active' : '' }}">
+            <i class="bi bi-journal-bookmark-fill"></i> Kitoblarim
+        </a>
         <a href="{{ route('student-statistics.index') }}" class="nav-link {{ request()->routeIs('student-statistics.*') ? 'active' : '' }}">
             <i class="bi bi-graph-up"></i> Progressim
         </a>
@@ -646,6 +649,9 @@
         <a href="{{ route('student-tests.index') }}" class="bn-link {{ request()->routeIs('student-tests.*') ? 'active' : '' }}">
             <i class="bi bi-patch-question"></i><span>Testlar</span>
         </a>
+        <a href="{{ route('student-books.index') }}" class="bn-link {{ request()->routeIs('student-books.*') ? 'active' : '' }}">
+            <i class="bi bi-journal-bookmark-fill"></i><span>Kitoblar</span>
+        </a>
         <a href="{{ route('student-statistics.index') }}" class="bn-link {{ request()->routeIs('student-statistics.*') ? 'active' : '' }}">
             <i class="bi bi-graph-up"></i><span>Progress</span>
         </a>
@@ -661,6 +667,7 @@
         <a href="{{ route('student_dashboard') }}" class="sheet-link"><i class="bi bi-grid-1x2-fill"></i> Bosh sahifa</a>
         <a href="{{ route('student-lessons.index') }}" class="sheet-link"><i class="bi bi-camera-reels"></i> Darslarim</a>
         <a href="{{ route('student-tests.index') }}" class="sheet-link"><i class="bi bi-patch-question"></i> Testlarim</a>
+        <a href="{{ route('student-books.index') }}" class="sheet-link"><i class="bi bi-journal-bookmark-fill"></i> Kitoblarim</a>
         <a href="{{ route('student-statistics.index') }}" class="sheet-link"><i class="bi bi-graph-up"></i> Progressim</a>
         <a href="{{ route('profile.edit') }}" class="sheet-link"><i class="bi bi-gear"></i> Sozlamalar</a>
         <div class="sheet-divider"></div>

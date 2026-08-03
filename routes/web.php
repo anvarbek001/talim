@@ -1,10 +1,12 @@
 <?php
 
+use App\Http\Controllers\BookController;
 use App\Http\Controllers\DtmTestController;
 use App\Http\Controllers\LessonController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SectionController;
 use App\Http\Controllers\SertifikatTestController;
+use App\Http\Controllers\StudentBookController;
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\StudentLessonController;
 use App\Http\Controllers\StudentPurchaseController;
@@ -37,6 +39,14 @@ Route::controller(LessonController::class)->group(function () {
     Route::get('/lesson', 'index')->name('lesson');
     Route::post('/lesson', 'store')->name('lessons.store');
     Route::get('/my-lessons', 'myLessons')->name('lessons.mine');
+});
+
+Route::controller(BookController::class)->group(function () {
+    Route::get('/books', 'index')->name('book');
+    Route::post('/books', 'store')->name('books.store');
+    Route::get('/my-books', 'myBooks')->name('books.mine');
+    Route::get('/books/{book}/view', 'view')->name('books.view');
+    Route::get('/books/{book}/files/{bookFile}/stream', 'stream')->name('books.stream');
 });
 
 Route::controller(SectionController::class)->group(function () {
@@ -84,6 +94,10 @@ Route::controller(StudentLessonController::class)->group(function () {
     Route::get('/student/lessons/science/{science}/teacher/{teacher}', 'byTeacher')->name('student-lessons.by-teacher');
     Route::get('/student/lessons/watch/{lesson}', 'show')->name('student-lessons.show');
     Route::post('/student/lessons/watch/{lesson}/save', 'toggleSave')->name('student-lessons.save');
+});
+
+Route::controller(StudentBookController::class)->group(function () {
+    Route::get('/student/books', 'index')->name('student-books.index');
 });
 
 Route::controller(StudentStatisticsController::class)->group(function () {

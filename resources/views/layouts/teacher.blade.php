@@ -897,6 +897,9 @@
         <a href="{{ route('tests.index') }}" class="nav-link {{ request()->routeIs('tests.index') ? 'active' : '' }}">
             <i class="bi bi-patch-question"></i> Testlarim
         </a>
+        <a href="{{ route('books.mine') }}" class="nav-link {{ request()->routeIs('books.mine') ? 'active' : '' }}">
+            <i class="bi bi-journal-bookmark-fill"></i> Kitoblarim
+        </a>
 
         <div class="nav-eyebrow">Auditoriya</div>
         <a href="{{ route('teacher-students.index') }}" class="nav-link {{ request()->routeIs('teacher-students.*') ? 'active' : '' }}">
@@ -976,6 +979,9 @@
         </a>
         <a href="{{ route('tests.index') }}" class="bn-link {{ request()->routeIs('tests.index') ? 'active' : '' }}">
             <i class="bi bi-mortarboard"></i><span>Testlarim</span>
+        </a>
+        <a href="{{ route('books.mine') }}" class="bn-link {{ request()->routeIs('books.mine') ? 'active' : '' }}">
+            <i class="bi bi-journal-bookmark-fill"></i><span>Kitoblarim</span>
         </a>
         <a href="{{ route('teacher-students.index') }}" class="bn-link {{ request()->routeIs('teacher-students.*') ? 'active' : '' }}">
             <i class="bi bi-mortarboard"></i> <span>O'quvchilarim</span>

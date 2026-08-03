@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Book;
 use App\Models\DtmTest;
 use App\Models\Section;
 use App\Models\SertifikatTest;
@@ -16,6 +17,7 @@ class StudentPurchaseController extends Controller implements HasMiddleware
         'section' => Section::class,
         'dtm' => DtmTest::class,
         'sertifikat' => SertifikatTest::class,
+        'book' => Book::class,
     ];
 
     public function __construct(protected PurchaseService $purchaseServ) {}

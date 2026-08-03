@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Repositories\BookRepository;
+use App\Repositories\Contracts\BookRepositoryInterface;
 use App\Repositories\Contracts\DtmTestRepositoryInterface;
 use App\Repositories\Contracts\LessonRepositoryInterface;
 use App\Repositories\Contracts\SectionRepositoryInterface;
@@ -29,6 +31,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(TopicTestRepositoryInterface::class, TopicTestRepository::class);
         $this->app->bind(DtmTestRepositoryInterface::class, DtmTestRepository::class);
         $this->app->bind(SertifikatTestRepositoryInterface::class, SertifikatTestRepository::class);
+        $this->app->bind(BookRepositoryInterface::class, BookRepository::class);
     }
 
     /**
