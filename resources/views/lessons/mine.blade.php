@@ -20,20 +20,34 @@
             </div>
         @endif
 
+        <form method="GET" action="{{ route('lessons.mine') }}" class="mine-filter-bar fade-up">
+            <input type="text" name="q" value="{{ request('q') }}" placeholder="Dars nomi bo'yicha qidirish..." class="mine-filter-input">
+            <button type="submit" class="btn-primary mine-filter-btn"><i class="bi bi-search"></i> Qidirish</button>
+            @if (request('q'))
+                <a href="{{ route('lessons.mine') }}" class="mine-filter-reset">Tozalash</a>
+            @endif
+        </form>
+
         @if ($lessons->isEmpty())
             <div class="mine-empty fade-up">
                 <div class="mine-empty-icon"><i class="bi bi-camera-reels"></i></div>
-                <div class="mine-empty-title">Hali dars joylanmagan</div>
-                <div class="mine-empty-sub">Birinchi video darsingizni joylab, shogirdlaringizga yetkazing.</div>
-                <a href="{{ route('lesson') }}" class="btn-primary">
-                    <i class="bi bi-cloud-upload"></i> Dars joylash
-                </a>
+                @if (request('q'))
+                    <div class="mine-empty-title">"{{ request('q') }}" bo'yicha dars topilmadi</div>
+                @else
+                    <div class="mine-empty-title">Hali dars joylanmagan</div>
+                    <div class="mine-empty-sub">Birinchi video darsingizni joylab, shogirdlaringizga yetkazing.</div>
+                    <a href="{{ route('lesson') }}" class="btn-primary">
+                        <i class="bi bi-cloud-upload"></i> Dars joylash
+                    </a>
+                @endif
             </div>
         @else
             <div class="mine-grid">
                 @foreach ($lessons as $index => $lesson)
                     @php
                         $videoFile = $lesson->lessonfiles->first(fn($f) => $f->isVideo() && $f->embedUrl());
+                        $pendingVideo = $lesson->lessonfiles->first(fn($f) => $f->isVideo() && $f->isPending());
+                        $failedVideo = $lesson->lessonfiles->first(fn($f) => $f->isVideo() && $f->isFailed());
                         $bookFiles = $lesson->lessonfiles->filter(fn($f) => !$f->isVideo());
                         $accent = $lesson->science->color ?? '#6C5CE7';
                     @endphp
@@ -43,6 +57,16 @@
                                 <iframe src="{{ $videoFile->embedUrl() }}" loading="lazy" allowfullscreen
                                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                                     referrerpolicy="strict-origin-when-cross-origin"></iframe>
+                            @elseif ($pendingVideo)
+                                <div class="lesson-video-placeholder" style="background:linear-gradient(135deg,{{ $accent }},#9C8CFF);">
+                                    <i class="bi bi-arrow-repeat"></i>
+                                    <span>Video YouTube'ga yuklanmoqda...</span>
+                                </div>
+                            @elseif ($failedVideo)
+                                <div class="lesson-video-placeholder" style="background:linear-gradient(135deg,var(--coral),#FF9B7B);">
+                                    <i class="bi bi-exclamation-triangle-fill"></i>
+                                    <span>Video yuklashda xatolik yuz berdi</span>
+                                </div>
                             @else
                                 <div class="lesson-video-placeholder" style="background:linear-gradient(135deg,{{ $accent }},#9C8CFF);">
                                     <i class="bi bi-camera-reels-fill"></i>
@@ -84,6 +108,7 @@
                     </div>
                 @endforeach
             </div>
+            {{ $lessons->links() }}
         @endif
     </div>
 
@@ -226,10 +251,19 @@
             width: 100%;
             height: 100%;
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
+            gap: 8px;
             color: #fff;
             font-size: 2rem;
+            text-align: center;
+            padding: 10px;
+        }
+
+        .lesson-video-placeholder span {
+            font-size: .78rem;
+            font-weight: 600;
         }
 
         .lesson-card-body {
@@ -314,6 +348,39 @@
             .mine-grid {
                 grid-template-columns: 1fr;
             }
+        }
+
+        .mine-filter-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .mine-filter-input {
+            flex: 1 1 260px;
+            border: 1px solid var(--line);
+            border-radius: 10px;
+            padding: 10px 14px;
+            font-size: .86rem;
+            background: var(--card);
+            color: var(--text);
+        }
+
+        .mine-filter-btn {
+            flex-shrink: 0;
+        }
+
+        .mine-filter-reset {
+            display: inline-flex;
+            align-items: center;
+            font-size: .84rem;
+            font-weight: 600;
+            color: var(--muted);
+        }
+
+        .mine-filter-reset:hover {
+            color: var(--coral);
         }
     </style>
 @endsection

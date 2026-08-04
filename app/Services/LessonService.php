@@ -2,22 +2,60 @@
 
 namespace App\Services;
 
+use App\Jobs\UploadLessonVideoToYoutube;
 use App\Models\Lesson;
 use App\Models\Topic;
 use App\Repositories\Contracts\LessonRepositoryInterface;
-use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class LessonService
 {
     public function __construct(
         protected LessonRepositoryInterface $lessonRepo,
-        protected YoutubeUploadService $youtubeService
     ) {}
 
-    public function myLessons(int $userId): Collection
+    /**
+     * @param  array{q?: string}  $filters
+     */
+    public function myLessons(int $userId, array $filters = []): LengthAwarePaginator
     {
-        return $this->lessonRepo->forUser($userId);
+        return $this->lessonRepo->forUser($userId, $filters);
+    }
+
+    /**
+     * @param  array{q?: string, teacher_id?: int, science_id?: int}  $filters
+     */
+    public function all(array $filters = []): LengthAwarePaginator
+    {
+        return $this->lessonRepo->all($filters);
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     */
+    public function updateLesson(Lesson $lesson, array $data): Lesson
+    {
+        return $this->lessonRepo->update($lesson, [
+            'title' => $data['title'],
+            'description' => $data['description'] ?? null,
+        ]);
+    }
+
+    public function deleteLesson(Lesson $lesson): bool
+    {
+        return DB::transaction(function () use ($lesson) {
+            foreach ($lesson->lessonfiles as $file) {
+                if ($file->type === 'file' && $file->lesson_file) {
+                    Storage::disk('public')->delete($file->lesson_file);
+                } elseif ($file->isVideo() && $file->isPending() && $file->lesson_file) {
+                    Storage::disk('local')->delete($file->lesson_file);
+                }
+            }
+
+            return $this->lessonRepo->delete($lesson);
+        });
     }
 
     public function createLesson(array $validated, int $userId): Lesson
@@ -37,13 +75,16 @@ class LessonService
 
             foreach ($validated['lesson_files'] as $file) {
                 if (str_starts_with($file->getMimeType(), 'video/')) {
-                    // Video — YouTube'ga yuklaymiz
-                    $youtubeId = $this->youtubeService->upload($file, $lesson->title, $lesson->description);
-                    $lesson->lessonfiles()->create([
+                    // Video — diskka vaqtincha saqlab, YouTube'ga yuklashni
+                    // fon jarayoniga (queue) topshiramiz — so'rovni bloklamaslik uchun
+                    $tempPath = $file->store("lessons/{$lesson->id}/pending", 'local');
+                    $lessonFile = $lesson->lessonfiles()->create([
                         'type' => 'youtube',
-                        'youtube_id' => $youtubeId,
-                        'lesson_file' => '',
+                        'youtube_id' => null,
+                        'lesson_file' => $tempPath,
+                        'status' => 'pending',
                     ]);
+                    UploadLessonVideoToYoutube::dispatch($lessonFile->id)->afterCommit();
                 } else {
                     // Kitob/qo'llanma — oddiy diskka saqlaymiz
                     $path = $file->store("lessons/{$lesson->id}", 'public');

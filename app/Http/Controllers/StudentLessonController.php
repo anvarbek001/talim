@@ -34,7 +34,13 @@ class StudentLessonController extends Controller implements HasMiddleware
             return view('student.lessons.saved', compact('lessons', 'savedIds'));
         }
 
-        $sciences = $this->lessonServ->sciencesWithLessons();
+        $q = trim((string) $request->query('q', ''));
+
+        $sciences = $this->lessonServ->sciencesWithLessons()
+            ->when($q !== '', fn ($items) => $items->filter(
+                fn (Science $science) => str_contains(mb_strtolower($science->title), mb_strtolower($q))
+            ))
+            ->values();
 
         return view('student.lessons.index', compact('sciences'));
     }
@@ -46,9 +52,14 @@ class StudentLessonController extends Controller implements HasMiddleware
         return view('student.lessons.teachers', compact('science', 'teachers'));
     }
 
-    public function byTeacher(Science $science, User $teacher)
+    public function byTeacher(Request $request, Science $science, User $teacher)
     {
-        $lessons = $this->lessonServ->lessonsByTeacherAndScience($science, $teacher);
+        $q = trim((string) $request->query('q', ''));
+
+        $lessons = $this->lessonServ->lessonsByTeacherAndScience($science, $teacher)
+            ->when($q !== '', fn ($items) => $items->filter(
+                fn (Lesson $lesson) => str_contains(mb_strtolower($lesson->title), mb_strtolower($q))
+            ));
         $savedIds = $this->lessonServ->savedIds(Auth::id());
         $grouped = $lessons->groupBy(fn (Lesson $lesson) => $lesson->grade->title ?? '—');
 

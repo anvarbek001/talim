@@ -14,6 +14,14 @@
             <div class="alert-error fade-up"><i class="bi bi-exclamation-triangle-fill"></i> {{ session('error') }}</div>
         @endif
 
+        <form method="GET" action="{{ route('student-books.index') }}" class="book-filter-bar fade-up" style="animation-delay:.03s;">
+            <input type="text" name="q" value="{{ request('q') }}" placeholder="Kitob nomi yoki o'qituvchi bo'yicha qidirish..." class="book-filter-input">
+            <button type="submit" class="btn-primary book-filter-btn"><i class="bi bi-search"></i> Qidirish</button>
+            @if (request('q'))
+                <a href="{{ route('student-books.index') }}" class="book-filter-reset">Tozalash</a>
+            @endif
+        </form>
+
         <div class="card fade-up" style="animation-delay:.06s;">
             <div class="card-head">
                 <div class="card-title">Mavjud kitoblar</div>
@@ -22,7 +30,11 @@
             @if ($catalog->isEmpty())
                 <div class="empty-hint">
                     <i class="bi bi-info-circle"></i>
-                    Hozircha hech qanday kitob joylanmagan.
+                    @if (request('q'))
+                        "{{ request('q') }}" bo'yicha kitob topilmadi.
+                    @else
+                        Hozircha hech qanday kitob joylanmagan.
+                    @endif
                 </div>
             @else
                 <div class="book-grid">
@@ -55,6 +67,7 @@
                         </div>
                     @endforeach
                 </div>
+                {{ $catalog->links() }}
             @endif
         </div>
     </div>
@@ -223,6 +236,39 @@
             .card {
                 padding: 16px;
             }
+        }
+
+        .book-filter-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .book-filter-input {
+            flex: 1 1 260px;
+            border: 1px solid var(--line);
+            border-radius: 10px;
+            padding: 10px 14px;
+            font-size: .86rem;
+            background: var(--card);
+            color: var(--text);
+        }
+
+        .book-filter-btn {
+            flex-shrink: 0;
+        }
+
+        .book-filter-reset {
+            display: inline-flex;
+            align-items: center;
+            font-size: .84rem;
+            font-weight: 600;
+            color: var(--muted);
+        }
+
+        .book-filter-reset:hover {
+            color: var(--coral);
         }
     </style>
 @endsection

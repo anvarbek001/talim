@@ -5,9 +5,9 @@ namespace App\Services;
 use App\Models\Book;
 use App\Models\User;
 use App\Repositories\Contracts\BookRepositoryInterface;
-use Illuminate\Database\Eloquent\Collection as EloquentCollection;
-use Illuminate\Support\Collection;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class BookService
 {
@@ -16,9 +16,43 @@ class BookService
         protected PurchaseService $purchaseServ,
     ) {}
 
-    public function myBooks(int $userId): EloquentCollection
+    /**
+     * @param  array{q?: string}  $filters
+     */
+    public function myBooks(int $userId, array $filters = []): LengthAwarePaginator
     {
-        return $this->bookRepo->forUser($userId);
+        return $this->bookRepo->forUser($userId, $filters);
+    }
+
+    /**
+     * @param  array{q?: string, teacher_id?: int}  $filters
+     */
+    public function all(array $filters = []): LengthAwarePaginator
+    {
+        return $this->bookRepo->all($filters);
+    }
+
+    /**
+     * @param  array<string, mixed>  $data
+     */
+    public function updateBook(Book $book, array $data): Book
+    {
+        return $this->bookRepo->update($book, [
+            'title' => $data['title'],
+            'description' => $data['description'] ?? null,
+            'price' => $data['price'] ?? 0,
+        ]);
+    }
+
+    public function deleteBook(Book $book): bool
+    {
+        return DB::transaction(function () use ($book) {
+            foreach ($book->files as $file) {
+                Storage::disk('local')->delete($file->file_path);
+            }
+
+            return $this->bookRepo->delete($book);
+        });
     }
 
     public function createBook(array $data, int $userId): Book
@@ -43,12 +77,22 @@ class BookService
         });
     }
 
-    public function catalog(int $userId): Collection
+    /**
+     * @param  array{q?: string}  $filters
+     */
+    public function catalog(int $userId, array $filters = []): LengthAwarePaginator
     {
-        return Book::with(['user', 'files', 'purchases' => fn ($q) => $q->where('user_id', $userId)])
+        $q = $filters['q'] ?? null;
+
+        return Book::with(['user', 'files', 'purchases' => fn ($query) => $query->where('user_id', $userId)])
+            ->when($q, fn ($query, $search) => $query->where(
+                fn ($sub) => $sub->where('title', 'like', "%{$search}%")
+                    ->orWhereHas('user', fn ($u) => $u->where('name', 'like', "%{$search}%"))
+            ))
             ->latest()
-            ->get()
-            ->map(fn (Book $book) => [
+            ->paginate(12)
+            ->withQueryString()
+            ->through(fn (Book $book) => [
                 'id' => $book->id,
                 'title' => $book->title,
                 'description' => $book->description,
@@ -66,6 +110,8 @@ class BookService
      */
     public function canView(Book $book, User $user): bool
     {
-        return $book->user_id === $user->id || $this->purchaseServ->hasAccess($user, $book);
+        return $book->user_id === $user->id
+            || $user->hasRole('admin')
+            || $this->purchaseServ->hasAccess($user, $book);
     }
 }

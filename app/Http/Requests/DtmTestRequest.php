@@ -39,11 +39,11 @@ class DtmTestRequest extends FormRequest
         // not be validated against the manual-entry rules below.
         if ($this->isExcelMode()) {
             return $base + [
-                'block1_questions_file' => 'required|file|mimes:xlsx,xls|max:5120',
-                'block2_questions_file' => 'required|file|mimes:xlsx,xls|max:5120',
-                'block3_ona_tili_questions_file' => 'required|file|mimes:xlsx,xls|max:5120',
-                'block3_matematika_questions_file' => 'required|file|mimes:xlsx,xls|max:5120',
-                'block3_tarix_questions_file' => 'required|file|mimes:xlsx,xls|max:5120',
+                'block1_questions_file' => 'required|file|mimes:xlsx,xls,docx|max:5120',
+                'block2_questions_file' => 'required|file|mimes:xlsx,xls,docx|max:5120',
+                'block3_ona_tili_questions_file' => 'required|file|mimes:xlsx,xls,docx|max:5120',
+                'block3_matematika_questions_file' => 'required|file|mimes:xlsx,xls,docx|max:5120',
+                'block3_tarix_questions_file' => 'required|file|mimes:xlsx,xls,docx|max:5120',
             ];
         }
 
@@ -82,11 +82,11 @@ class DtmTestRequest extends FormRequest
             'block3_ona_tili_questions_file.required' => 'Ona tili uchun Excel faylni yuklang.',
             'block3_matematika_questions_file.required' => 'Matematika uchun Excel faylni yuklang.',
             'block3_tarix_questions_file.required' => 'Tarix uchun Excel faylni yuklang.',
-            'block1_questions_file.mimes' => 'Fayl xlsx yoki xls formatida bo\'lishi kerak.',
-            'block2_questions_file.mimes' => 'Fayl xlsx yoki xls formatida bo\'lishi kerak.',
-            'block3_ona_tili_questions_file.mimes' => 'Fayl xlsx yoki xls formatida bo\'lishi kerak.',
-            'block3_matematika_questions_file.mimes' => 'Fayl xlsx yoki xls formatida bo\'lishi kerak.',
-            'block3_tarix_questions_file.mimes' => 'Fayl xlsx yoki xls formatida bo\'lishi kerak.',
+            'block1_questions_file.mimes' => 'Fayl xlsx, xls yoki docx formatida bo\'lishi kerak.',
+            'block2_questions_file.mimes' => 'Fayl xlsx, xls yoki docx formatida bo\'lishi kerak.',
+            'block3_ona_tili_questions_file.mimes' => 'Fayl xlsx, xls yoki docx formatida bo\'lishi kerak.',
+            'block3_matematika_questions_file.mimes' => 'Fayl xlsx, xls yoki docx formatida bo\'lishi kerak.',
+            'block3_tarix_questions_file.mimes' => 'Fayl xlsx, xls yoki docx formatida bo\'lishi kerak.',
             'block1_questions_file.max' => 'Fayl hajmi 5 MB dan oshmasligi kerak.',
             'block2_questions_file.max' => 'Fayl hajmi 5 MB dan oshmasligi kerak.',
             'block3_ona_tili_questions_file.max' => 'Fayl hajmi 5 MB dan oshmasligi kerak.',

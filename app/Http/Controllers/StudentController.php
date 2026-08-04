@@ -29,8 +29,9 @@ class StudentController extends Controller
         $savedLessons = $this->lessonServ->saved($userId)->take(8);
         $stats = $this->statisticsServ->forUser($userId);
         $leaderboard = $this->statisticsServ->leaderboard(5);
+        $sciences = $this->lessonServ->sciencesWithLessons()->take(8);
 
-        return view('student_dashboard', compact('recentLessons', 'savedLessons', 'stats', 'leaderboard'));
+        return view('student_dashboard', compact('recentLessons', 'savedLessons', 'stats', 'leaderboard', 'sciences'));
     }
 
     /**

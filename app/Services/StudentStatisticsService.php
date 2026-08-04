@@ -9,6 +9,7 @@ use App\Models\TestAttempt;
 use App\Models\TopicTest;
 use App\Models\User;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Cache;
 use Spatie\Permission\Models\Role;
 
 class StudentStatisticsService
@@ -66,7 +67,8 @@ class StudentStatisticsService
     }
 
     /**
-     * Ranks students by their total score across submitted attempts.
+     * Ranks students by their total score across submitted attempts. Cached
+     * briefly since every student's dashboard visit triggers this query.
      *
      * @return Collection<int, array{user: User, total_score: float, attempts_count: int}>
      */
@@ -76,16 +78,18 @@ class StudentStatisticsService
             return collect();
         }
 
-        return User::role('student')
-            ->withSum(['testAttempts as total_score' => fn ($query) => $query->where('status', 'submitted')], 'score')
-            ->withCount(['testAttempts as attempts_count' => fn ($query) => $query->where('status', 'submitted')])
-            ->orderByDesc('total_score')
-            ->limit($limit)
-            ->get()
-            ->map(fn (User $user) => [
-                'user' => $user,
-                'total_score' => (float) ($user->total_score ?? 0),
-                'attempts_count' => (int) $user->attempts_count,
-            ]);
+        return Cache::remember("student.leaderboard.{$limit}", 120, function () use ($limit) {
+            return User::role('student')
+                ->withSum(['testAttempts as total_score' => fn ($query) => $query->where('status', 'submitted')], 'score')
+                ->withCount(['testAttempts as attempts_count' => fn ($query) => $query->where('status', 'submitted')])
+                ->orderByDesc('total_score')
+                ->limit($limit)
+                ->get()
+                ->map(fn (User $user) => [
+                    'user' => $user,
+                    'total_score' => (float) ($user->total_score ?? 0),
+                    'attempts_count' => (int) $user->attempts_count,
+                ]);
+        });
     }
 }

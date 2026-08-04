@@ -2,6 +2,7 @@
 
 @php
     $videoFile = $lesson->lessonfiles->first(fn ($f) => $f->isVideo() && $f->embedUrl());
+    $pendingVideo = $lesson->lessonfiles->first(fn ($f) => $f->isVideo() && $f->isPending());
     $bookFiles = $lesson->lessonfiles->filter(fn ($f) => ! $f->isVideo());
     $accent = $lesson->science->color ?? '#6C5CE7';
 @endphp
@@ -20,6 +21,11 @@
                             <iframe src="{{ $videoFile->embedUrl() }}" loading="lazy" allowfullscreen
                                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                                 referrerpolicy="strict-origin-when-cross-origin"></iframe>
+                        @elseif ($pendingVideo)
+                            <div class="watch-video-placeholder" style="background:linear-gradient(135deg,{{ $accent }},#9C8CFF);">
+                                <i class="bi bi-arrow-repeat"></i>
+                                <span>Video YouTube'ga yuklanmoqda, biroz kuting...</span>
+                            </div>
                         @else
                             <div class="watch-video-placeholder" style="background:linear-gradient(135deg,{{ $accent }},#9C8CFF);">
                                 <i class="bi bi-camera-reels-fill"></i>

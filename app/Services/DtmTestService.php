@@ -3,10 +3,12 @@
 namespace App\Services;
 
 use App\Models\DtmTest;
+use App\Models\DtmTestOption;
 use App\Models\Grade;
 use App\Models\Science;
 use App\Repositories\Contracts\DtmTestRepositoryInterface;
 use Exception;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 
@@ -16,9 +18,20 @@ class DtmTestService
         protected DtmTestRepositoryInterface $dtmTestRepo
     ) {}
 
-    public function myTests(int $userId): Collection
+    /**
+     * @param  array{q?: string}  $filters
+     */
+    public function myTests(int $userId, array $filters = []): Collection
     {
-        return $this->dtmTestRepo->forUser($userId);
+        return $this->dtmTestRepo->forUser($userId, $filters);
+    }
+
+    /**
+     * @param  array{q?: string, teacher_id?: int, page_name?: string}  $filters
+     */
+    public function all(array $filters = []): LengthAwarePaginator
+    {
+        return $this->dtmTestRepo->all($filters);
     }
 
     public function create(array $data, int $userId): DtmTest
@@ -97,31 +110,53 @@ class DtmTestService
 
     protected function authorize(DtmTest $dtmTest): void
     {
-        if ($dtmTest->user_id !== auth()->id()) {
+        if ($dtmTest->user_id !== auth()->id() && ! auth()->user()->hasRole('admin')) {
             throw new Exception('Bu test ustida amaliyot bajara olmaysiz', 403);
         }
     }
 
     /**
+     * Bulk-inserts questions and their options in two queries total instead
+     * of one per question/option — a DTM test can have 90+ questions.
+     *
      * @param  array<int, array{block: int, science_id: int, text: string, options: array<int, array{text: string}>, correct: int}>  $questions
      */
     protected function syncQuestions(DtmTest $dtmTest, array $questions): void
     {
-        foreach ($questions as $index => $question) {
-            $questionModel = $dtmTest->questions()->create([
+        if (empty($questions)) {
+            return;
+        }
+
+        $now = now();
+
+        $dtmTest->questions()->insert(
+            collect($questions)->map(fn (array $question, int $index) => [
+                'dtm_test_id' => $dtmTest->id,
                 'question' => $question['text'],
                 'block' => $question['block'],
                 'science_id' => $question['science_id'],
                 'order' => $index,
-            ]);
+                'created_at' => $now,
+                'updated_at' => $now,
+            ])->all()
+        );
 
+        $questionIds = $dtmTest->questions()->orderBy('order')->pluck('id', 'order');
+
+        $optionRows = [];
+        foreach ($questions as $index => $question) {
             foreach ($question['options'] as $optionIndex => $option) {
-                $questionModel->options()->create([
+                $optionRows[] = [
+                    'dtm_test_question_id' => $questionIds[$index],
                     'option_text' => $option['text'],
                     'is_correct' => (int) $question['correct'] === $optionIndex,
                     'order' => $optionIndex,
-                ]);
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                ];
             }
         }
+
+        DtmTestOption::insert($optionRows);
     }
 }

@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\SertifikatTestRequest;
 use App\Models\SertifikatTest;
 use App\Services\SertifikatTestService;
-use App\Services\TestQuestionExcelParser;
+use App\Services\TestQuestionFileParser;
 use Exception;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Support\Facades\Auth;
@@ -15,7 +15,7 @@ class SertifikatTestController extends Controller implements HasMiddleware
 {
     public function __construct(
         protected SertifikatTestService $sertifikatTestServ,
-        protected TestQuestionExcelParser $excelParser,
+        protected TestQuestionFileParser $fileParser,
     ) {}
 
     public static function middleware(): array
@@ -62,11 +62,11 @@ class SertifikatTestController extends Controller implements HasMiddleware
     protected function resolveQuestions(SertifikatTestRequest $request, array $data): array
     {
         if ($request->hasFile('questions_file')) {
-            $data['questions'] = $this->excelParser->parse($request->file('questions_file'));
+            $data['questions'] = $this->fileParser->parse($request->file('questions_file'));
 
             if (empty($data['questions'])) {
                 throw ValidationException::withMessages([
-                    'questions_file' => 'Excel faylida savol topilmadi. Shablonga mos formatda ekanligini tekshiring.',
+                    'questions_file' => 'Faylda savol topilmadi. Shablonga mos formatda ekanligini tekshiring.',
                 ]);
             }
         }

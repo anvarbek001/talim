@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\DtmTestRequest;
 use App\Models\DtmTest;
 use App\Services\DtmTestService;
-use App\Services\TestQuestionExcelParser;
+use App\Services\TestQuestionFileParser;
 use Exception;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Support\Facades\Auth;
@@ -15,7 +15,7 @@ class DtmTestController extends Controller implements HasMiddleware
 {
     public function __construct(
         protected DtmTestService $dtmTestServ,
-        protected TestQuestionExcelParser $excelParser,
+        protected TestQuestionFileParser $fileParser,
     ) {}
 
     public static function middleware(): array
@@ -118,7 +118,7 @@ class DtmTestController extends Controller implements HasMiddleware
         $questions = [];
 
         foreach ($slots as $slot) {
-            $parsed = $this->excelParser->parse($request->file($slot['file']));
+            $parsed = $this->fileParser->parse($request->file($slot['file']));
 
             if (count($parsed) !== $slot['count']) {
                 throw ValidationException::withMessages([

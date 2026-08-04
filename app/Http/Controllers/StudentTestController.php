@@ -8,6 +8,7 @@ use App\Services\PurchaseService;
 use App\Services\StudentTestService;
 use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Support\Facades\Auth;
 
@@ -23,12 +24,40 @@ class StudentTestController extends Controller implements HasMiddleware
         return ['auth'];
     }
 
-    public function index()
+    public function index(Request $request)
     {
         $catalog = $this->studentTestServ->catalog(Auth::id());
+
+        $sciences = $catalog->pluck('science')->filter()->unique('id')->sortBy('title')->values();
+
+        $q = trim((string) $request->query('q', ''));
+        $scienceId = $request->query('science');
+        $type = $request->query('type');
+
+        $filtered = $catalog
+            ->when($q !== '', fn ($items) => $items->filter(fn ($item) => str_contains(mb_strtolower($item['title']), mb_strtolower($q))))
+            ->when($scienceId, fn ($items) => $items->filter(fn ($item) => $item['science']?->id === (int) $scienceId))
+            ->when($type, fn ($items) => $items->filter(fn ($item) => $item['type'] === $type))
+            ->values();
+
+        $perPage = 12;
+        $page = (int) $request->query('page', 1);
+
+        $catalog = new LengthAwarePaginator(
+            $filtered->forPage($page, $perPage)->values(),
+            $filtered->count(),
+            $perPage,
+            $page,
+            ['path' => $request->url(), 'query' => $request->query()]
+        );
+
         $attempts = $this->studentTestServ->myAttempts(Auth::id());
 
-        return view('student.tests.index', compact('catalog', 'attempts'));
+        return view('student.tests.index', [
+            'catalog' => $catalog,
+            'sciences' => $sciences,
+            'attempts' => $attempts,
+        ]);
     }
 
     public function start(string $type, int $id)

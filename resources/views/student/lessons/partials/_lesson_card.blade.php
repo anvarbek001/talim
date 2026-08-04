@@ -1,5 +1,6 @@
 @php
     $videoFile = $lesson->lessonfiles->first(fn ($f) => $f->isVideo() && $f->embedUrl());
+    $pendingVideo = $lesson->lessonfiles->first(fn ($f) => $f->isVideo() && $f->isPending());
     $accent = $lesson->science->color ?? '#6C5CE7';
     $isSaved = in_array($lesson->id, $savedIds ?? [], true);
 @endphp
@@ -9,6 +10,10 @@
         @if ($videoFile)
             <img src="https://img.youtube.com/vi/{{ $videoFile->youtube_id }}/hqdefault.jpg" alt="{{ $lesson->title }}" loading="lazy">
             <span class="lesson-play"><i class="bi bi-play-fill"></i></span>
+        @elseif ($pendingVideo)
+            <div class="lesson-video-placeholder" style="background:linear-gradient(135deg,{{ $accent }},#9C8CFF);">
+                <i class="bi bi-arrow-repeat"></i>
+            </div>
         @else
             <div class="lesson-video-placeholder" style="background:linear-gradient(135deg,{{ $accent }},#9C8CFF);">
                 <i class="bi bi-camera-reels-fill"></i>

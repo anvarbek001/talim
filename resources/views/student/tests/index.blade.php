@@ -14,6 +14,26 @@
             <div class="alert-error fade-up"><i class="bi bi-exclamation-triangle-fill"></i> {{ session('error') }}</div>
         @endif
 
+        <form method="GET" action="{{ route('student-tests.index') }}" class="test-filter-bar fade-up" style="animation-delay:.03s;">
+            <input type="text" name="q" value="{{ request('q') }}" placeholder="Test nomi bo'yicha qidirish..." class="test-filter-input">
+            <select name="science" class="test-filter-select" onchange="this.form.submit()">
+                <option value="">Barcha fanlar</option>
+                @foreach ($sciences as $science)
+                    <option value="{{ $science->id }}" {{ (string) request('science') === (string) $science->id ? 'selected' : '' }}>{{ $science->title }}</option>
+                @endforeach
+            </select>
+            <select name="type" class="test-filter-select" onchange="this.form.submit()">
+                <option value="">Barcha turlar</option>
+                <option value="topic" {{ request('type') === 'topic' ? 'selected' : '' }}>Mavzu testi</option>
+                <option value="dtm" {{ request('type') === 'dtm' ? 'selected' : '' }}>DTM testi</option>
+                <option value="sertifikat" {{ request('type') === 'sertifikat' ? 'selected' : '' }}>Sertifikat testi</option>
+            </select>
+            <button type="submit" class="test-filter-btn"><i class="bi bi-search"></i> Qidirish</button>
+            @if (request('q') || request('science') || request('type'))
+                <a href="{{ route('student-tests.index') }}" class="test-filter-reset">Tozalash</a>
+            @endif
+        </form>
+
         <div class="card fade-up" style="animation-delay:.06s;">
             <div class="card-head">
                 <div class="card-title">Mavjud testlar</div>
@@ -69,6 +89,7 @@
                         </div>
                     @endforeach
                 </div>
+                {{ $catalog->links() }}
             @endif
         </div>
 
@@ -440,6 +461,58 @@
             .text-end {
                 text-align: right;
             }
+        }
+
+        .test-filter-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .test-filter-input {
+            flex: 1 1 220px;
+            border: 1px solid var(--line);
+            border-radius: 10px;
+            padding: 10px 14px;
+            font-size: .86rem;
+            background: var(--card);
+            color: var(--text);
+        }
+
+        .test-filter-select {
+            border: 1px solid var(--line);
+            border-radius: 10px;
+            padding: 10px 12px;
+            font-size: .86rem;
+            background: var(--card);
+            color: var(--text);
+        }
+
+        .test-filter-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            border: none;
+            border-radius: 10px;
+            padding: 10px 18px;
+            background: var(--primary);
+            color: #fff;
+            font-weight: 700;
+            font-size: .84rem;
+        }
+
+        .test-filter-reset {
+            display: inline-flex;
+            align-items: center;
+            font-size: .84rem;
+            font-weight: 600;
+            color: var(--muted);
+            padding: 10px 4px;
+        }
+
+        .test-filter-reset:hover {
+            color: var(--coral);
         }
     </style>
 @endsection

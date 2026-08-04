@@ -16,6 +16,7 @@ use App\Repositories\SectionRepository;
 use App\Repositories\SertifikatTestRepository;
 use App\Repositories\TopicRepository;
 use App\Repositories\TopicTestRepository;
+use Illuminate\Pagination\Paginator;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -39,6 +40,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        Paginator::defaultView('partials.pagination');
+        Paginator::defaultSimpleView('partials.pagination');
     }
 }

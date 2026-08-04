@@ -46,21 +46,25 @@
         @endphp
         <div class="field mb-16">
             <a href="{{ route('tests.questions-template') }}" class="template-link">
-                <i class="bi bi-download"></i> Namuna shablonni yuklab olish
+                <i class="bi bi-download"></i> Excel shablonni yuklab olish
+            </a>
+            <a href="{{ route('tests.questions-template-word') }}" class="template-link">
+                <i class="bi bi-download"></i> Word shablonni yuklab olish
             </a>
             <div class="field-hint mb-12">
-                Shablondagi ustunlar: <strong>savol</strong>, <strong>variant_1..variant_4</strong>,
-                <strong>togri_variant</strong> (1-4 raqam). Har bir blok/fan uchun alohida fayl yuklang —
-                fayldagi savollar soni ko'rsatilgan miqdorga aniq mos kelishi kerak.
+                Excel ustunlari: <strong>savol</strong>, <strong>variant_1..variant_4</strong>,
+                <strong>togri_variant</strong> (1-4 raqam). Word faylida esa savol "1. Savol matni?" ko'rinishida,
+                variantlar "A) matn" ko'rinishida yoziladi — to'g'ri variant oxiriga <strong>*</strong> belgisi qo'yiladi.
+                Har bir blok/fan uchun alohida fayl yuklang — fayldagi savollar soni ko'rsatilgan miqdorga aniq mos kelishi kerak.
             </div>
             @foreach ($excelSlots as $slot)
                 <div class="mb-12">
                     <label class="field-label">{{ $slot['label'] }}</label>
                     <label class="dropzone" id="{{ $prefix }}_{{ $slot['key'] }}_dropzone" for="{{ $prefix }}_{{ $slot['key'] }}_questions_file">
                         <div class="dropzone-icon"><i class="bi bi-file-earmark-spreadsheet"></i></div>
-                        <div class="dropzone-text">Excel faylni shu yerga tashlang yoki <span>tanlash uchun bosing</span></div>
-                        <div class="dropzone-hint">XLSX yoki XLS — maksimal 5 MB</div>
-                        <input type="file" name="{{ $slot['key'] }}_questions_file" id="{{ $prefix }}_{{ $slot['key'] }}_questions_file" accept=".xlsx,.xls" hidden>
+                        <div class="dropzone-text">Excel yoki Word faylni shu yerga tashlang yoki <span>tanlash uchun bosing</span></div>
+                        <div class="dropzone-hint">XLSX, XLS yoki DOCX — maksimal 5 MB</div>
+                        <input type="file" name="{{ $slot['key'] }}_questions_file" id="{{ $prefix }}_{{ $slot['key'] }}_questions_file" accept=".xlsx,.xls,.docx" hidden>
                     </label>
                     <div class="file-list" id="{{ $prefix }}_{{ $slot['key'] }}_file_list"></div>
                 </div>
@@ -70,18 +74,22 @@
         <div class="field mb-16">
             <label class="field-label">Savollar fayli</label>
             <a href="{{ route('tests.questions-template') }}" class="template-link">
-                <i class="bi bi-download"></i> Namuna shablonni yuklab olish
+                <i class="bi bi-download"></i> Excel shablonni yuklab olish
+            </a>
+            <a href="{{ route('tests.questions-template-word') }}" class="template-link">
+                <i class="bi bi-download"></i> Word shablonni yuklab olish
             </a>
             <label class="dropzone" id="{{ $prefix }}_dropzone" for="{{ $prefix }}_questions_file">
                 <div class="dropzone-icon"><i class="bi bi-file-earmark-spreadsheet"></i></div>
-                <div class="dropzone-text">Excel faylni shu yerga tashlang yoki <span>tanlash uchun bosing</span></div>
-                <div class="dropzone-hint">XLSX yoki XLS — maksimal 5 MB</div>
-                <input type="file" name="questions_file" id="{{ $prefix }}_questions_file" accept=".xlsx,.xls" hidden>
+                <div class="dropzone-text">Excel yoki Word faylni shu yerga tashlang yoki <span>tanlash uchun bosing</span></div>
+                <div class="dropzone-hint">XLSX, XLS yoki DOCX — maksimal 5 MB</div>
+                <input type="file" name="questions_file" id="{{ $prefix }}_questions_file" accept=".xlsx,.xls,.docx" hidden>
             </label>
             <div class="file-list" id="{{ $prefix }}_file_list"></div>
             <div class="field-hint">
-                Shablondagi ustunlar: <strong>savol</strong>, <strong>variant_1..variant_4</strong>,
-                <strong>togri_variant</strong> (1-4 raqam). Har bir qator — bitta savol.
+                Excel ustunlari: <strong>savol</strong>, <strong>variant_1..variant_4</strong>,
+                <strong>togri_variant</strong> (1-4 raqam). Word faylida esa savol "1. Savol matni?" ko'rinishida,
+                variantlar "A) matn" ko'rinishida yoziladi — to'g'ri variant oxiriga <strong>*</strong> belgisi qo'yiladi.
             </div>
         </div>
     @endif

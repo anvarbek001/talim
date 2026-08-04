@@ -1,5 +1,11 @@
 <?php
 
+use App\Http\Controllers\Admin\BookController as AdminBookController;
+use App\Http\Controllers\Admin\LessonController as AdminLessonController;
+use App\Http\Controllers\Admin\PurchaseController as AdminPurchaseController;
+use App\Http\Controllers\Admin\TestController as AdminTestController;
+use App\Http\Controllers\Admin\UserController as AdminUserController;
+use App\Http\Controllers\AdminController;
 use App\Http\Controllers\BookController;
 use App\Http\Controllers\DtmTestController;
 use App\Http\Controllers\LessonController;
@@ -16,11 +22,10 @@ use App\Http\Controllers\TeacherController;
 use App\Http\Controllers\TeacherStudentController;
 use App\Http\Controllers\TopicController;
 use App\Http\Controllers\TopicTestController;
+use App\Http\Controllers\WelcomeController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
-    return view('welcome');
-})->name('welcome');
+Route::get('/', [WelcomeController::class, 'index'])->name('welcome');
 
 Route::controller(TeacherController::class)->group(function () {
     Route::get('/dashboard', 'index')->middleware(['auth', 'verified'])->name('dashboard');
@@ -63,6 +68,7 @@ Route::controller(TopicController::class)->group(function () {
 Route::controller(TopicTestController::class)->group(function () {
     Route::get('/tests', 'index')->name('tests.index');
     Route::get('/tests/questions-template', 'questionsTemplate')->name('tests.questions-template');
+    Route::get('/tests/questions-template-word', 'questionsTemplateWord')->name('tests.questions-template-word');
     Route::post('/tests/topic', 'store')->name('topic-tests.store');
     Route::put('/tests/topic/{topicTest}', 'update')->name('topic-tests.update');
     Route::delete('/tests/topic/{topicTest}', 'destroy')->name('topic-tests.destroy');
@@ -102,6 +108,41 @@ Route::controller(StudentBookController::class)->group(function () {
 
 Route::controller(StudentStatisticsController::class)->group(function () {
     Route::get('/student/statistics', 'index')->name('student-statistics.index');
+});
+
+Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(function () {
+    Route::get('/', [AdminController::class, 'index'])->name('dashboard');
+
+    Route::controller(AdminUserController::class)->prefix('users')->name('users.')->group(function () {
+        Route::get('/', 'index')->name('index');
+        Route::post('/', 'store')->name('store');
+        Route::put('/{user}', 'update')->name('update');
+        Route::delete('/{user}', 'destroy')->name('destroy');
+    });
+
+    Route::controller(AdminBookController::class)->prefix('books')->name('books.')->group(function () {
+        Route::get('/', 'index')->name('index');
+        Route::put('/{book}', 'update')->name('update');
+        Route::delete('/{book}', 'destroy')->name('destroy');
+    });
+
+    Route::controller(AdminLessonController::class)->prefix('lessons')->name('lessons.')->group(function () {
+        Route::get('/', 'index')->name('index');
+        Route::put('/{lesson}', 'update')->name('update');
+        Route::delete('/{lesson}', 'destroy')->name('destroy');
+    });
+
+    Route::controller(AdminTestController::class)->prefix('tests')->name('tests.')->group(function () {
+        Route::get('/', 'index')->name('index');
+        Route::delete('/topic/{topicTest}', 'destroyTopic')->name('topic.destroy');
+        Route::delete('/dtm/{dtmTest}', 'destroyDtm')->name('dtm.destroy');
+        Route::delete('/sertifikat/{sertifikatTest}', 'destroySertifikat')->name('sertifikat.destroy');
+    });
+
+    Route::controller(AdminPurchaseController::class)->prefix('purchases')->name('purchases.')->group(function () {
+        Route::get('/', 'index')->name('index');
+        Route::delete('/{purchase}', 'destroy')->name('destroy');
+    });
 });
 
 Route::controller(StudentPurchaseController::class)->middleware('auth')->group(function () {

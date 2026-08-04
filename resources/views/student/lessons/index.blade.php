@@ -24,11 +24,24 @@
             </a>
         </div>
 
+        <form method="GET" action="{{ route('student-lessons.index') }}" class="science-filter-bar fade-up" style="animation-delay:.05s;">
+            <input type="text" name="q" value="{{ request('q') }}" placeholder="Fan nomi bo'yicha qidirish..." class="science-filter-input">
+            <button type="submit" class="science-filter-btn"><i class="bi bi-search"></i> Qidirish</button>
+            @if (request('q'))
+                <a href="{{ route('student-lessons.index') }}" class="science-filter-reset">Tozalash</a>
+            @endif
+        </form>
+
         @if ($sciences->isEmpty())
             <div class="lessons-empty fade-up">
                 <div class="lessons-empty-icon"><i class="bi bi-camera-reels"></i></div>
-                <div class="lessons-empty-title">Hozircha dars yo'q</div>
-                <div class="lessons-empty-sub">Yaqin orada yangi darslar joylanadi.</div>
+                @if (request('q'))
+                    <div class="lessons-empty-title">"{{ request('q') }}" bo'yicha fan topilmadi</div>
+                    <div class="lessons-empty-sub">Boshqa nom bilan qidirib ko'ring.</div>
+                @else
+                    <div class="lessons-empty-title">Hozircha dars yo'q</div>
+                    <div class="lessons-empty-sub">Yaqin orada yangi darslar joylanadi.</div>
+                @endif
             </div>
         @else
             <div class="science-grid">
@@ -116,6 +129,48 @@
         .science-count {
             font-size: .76rem;
             color: var(--muted);
+        }
+
+        .science-filter-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .science-filter-input {
+            flex: 1 1 260px;
+            border: 1px solid var(--line);
+            border-radius: 10px;
+            padding: 10px 14px;
+            font-size: .86rem;
+            background: var(--card);
+            color: var(--text);
+        }
+
+        .science-filter-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            border: none;
+            border-radius: 10px;
+            padding: 10px 18px;
+            background: var(--primary);
+            color: #fff;
+            font-weight: 700;
+            font-size: .84rem;
+        }
+
+        .science-filter-reset {
+            display: inline-flex;
+            align-items: center;
+            font-size: .84rem;
+            font-weight: 600;
+            color: var(--muted);
+        }
+
+        .science-filter-reset:hover {
+            color: var(--coral);
         }
     </style>
 @endsection

@@ -3,11 +3,20 @@
 namespace App\Repositories\Contracts;
 
 use App\Models\SertifikatTest;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
 
 interface SertifikatTestRepositoryInterface
 {
-    public function forUser(int $userId): Collection;
+    /**
+     * @param  array{q?: string, teacher_id?: int, per_page?: int, page_name?: string}  $filters
+     */
+    public function all(array $filters = []): LengthAwarePaginator;
+
+    /**
+     * @param  array{q?: string}  $filters
+     */
+    public function forUser(int $userId, array $filters = []): Collection;
 
     public function create(array $data);
 

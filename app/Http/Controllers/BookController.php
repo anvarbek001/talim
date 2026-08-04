@@ -6,6 +6,7 @@ use App\Http\Requests\BookRequest;
 use App\Models\Book;
 use App\Models\BookFile;
 use App\Services\BookService;
+use Illuminate\Http\Request;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -31,9 +32,11 @@ class BookController extends Controller implements HasMiddleware
         return redirect()->route('books.mine')->with('success', 'Kitob muvaffaqiyatli joylandi');
     }
 
-    public function myBooks()
+    public function myBooks(Request $request)
     {
-        $books = $this->bookServ->myBooks(Auth::id());
+        $books = $this->bookServ->myBooks(Auth::id(), [
+            'q' => trim((string) $request->query('q', '')),
+        ]);
 
         return view('books.mine', compact('books'));
     }

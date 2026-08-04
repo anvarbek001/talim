@@ -44,12 +44,12 @@ class SertifikatTestRequest extends FormRequest
         // validated the same way.
         if ($this->hasFile('questions_file')) {
             return $base + [
-                'questions_file' => 'required|file|mimes:xlsx,xls|max:5120',
+                'questions_file' => 'required|file|mimes:xlsx,xls,docx|max:5120',
             ];
         }
 
         return $base + [
-            'questions_file' => 'nullable|file|mimes:xlsx,xls|max:5120',
+            'questions_file' => 'nullable|file|mimes:xlsx,xls,docx|max:5120',
             'questions' => 'required|array|min:1',
             'questions.*.text' => 'required|string|min:3|max:2000',
             'questions.*.options' => 'required|array|min:2|max:6',
@@ -76,7 +76,7 @@ class SertifikatTestRequest extends FormRequest
             'price.integer' => "Narx butun son bo'lishi kerak.",
             'price.min' => "Narx manfiy bo'lishi mumkin emas.",
             'questions_file.required' => 'Excel faylni yuklang.',
-            'questions_file.mimes' => 'Fayl xlsx yoki xls formatida bo\'lishi kerak.',
+            'questions_file.mimes' => 'Fayl xlsx, xls yoki docx formatida bo\'lishi kerak.',
             'questions_file.max' => 'Fayl hajmi 5 MB dan oshmasligi kerak.',
             'questions.required' => 'Savollarni kiriting yoki Excel fayl yuklang.',
             'questions.min' => 'Kamida bitta savol qo\'shish majburiy.',

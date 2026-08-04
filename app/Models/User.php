@@ -67,6 +67,26 @@ class User extends Authenticatable
         return $this->hasMany(Lesson::class);
     }
 
+    public function books(): HasMany
+    {
+        return $this->hasMany(Book::class);
+    }
+
+    public function topicTests(): HasMany
+    {
+        return $this->hasMany(TopicTest::class);
+    }
+
+    public function dtmTests(): HasMany
+    {
+        return $this->hasMany(DtmTest::class);
+    }
+
+    public function sertifikatTests(): HasMany
+    {
+        return $this->hasMany(SertifikatTest::class);
+    }
+
     public function savedLessons(): BelongsToMany
     {
         return $this->belongsToMany(Lesson::class, 'saved_lessons')->withTimestamps();

@@ -4,7 +4,7 @@ namespace App\Repositories;
 
 use App\Models\Book;
 use App\Repositories\Contracts\BookRepositoryInterface;
-use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Override;
 
 class BookRepository implements BookRepositoryInterface
@@ -13,10 +13,19 @@ class BookRepository implements BookRepositoryInterface
         protected Book $model
     ) {}
 
+    /**
+     * @param  array{q?: string, teacher_id?: int, per_page?: int}  $filters
+     */
     #[Override]
-    public function all(): Collection
+    public function all(array $filters = []): LengthAwarePaginator
     {
-        return $this->model->with(['user', 'files'])->latest()->get();
+        return $this->model
+            ->with(['user', 'files'])
+            ->when($filters['q'] ?? null, fn ($query, $search) => $query->where('title', 'like', "%{$search}%"))
+            ->when($filters['teacher_id'] ?? null, fn ($query, $teacherId) => $query->where('user_id', $teacherId))
+            ->latest()
+            ->paginate($filters['per_page'] ?? 20)
+            ->withQueryString();
     }
 
     #[Override]
@@ -31,14 +40,33 @@ class BookRepository implements BookRepositoryInterface
         return $this->model->with(['user', 'files'])->find($id);
     }
 
+    /**
+     * @param  array{q?: string, per_page?: int}  $filters
+     */
     #[Override]
-    public function forUser(int $userId): Collection
+    public function forUser(int $userId, array $filters = []): LengthAwarePaginator
     {
         return $this
             ->model
             ->where('user_id', $userId)
             ->with('files')
+            ->when($filters['q'] ?? null, fn ($query, $search) => $query->where('title', 'like', "%{$search}%"))
             ->latest()
-            ->get();
+            ->paginate($filters['per_page'] ?? 12)
+            ->withQueryString();
+    }
+
+    #[Override]
+    public function update(Book $book, array $data): Book
+    {
+        $book->update($data);
+
+        return $book;
+    }
+
+    #[Override]
+    public function delete(Book $book): bool
+    {
+        return $book->delete();
     }
 }

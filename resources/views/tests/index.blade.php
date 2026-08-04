@@ -247,6 +247,14 @@
                 </div>
             </div>
 
+            <form method="GET" action="{{ route('tests.index') }}" class="my-tests-filter-bar">
+                <input type="text" name="q" value="{{ request('q') }}" placeholder="Test nomi bo'yicha qidirish..." class="my-tests-filter-input">
+                <button type="submit" class="my-tests-filter-btn"><i class="bi bi-search"></i> Qidirish</button>
+                @if (request('q'))
+                    <a href="{{ route('tests.index') }}" class="my-tests-filter-reset">Tozalash</a>
+                @endif
+            </form>
+
             @php
                 $mandatorySlugByScienceId = collect(\App\Models\DtmTest::MANDATORY_SUBJECTS)
                     ->mapWithKeys(fn ($title, $slug) => [(string) $sciences->firstWhere('title', $title)?->id => $slug])
@@ -302,7 +310,11 @@
             @if ($allTests->isEmpty())
                 <div class="empty-hint">
                     <i class="bi bi-info-circle"></i>
-                    Hali test yaratilmagan — yuqoridagi formalardan birini to'ldiring
+                    @if (request('q'))
+                        "{{ request('q') }}" bo'yicha test topilmadi
+                    @else
+                        Hali test yaratilmagan — yuqoridagi formalardan birini to'ldiring
+                    @endif
                 </div>
             @else
                 <div class="table-wrap">
@@ -1362,6 +1374,48 @@
                 width: 100%;
                 overflow-x: auto;
             }
+        }
+
+        .my-tests-filter-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 18px;
+        }
+
+        .my-tests-filter-input {
+            flex: 1 1 260px;
+            border: 1px solid var(--line);
+            border-radius: 10px;
+            padding: 10px 14px;
+            font-size: .86rem;
+            background: var(--card);
+            color: var(--text);
+        }
+
+        .my-tests-filter-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            border: none;
+            border-radius: 10px;
+            padding: 10px 18px;
+            background: var(--primary);
+            color: #fff;
+            font-weight: 700;
+            font-size: .84rem;
+        }
+
+        .my-tests-filter-reset {
+            display: inline-flex;
+            align-items: center;
+            font-size: .84rem;
+            font-weight: 600;
+            color: var(--muted);
+        }
+
+        .my-tests-filter-reset:hover {
+            color: var(--coral);
         }
     </style>
 

@@ -3,8 +3,10 @@
 namespace App\Services;
 
 use App\Models\SertifikatTest;
+use App\Models\SertifikatTestOption;
 use App\Repositories\Contracts\SertifikatTestRepositoryInterface;
 use Exception;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 
@@ -14,9 +16,20 @@ class SertifikatTestService
         protected SertifikatTestRepositoryInterface $sertifikatTestRepo
     ) {}
 
-    public function myTests(int $userId): Collection
+    /**
+     * @param  array{q?: string}  $filters
+     */
+    public function myTests(int $userId, array $filters = []): Collection
     {
-        return $this->sertifikatTestRepo->forUser($userId);
+        return $this->sertifikatTestRepo->forUser($userId, $filters);
+    }
+
+    /**
+     * @param  array{q?: string, teacher_id?: int, page_name?: string}  $filters
+     */
+    public function all(array $filters = []): LengthAwarePaginator
+    {
+        return $this->sertifikatTestRepo->all($filters);
     }
 
     public function create(array $data, int $userId): SertifikatTest
@@ -72,30 +85,52 @@ class SertifikatTestService
 
     protected function authorize(SertifikatTest $sertifikatTest): void
     {
-        if ($sertifikatTest->user_id !== auth()->id()) {
+        if ($sertifikatTest->user_id !== auth()->id() && ! auth()->user()->hasRole('admin')) {
             throw new Exception('Bu test ustida amaliyot bajara olmaysiz', 403);
         }
     }
 
     /**
+     * Bulk-inserts questions and their options in two queries total instead
+     * of one per question/option.
+     *
      * @param  array<int, array{text: string, options: array<int, array{text: string}>, correct: int}>  $questions
      */
     protected function syncQuestions(SertifikatTest $sertifikatTest, array $questions): void
     {
-        foreach ($questions as $index => $question) {
-            $questionModel = $sertifikatTest->questions()->create([
+        if (empty($questions)) {
+            return;
+        }
+
+        $now = now();
+
+        $sertifikatTest->questions()->insert(
+            collect($questions)->map(fn (array $question, int $index) => [
+                'sertifikat_test_id' => $sertifikatTest->id,
                 'question' => $question['text'],
                 'order' => $index,
-            ]);
+                'created_at' => $now,
+                'updated_at' => $now,
+            ])->all()
+        );
 
+        $questionIds = $sertifikatTest->questions()->orderBy('order')->pluck('id', 'order');
+
+        $optionRows = [];
+        foreach ($questions as $index => $question) {
             foreach ($question['options'] as $optionIndex => $option) {
-                $questionModel->options()->create([
+                $optionRows[] = [
+                    'sertifikat_test_question_id' => $questionIds[$index],
                     'option_text' => $option['text'],
                     'is_correct' => (int) $question['correct'] === $optionIndex,
                     'order' => $optionIndex,
-                ]);
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                ];
             }
         }
+
+        SertifikatTestOption::insert($optionRows);
     }
 
     /**
@@ -103,12 +138,21 @@ class SertifikatTestService
      */
     protected function syncWrittenQuestions(SertifikatTest $sertifikatTest, array $writtenQuestions): void
     {
-        foreach ($writtenQuestions as $index => $writtenQuestion) {
-            $sertifikatTest->writtenQuestions()->create([
+        if (empty($writtenQuestions)) {
+            return;
+        }
+
+        $now = now();
+
+        $sertifikatTest->writtenQuestions()->insert(
+            collect($writtenQuestions)->map(fn (array $writtenQuestion, int $index) => [
+                'sertifikat_test_id' => $sertifikatTest->id,
                 'question' => $writtenQuestion['text'],
                 'max_score' => $writtenQuestion['max_score'] ?? 10,
                 'order' => $index,
-            ]);
-        }
+                'created_at' => $now,
+                'updated_at' => $now,
+            ])->all()
+        );
     }
 }

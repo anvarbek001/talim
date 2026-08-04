@@ -19,14 +19,26 @@
             </div>
         @endif
 
+        <form method="GET" action="{{ route('books.mine') }}" class="mine-filter-bar fade-up">
+            <input type="text" name="q" value="{{ request('q') }}" placeholder="Kitob nomi bo'yicha qidirish..." class="mine-filter-input">
+            <button type="submit" class="btn-ghost"><i class="bi bi-search"></i> Qidirish</button>
+            @if (request('q'))
+                <a href="{{ route('books.mine') }}" class="mine-filter-reset">Tozalash</a>
+            @endif
+        </form>
+
         @if ($books->isEmpty())
             <div class="mine-empty fade-up">
                 <div class="mine-empty-icon"><i class="bi bi-journal-bookmark"></i></div>
-                <div class="mine-empty-title">Hali kitob joylanmagan</div>
-                <div class="mine-empty-sub">Birinchi kitobingizni joylab, o'quvchilaringizga yetkazing.</div>
-                <a href="{{ route('book') }}" class="btn-primary">
-                    <i class="bi bi-cloud-upload"></i> Kitob joylash
-                </a>
+                @if (request('q'))
+                    <div class="mine-empty-title">"{{ request('q') }}" bo'yicha kitob topilmadi</div>
+                @else
+                    <div class="mine-empty-title">Hali kitob joylanmagan</div>
+                    <div class="mine-empty-sub">Birinchi kitobingizni joylab, o'quvchilaringizga yetkazing.</div>
+                    <a href="{{ route('book') }}" class="btn-primary">
+                        <i class="bi bi-cloud-upload"></i> Kitob joylash
+                    </a>
+                @endif
             </div>
         @else
             <div class="mine-grid">
@@ -66,6 +78,7 @@
                     </div>
                 @endforeach
             </div>
+            {{ $books->links() }}
         @endif
     </div>
 
@@ -270,6 +283,35 @@
             .mine-grid {
                 grid-template-columns: 1fr;
             }
+        }
+
+        .mine-filter-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .mine-filter-input {
+            flex: 1 1 260px;
+            border: 1px solid var(--line);
+            border-radius: 10px;
+            padding: 10px 14px;
+            font-size: .86rem;
+            background: var(--card);
+            color: var(--text);
+        }
+
+        .mine-filter-reset {
+            display: inline-flex;
+            align-items: center;
+            font-size: .84rem;
+            font-weight: 600;
+            color: var(--muted);
+        }
+
+        .mine-filter-reset:hover {
+            color: var(--coral);
         }
     </style>
 @endsection

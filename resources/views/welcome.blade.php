@@ -292,57 +292,6 @@
             font-family: 'Sora', sans-serif;
         }
 
-        /* Pricing */
-        .price-card {
-            background: #fff;
-            border: 1.5px solid #E7E4DA;
-            border-radius: 16px;
-            padding: 34px 28px;
-            height: 100%;
-        }
-
-        .price-card.featured {
-            border-color: var(--gold);
-            box-shadow: 0 20px 40px -20px rgba(242, 169, 59, .35);
-            position: relative;
-        }
-
-        .price-card.featured .ribbon {
-            position: absolute;
-            top: -14px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: var(--gold);
-            color: var(--navy-deep);
-            font-size: .75rem;
-            font-weight: 700;
-            padding: 5px 16px;
-            border-radius: 20px;
-        }
-
-        .price-amount {
-            font-family: 'Sora', sans-serif;
-            font-weight: 800;
-            font-size: 2.4rem;
-            color: var(--navy);
-        }
-
-        .price-amount small {
-            font-size: 1rem;
-            font-weight: 500;
-            color: var(--muted);
-        }
-
-        .check-list li {
-            padding: 6px 0;
-            font-size: .92rem;
-        }
-
-        .check-list i {
-            color: var(--teal);
-            margin-right: 8px;
-        }
-
         /* Testimonials */
         .testimonial-card {
             background: #fff;
@@ -400,7 +349,7 @@
     <!-- NAVBAR -->
     <nav class="navbar navbar-expand-lg py-3 sticky-top">
         <div class="container">
-            <a class="navbar-brand" href="#">Dars<span>lik</span></a>
+            <a class="navbar-brand" href="{{ route('welcome') }}">Dars<span>lik</span></a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
                 <span class="navbar-toggler-icon"></span>
             </button>
@@ -408,7 +357,6 @@
                 <ul class="navbar-nav mx-auto gap-lg-4">
                     <li class="nav-item"><a class="nav-link" href="#fanlar">Fanlar</a></li>
                     <li class="nav-item"><a class="nav-link" href="#oqituvchilar">O'qituvchilar</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#narxlar">Obuna</a></li>
                     <li class="nav-item"><a class="nav-link" href="#fikrlar">Fikrlar</a></li>
                 </ul>
                 <div class="d-flex gap-2 mt-3 mt-lg-0">
@@ -429,17 +377,17 @@
                     <p class="lead mb-4">Matematika, fizika, dasturlash va boshqa fanlar bo'yicha tajribali
                         o'qituvchilarning video darslariga bir oylik obuna orqali kirish oling.</p>
                     <div class="d-flex flex-wrap gap-3">
-                        <a href="#narxlar" class="btn btn-gold btn-lg px-4">Obunani boshlash</a>
+                        <a href="{{ route('register') }}" class="btn btn-gold btn-lg px-4">Ro'yxatdan o'tish</a>
                         <a href="#fanlar" class="btn btn-outline-light btn-lg px-4">Fanlarni ko'rish</a>
                     </div>
                     <div class="d-flex gap-4 mt-4 flex-wrap">
                         <div class="d-flex align-items-center gap-2">
                             <i class="bi bi-camera-reels text-warning fs-5"></i>
-                            <span class="small">1,200+ video dars</span>
+                            <span class="small">{{ number_format($overview['lessons_count'], 0, '.', ' ') }} video dars</span>
                         </div>
                         <div class="d-flex align-items-center gap-2">
                             <i class="bi bi-people text-warning fs-5"></i>
-                            <span class="small">150+ o'qituvchi</span>
+                            <span class="small">{{ number_format($overview['teachers_count'], 0, '.', ' ') }} o'qituvchi</span>
                         </div>
                     </div>
                 </div>
@@ -469,19 +417,19 @@
         <div class="container">
             <div class="row text-center gy-3">
                 <div class="col-6 col-md-3">
-                    <div class="num">1,200+</div>
+                    <div class="num">{{ number_format($overview['lessons_count'], 0, '.', ' ') }}</div>
                     <div class="lbl">Video darslar</div>
                 </div>
                 <div class="col-6 col-md-3">
-                    <div class="num">150+</div>
+                    <div class="num">{{ number_format($overview['teachers_count'], 0, '.', ' ') }}</div>
                     <div class="lbl">O'qituvchilar</div>
                 </div>
                 <div class="col-6 col-md-3">
-                    <div class="num">30,000+</div>
+                    <div class="num">{{ number_format($overview['students_count'], 0, '.', ' ') }}</div>
                     <div class="lbl">Faol o'quvchilar</div>
                 </div>
                 <div class="col-6 col-md-3">
-                    <div class="num">18</div>
+                    <div class="num">{{ number_format($sciencesCount, 0, '.', ' ') }}</div>
                     <div class="lbl">Fan yo'nalishi</div>
                 </div>
             </div>
@@ -530,42 +478,18 @@
                 <h2 class="mt-2">Har bir fan bo'yicha video darslar</h2>
             </div>
             <div class="row g-3 g-md-4">
-                <div class="col-6 col-md-4 col-lg-2">
-                    <div class="subject-pill">
-                        <div class="icon"><i class="bi bi-calculator"></i></div>
-                        <div class="fw-semibold">Matematika</div>
+                @forelse ($sciences as $science)
+                    <div class="col-6 col-md-4 col-lg-2">
+                        <a href="{{ route('register') }}" class="subject-pill d-block text-decoration-none text-reset">
+                            <div class="icon" style="background:{{ $science->color }};color:#fff;">
+                                <i class="bi {{ $science->icon }}"></i>
+                            </div>
+                            <div class="fw-semibold">{{ $science->title }}</div>
+                        </a>
                     </div>
-                </div>
-                <div class="col-6 col-md-4 col-lg-2">
-                    <div class="subject-pill">
-                        <div class="icon"><i class="bi bi-magnet"></i></div>
-                        <div class="fw-semibold">Fizika</div>
-                    </div>
-                </div>
-                <div class="col-6 col-md-4 col-lg-2">
-                    <div class="subject-pill">
-                        <div class="icon"><i class="bi bi-translate"></i></div>
-                        <div class="fw-semibold">Ingliz tili</div>
-                    </div>
-                </div>
-                <div class="col-6 col-md-4 col-lg-2">
-                    <div class="subject-pill">
-                        <div class="icon"><i class="bi bi-code-slash"></i></div>
-                        <div class="fw-semibold">Dasturlash</div>
-                    </div>
-                </div>
-                <div class="col-6 col-md-4 col-lg-2">
-                    <div class="subject-pill">
-                        <div class="icon"><i class="bi bi-droplet-half"></i></div>
-                        <div class="fw-semibold">Kimyo</div>
-                    </div>
-                </div>
-                <div class="col-6 col-md-4 col-lg-2">
-                    <div class="subject-pill">
-                        <div class="icon"><i class="bi bi-flower1"></i></div>
-                        <div class="fw-semibold">Biologiya</div>
-                    </div>
-                </div>
+                @empty
+                    <div class="col-12 text-center text-muted">Hozircha fanlar qo'shilmagan.</div>
+                @endforelse
             </div>
         </div>
     </section>
@@ -578,94 +502,22 @@
                 <h2 class="mt-2">Tajribali mutaxassislardan o'rganing</h2>
             </div>
             <div class="row g-4">
-                <div class="col-md-3 col-6">
-                    <div class="teacher-card">
-                        <div class="teacher-avatar">AK</div>
-                        <div class="p-3">
-                            <div class="fw-semibold">Aziz Karimov</div>
-                            <div class="text-muted small">Matematika · 8 yil tajriba</div>
+                @forelse ($teachers as $teacher)
+                    <div class="col-md-3 col-6">
+                        <div class="teacher-card">
+                            <div class="teacher-avatar">{{ $teacher->initials() }}</div>
+                            <div class="p-3">
+                                <div class="fw-semibold">{{ $teacher->name }}</div>
+                                <div class="text-muted small">
+                                    {{ $teacher->lessons->first()?->science?->title ?? "O'qituvchi" }}
+                                    · {{ $teacher->lessons_count }} ta dars
+                                </div>
+                            </div>
                         </div>
                     </div>
-                </div>
-                <div class="col-md-3 col-6">
-                    <div class="teacher-card">
-                        <div class="teacher-avatar">DY</div>
-                        <div class="p-3">
-                            <div class="fw-semibold">Dilnoza Yusupova</div>
-                            <div class="text-muted small">Ingliz tili · 6 yil tajriba</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3 col-6">
-                    <div class="teacher-card">
-                        <div class="teacher-avatar">SR</div>
-                        <div class="p-3">
-                            <div class="fw-semibold">Sardor Rashidov</div>
-                            <div class="text-muted small">Dasturlash · 5 yil tajriba</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3 col-6">
-                    <div class="teacher-card">
-                        <div class="teacher-avatar">NM</div>
-                        <div class="p-3">
-                            <div class="fw-semibold">Nilufar Mirzayeva</div>
-                            <div class="text-muted small">Kimyo · 7 yil tajriba</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- PRICING -->
-    <section id="narxlar" class="bg-white border-top border-bottom" style="border-color:#E7E4DA !important;">
-        <div class="container">
-            <div class="text-center mb-5">
-                <div class="section-eyebrow">Obuna rejalari</div>
-                <h2 class="mt-2">O'zingizga mos rejani tanlang</h2>
-            </div>
-            <div class="row g-4 justify-content-center">
-                <div class="col-lg-4 col-md-6">
-                    <div class="price-card">
-                        <h5 class="mb-1">Boshlang'ich</h5>
-                        <p class="text-muted small">Bitta fan bo'yicha darslar</p>
-                        <div class="price-amount mb-3">49,000 <small>so'm/oy</small></div>
-                        <ul class="list-unstyled check-list mb-4">
-                            <li><i class="bi bi-check-circle-fill"></i>1 ta fan</li>
-                            <li><i class="bi bi-check-circle-fill"></i>HD video darslar</li>
-                            <li><i class="bi bi-check-circle-fill"></i>Mobil ilova</li>
-                        </ul>
-                        <a href="#" class="btn btn-outline-navy w-100">Tanlash</a>
-                    </div>
-                </div>
-                <div class="col-lg-4 col-md-6">
-                    <div class="price-card featured">
-                        <span class="ribbon">Mashhur</span>
-                        <h5 class="mb-1">Standart</h5>
-                        <p class="text-muted small">Barcha fanlarga to'liq kirish</p>
-                        <div class="price-amount mb-3">99,000 <small>so'm/oy</small></div>
-                        <ul class="list-unstyled check-list mb-4">
-                            <li><i class="bi bi-check-circle-fill"></i>Barcha fanlar</li>
-                            <li><i class="bi bi-check-circle-fill"></i>Testlar va topshiriqlar</li>
-                            <li><i class="bi bi-check-circle-fill"></i>Sertifikat</li>
-                        </ul>
-                        <a href="#" class="btn btn-gold w-100">Tanlash</a>
-                    </div>
-                </div>
-                <div class="col-lg-4 col-md-6">
-                    <div class="price-card">
-                        <h5 class="mb-1">Premium</h5>
-                        <p class="text-muted small">Guruh yoki oila uchun</p>
-                        <div class="price-amount mb-3">179,000 <small>so'm/oy</small></div>
-                        <ul class="list-unstyled check-list mb-4">
-                            <li><i class="bi bi-check-circle-fill"></i>4 nafargacha profil</li>
-                            <li><i class="bi bi-check-circle-fill"></i>Shaxsiy murabbiy yordami</li>
-                            <li><i class="bi bi-check-circle-fill"></i>Offline yuklab olish</li>
-                        </ul>
-                        <a href="#" class="btn btn-outline-navy w-100">Tanlash</a>
-                    </div>
-                </div>
+                @empty
+                    <div class="col-12 text-center text-muted">Hozircha o'qituvchilar qo'shilmagan.</div>
+                @endforelse
             </div>
         </div>
     </section>
@@ -729,8 +581,8 @@
                 <p class="mb-4" style="color:#C7CBE0;">Ro'yxatdan o'ting va birinchi haftada istalgan fandan bepul
                     darslarni tomosha qiling.</p>
                 <div class="d-flex gap-3 justify-content-center flex-wrap">
-                    <a href="#" class="btn btn-gold btn-lg px-4">Ro'yxatdan o'tish</a>
-                    <a href="#" class="btn btn-outline-light btn-lg px-4">Kirish</a>
+                    <a href="{{ route('register') }}" class="btn btn-gold btn-lg px-4">Ro'yxatdan o'tish</a>
+                    <a href="{{ route('login') }}" class="btn btn-outline-light btn-lg px-4">Kirish</a>
                 </div>
             </div>
         </div>
@@ -750,7 +602,7 @@
                     <ul class="list-unstyled d-flex flex-column gap-2">
                         <li><a href="#fanlar">Fanlar</a></li>
                         <li><a href="#oqituvchilar">O'qituvchilar</a></li>
-                        <li><a href="#narxlar">Obuna</a></li>
+                        <li><a href="#fikrlar">Fikrlar</a></li>
                     </ul>
                 </div>
                 <div class="col-lg-2 col-6">
@@ -764,7 +616,7 @@
                 <div class="col-lg-4">
                     <h6 class="mb-3">O'qituvchi bo'lishni xohlaysizmi?</h6>
                     <p class="small mb-3">Darslaringizni joylang va o'quvchilarga bilim ulashing.</p>
-                    <a href="#" class="btn btn-outline-light btn-sm">Ariza topshirish</a>
+                    <a href="{{ route('register') }}" class="btn btn-outline-light btn-sm">Ariza topshirish</a>
                 </div>
             </div>
             <hr class="my-4" style="border-color:#2A3157;">

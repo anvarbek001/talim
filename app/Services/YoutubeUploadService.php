@@ -8,7 +8,6 @@ use Google\Service\YouTube as GoogleYouTube;
 use Google\Service\YouTube\Video as YoutubeVideo;
 use Google\Service\YouTube\VideoSnippet;
 use Google\Service\YouTube\VideoStatus;
-use Illuminate\Http\UploadedFile;
 use RuntimeException;
 
 class YoutubeUploadService
@@ -42,8 +41,12 @@ class YoutubeUploadService
     /**
      * Video faylni "Unlisted" holatda YouTube'ga yuklaydi va
      * video ID'sini qaytaradi (buni bazangizda saqlaysiz).
+     *
+     * Diskdagi fayl yo'lini oladi (UploadedFile emas) — shu tufayli navbat
+     * (queue) job'i ichida, so'rov tugab, vaqtinchalik fayl yo'qolgandan
+     * keyin ham chaqirish mumkin.
      */
-    public function upload(UploadedFile $file, string $title, string $description = ''): string
+    public function upload(string $filePath, string $title, string $description = ''): string
     {
         $snippet = new VideoSnippet;
         $snippet->setTitle($title);
@@ -70,10 +73,10 @@ class YoutubeUploadService
             true,
             1024 * 1024 * 5  // 5MB'lik qismlarga bo'lib yuklaydi (katta fayllar uchun barqaror)
         );
-        $media->setFileSize($file->getSize());
+        $media->setFileSize(filesize($filePath));
 
         $status = false;
-        $handle = fopen($file->getRealPath(), 'rb');
+        $handle = fopen($filePath, 'rb');
 
         while (! $status && ! feof($handle)) {
             $chunk = fread($handle, 1024 * 1024 * 5);

@@ -40,12 +40,12 @@ class TopicTestRequest extends FormRequest
         // not be validated against the "manual entry" rules below.
         if ($this->hasFile('questions_file')) {
             return $base + [
-                'questions_file' => 'required|file|mimes:xlsx,xls|max:5120',
+                'questions_file' => 'required|file|mimes:xlsx,xls,docx|max:5120',
             ];
         }
 
         return $base + [
-            'questions_file' => 'nullable|file|mimes:xlsx,xls|max:5120',
+            'questions_file' => 'nullable|file|mimes:xlsx,xls,docx|max:5120',
             'questions' => 'required|array|min:1',
             'questions.*.text' => 'required|string|min:3|max:2000',
             'questions.*.options' => 'required|array|min:2|max:6',
@@ -74,7 +74,7 @@ class TopicTestRequest extends FormRequest
             'duration_minutes.min' => 'Davomiylik kamida :min daqiqa bo\'lishi kerak.',
             'duration_minutes.max' => 'Davomiylik :max daqiqadan oshmasligi kerak.',
             'questions_file.required' => 'Excel faylni yuklang.',
-            'questions_file.mimes' => 'Fayl xlsx yoki xls formatida bo\'lishi kerak.',
+            'questions_file.mimes' => 'Fayl xlsx, xls yoki docx formatida bo\'lishi kerak.',
             'questions_file.max' => 'Fayl hajmi 5 MB dan oshmasligi kerak.',
             'questions.required' => 'Savollarni kiriting yoki Excel fayl yuklang.',
             'questions.min' => 'Kamida bitta savol qo\'shish majburiy.',

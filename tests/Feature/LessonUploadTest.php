@@ -35,7 +35,9 @@ function makeTopic(User $user): Topic
     ]);
 }
 
-test('video file is uploaded to youtube and saved as a lesson file', function () {
+test('video file is stored temporarily and uploaded to youtube via a queued job', function () {
+    Storage::fake('local');
+
     $this->mock(YoutubeUploadService::class, function ($mock) {
         $mock->shouldReceive('upload')->once()->andReturn('FAKE_YT_ID');
     });
@@ -57,10 +59,40 @@ test('video file is uploaded to youtube and saved as a lesson file', function ()
     expect($lesson->topic_id)->toBe($topic->id);
     expect($lesson->science_id)->toBe($topic->science_id);
 
+    // QUEUE_CONNECTION=sync in testing, so the job already ran inline.
     expect(LessonFile::where('lesson_id', $lesson->id)
         ->where('type', 'youtube')
         ->where('youtube_id', 'FAKE_YT_ID')
+        ->where('status', 'ready')
+        ->where('lesson_file', '')
         ->exists())->toBeTrue();
+});
+
+test('a lesson file starts as pending and turns failed if the youtube upload throws', function () {
+    Storage::fake('local');
+
+    $this->mock(YoutubeUploadService::class, function ($mock) {
+        $mock->shouldReceive('upload')->once()->andThrow(new Exception('YouTube API xatosi'));
+    });
+
+    $user = User::factory()->create();
+    $topic = makeTopic($user);
+    $video = UploadedFile::fake()->create('dars.mp4', 500, 'video/mp4');
+
+    $this->withoutExceptionHandling();
+
+    try {
+        $this->actingAs($user)->post(route('lessons.store'), [
+            'topic_id' => $topic->id,
+            'lesson_files' => [$video],
+        ]);
+    } catch (Exception $e) {
+        // sync queue re-throws the job's exception into the request — expected here.
+    }
+
+    $lessonFile = LessonFile::where('type', 'youtube')->first();
+    expect($lessonFile)->not->toBeNull();
+    expect($lessonFile->status)->toBe('failed');
 });
 
 test('non video file is stored on disk instead of youtube', function () {

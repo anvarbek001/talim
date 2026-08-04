@@ -20,10 +20,22 @@
             </div>
         </div>
 
+        <form method="GET" action="{{ route('student-lessons.by-teacher', [$science, $teacher]) }}" class="science-filter-bar fade-up">
+            <input type="text" name="q" value="{{ request('q') }}" placeholder="Dars nomi bo'yicha qidirish..." class="science-filter-input">
+            <button type="submit" class="science-filter-btn"><i class="bi bi-search"></i> Qidirish</button>
+            @if (request('q'))
+                <a href="{{ route('student-lessons.by-teacher', [$science, $teacher]) }}" class="science-filter-reset">Tozalash</a>
+            @endif
+        </form>
+
         @if ($grouped->isEmpty())
             <div class="lessons-empty fade-up">
                 <div class="lessons-empty-icon"><i class="bi bi-camera-reels"></i></div>
-                <div class="lessons-empty-title">Hozircha dars yo'q</div>
+                @if (request('q'))
+                    <div class="lessons-empty-title">"{{ request('q') }}" bo'yicha dars topilmadi</div>
+                @else
+                    <div class="lessons-empty-title">Hozircha dars yo'q</div>
+                @endif
             </div>
         @else
             @foreach ($grouped as $gradeTitle => $gradeLessons)
@@ -107,6 +119,48 @@
             font-size: .84rem;
             color: var(--muted);
             margin-bottom: 12px;
+        }
+
+        .science-filter-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .science-filter-input {
+            flex: 1 1 260px;
+            border: 1px solid var(--line);
+            border-radius: 10px;
+            padding: 10px 14px;
+            font-size: .86rem;
+            background: var(--card);
+            color: var(--text);
+        }
+
+        .science-filter-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            border: none;
+            border-radius: 10px;
+            padding: 10px 18px;
+            background: var(--primary);
+            color: #fff;
+            font-weight: 700;
+            font-size: .84rem;
+        }
+
+        .science-filter-reset {
+            display: inline-flex;
+            align-items: center;
+            font-size: .84rem;
+            font-weight: 600;
+            color: var(--muted);
+        }
+
+        .science-filter-reset:hover {
+            color: var(--coral);
         }
     </style>
 @endsection

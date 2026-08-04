@@ -2,15 +2,26 @@
 
 namespace App\Repositories\Contracts;
 
-use Illuminate\Database\Eloquent\Collection;
+use App\Models\Book;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 interface BookRepositoryInterface
 {
-    public function all(): Collection;
+    /**
+     * @param  array{q?: string, teacher_id?: int, per_page?: int}  $filters
+     */
+    public function all(array $filters = []): LengthAwarePaginator;
 
     public function create(array $data);
 
     public function find(int $id);
 
-    public function forUser(int $userId): Collection;
+    /**
+     * @param  array{q?: string, per_page?: int}  $filters
+     */
+    public function forUser(int $userId, array $filters = []): LengthAwarePaginator;
+
+    public function update(Book $book, array $data): Book;
+
+    public function delete(Book $book): bool;
 }

@@ -4,20 +4,22 @@ namespace App\Http\Controllers;
 
 use App\Exports\TestQuestionsTemplateExport;
 use App\Http\Requests\TopicTestRequest;
-use App\Models\Grade;
-use App\Models\Science;
 use App\Models\TopicTest;
 use App\Services\DtmTestService;
+use App\Services\ReferenceDataService;
 use App\Services\SectionService;
 use App\Services\SertifikatTestService;
-use App\Services\TestQuestionExcelParser;
+use App\Services\TestQuestionFileParser;
+use App\Services\TestQuestionsWordTemplateBuilder;
 use App\Services\TopicService;
 use App\Services\TopicTestService;
 use Exception;
+use Illuminate\Http\Request;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 use Maatwebsite\Excel\Facades\Excel;
+use PhpOffice\PhpWord\IOFactory;
 
 class TopicTestController extends Controller implements HasMiddleware
 {
@@ -27,7 +29,8 @@ class TopicTestController extends Controller implements HasMiddleware
         protected SertifikatTestService $sertifikatTestServ,
         protected SectionService $sectionServ,
         protected TopicService $topicServ,
-        protected TestQuestionExcelParser $excelParser,
+        protected TestQuestionFileParser $fileParser,
+        protected ReferenceDataService $referenceDataServ,
     ) {}
 
     public static function middleware(): array
@@ -40,16 +43,26 @@ class TopicTestController extends Controller implements HasMiddleware
         return Excel::download(new TestQuestionsTemplateExport, 'savollar-shabloni.xlsx');
     }
 
-    public function index()
+    public function questionsTemplateWord(TestQuestionsWordTemplateBuilder $builder)
     {
-        $sciences = Science::all();
-        $grades = Grade::all();
+        $path = tempnam(sys_get_temp_dir(), 'word-template').'.docx';
+        IOFactory::createWriter($builder->build(), 'Word2007')->save($path);
+
+        return response()->download($path, 'savollar-shabloni.docx')->deleteFileAfterSend(true);
+    }
+
+    public function index(Request $request)
+    {
+        $sciences = $this->referenceDataServ->sciences();
+        $grades = $this->referenceDataServ->grades();
         $sections = $this->sectionServ->all();
         $topics = $this->topicServ->all();
 
-        $topicTests = $this->topicTestServ->myTests(Auth::id());
-        $dtmTests = $this->dtmTestServ->myTests(Auth::id());
-        $sertifikatTests = $this->sertifikatTestServ->myTests(Auth::id());
+        $filters = ['q' => trim((string) $request->query('q', ''))];
+
+        $topicTests = $this->topicTestServ->myTests(Auth::id(), $filters);
+        $dtmTests = $this->dtmTestServ->myTests(Auth::id(), $filters);
+        $sertifikatTests = $this->sertifikatTestServ->myTests(Auth::id(), $filters);
 
         return view('tests.index', compact(
             'sciences', 'grades', 'sections', 'topics',
@@ -96,11 +109,11 @@ class TopicTestController extends Controller implements HasMiddleware
     protected function resolveQuestions(TopicTestRequest $request, array $data): array
     {
         if ($request->hasFile('questions_file')) {
-            $data['questions'] = $this->excelParser->parse($request->file('questions_file'));
+            $data['questions'] = $this->fileParser->parse($request->file('questions_file'));
 
             if (empty($data['questions'])) {
                 throw ValidationException::withMessages([
-                    'questions_file' => 'Excel faylida savol topilmadi. Shablonga mos formatda ekanligini tekshiring.',
+                    'questions_file' => 'Faylda savol topilmadi. Shablonga mos formatda ekanligini tekshiring.',
                 ]);
             }
         }

@@ -15,6 +15,10 @@ class TeacherController extends Controller
             return redirect()->route('student_dashboard');
         }
 
+        if (auth()->user()->hasRole('admin')) {
+            return redirect()->route('admin.dashboard');
+        }
+
         return view('teacher_dashboard');
     }
 

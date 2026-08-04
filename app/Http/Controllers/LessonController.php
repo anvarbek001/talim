@@ -3,11 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\LessonRequest;
-use App\Models\Grade;
-use App\Models\Science;
 use App\Services\LessonService;
+use App\Services\ReferenceDataService;
 use App\Services\SectionService;
 use App\Services\TopicService;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class LessonController extends Controller
@@ -16,6 +16,7 @@ class LessonController extends Controller
         protected SectionService $sectionServ,
         protected TopicService $serviceTopic,
         protected LessonService $lessonServ,
+        protected ReferenceDataService $referenceDataServ,
     ) {}
 
     public static function middleware(): array
@@ -27,8 +28,8 @@ class LessonController extends Controller
 
     public function index()
     {
-        $sciences = Science::all();
-        $grades = Grade::all();
+        $sciences = $this->referenceDataServ->sciences();
+        $grades = $this->referenceDataServ->grades();
         $sections = $this->sectionServ->all();
         $topics = $this->serviceTopic->all();
 
@@ -43,9 +44,11 @@ class LessonController extends Controller
         return redirect()->route('lesson')->with('success', 'Video dars muvaffaqiyatli joylandi');
     }
 
-    public function myLessons()
+    public function myLessons(Request $request)
     {
-        $lessons = $this->lessonServ->myLessons(Auth::id());
+        $lessons = $this->lessonServ->myLessons(Auth::id(), [
+            'q' => trim((string) $request->query('q', '')),
+        ]);
 
         return view('lessons.mine', compact('lessons'));
     }

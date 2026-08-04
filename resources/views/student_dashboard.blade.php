@@ -210,6 +210,70 @@
     .rec-card {
         scroll-snap-align: start;
     }
+
+    .subject-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 14px;
+    }
+
+    .subject-card {
+        background: var(--bg-soft);
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        padding: 16px 14px;
+        text-align: center;
+        transition: transform .2s ease, box-shadow .2s ease;
+    }
+
+    .subject-card:hover {
+        transform: translateY(-3px);
+        box-shadow: var(--shadow);
+    }
+
+    .subject-card-main {
+        display: block;
+    }
+
+    .subject-icon {
+        width: 42px;
+        height: 42px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.1rem;
+        margin: 0 auto 10px;
+    }
+
+    .subject-title {
+        font-weight: 700;
+        font-size: .88rem;
+        color: var(--text);
+    }
+
+    .subject-count {
+        font-size: .74rem;
+        color: var(--muted);
+        margin-top: 2px;
+    }
+
+    .subject-tests-link {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 5px;
+        font-size: .74rem;
+        font-weight: 600;
+        color: var(--primary);
+        margin-top: 10px;
+        padding-top: 10px;
+        border-top: 1px solid var(--line);
+    }
+
+    .subject-tests-link:hover {
+        color: var(--coral);
+    }
 @endsection
 
 @section('content')
@@ -240,6 +304,34 @@
                 <div class="stat-num" data-count="{{ $stats['saved_lessons_count'] }}">0</div>
                 <div class="stat-lbl">Saqlangan darslar</div>
             </div>
+        </div>
+
+        <!-- SUBJECTS -->
+        <div class="card fade-up" style="animation-delay:.06s;">
+            <div class="card-head">
+                <div class="card-title">Fanlar</div>
+                <a href="{{ route('student-lessons.index') }}" class="card-link">Barchasini ko'rish</a>
+            </div>
+            @if ($sciences->isEmpty())
+                <div style="font-size:.84rem;color:var(--muted);">Hozircha fan bo'yicha dars yo'q.</div>
+            @else
+                <div class="subject-grid">
+                    @foreach ($sciences as $science)
+                        <div class="subject-card">
+                            <a href="{{ route('student-lessons.teachers', $science) }}" class="subject-card-main">
+                                <div class="subject-icon" style="background:{{ $science->color }}1A;color:{{ $science->color }};">
+                                    <i class="bi {{ $science->icon }}"></i>
+                                </div>
+                                <div class="subject-title">{{ $science->title }}</div>
+                                <div class="subject-count">{{ $science->lessons_count }} ta dars</div>
+                            </a>
+                            <a href="{{ route('student-tests.index', ['science' => $science->id]) }}" class="subject-tests-link">
+                                <i class="bi bi-patch-question"></i> Testlar
+                            </a>
+                        </div>
+                    @endforeach
+                </div>
+            @endif
         </div>
 
         <!-- RECENT LESSONS -->
