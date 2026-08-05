@@ -52,6 +52,85 @@
             </div>
         </div>
 
+        <div class="card fade-up viz-root" style="animation-delay:.09s;">
+            <div class="card-head">
+                <div>
+                    <div class="card-title">Oylik statistika</div>
+                    <div class="card-sub-text">So'nggi {{ $monthlyRevenue->count() }} oy — tushum, platforma foydasi va o'qituvchilarga to'lovlar</div>
+                </div>
+                <div class="viz-legend">
+                    <span class="viz-legend-item"><i style="background:var(--series-1);"></i> Platforma foydasi</span>
+                    <span class="viz-legend-item"><i style="background:var(--series-2);"></i> O'qituvchilarga to'langan</span>
+                </div>
+            </div>
+
+            @php
+                $maxGross = max(1, (float) $monthlyRevenue->max('gross_revenue'));
+            @endphp
+
+            @if ($monthlyRevenue->sum('gross_revenue') == 0)
+                <div class="empty-hint"><i class="bi bi-info-circle"></i> Hozircha bu davrda xarid amalga oshirilmagan.</div>
+            @else
+                <div class="viz-chart">
+                    <div class="viz-gridlines">
+                        @foreach ([1, 0.75, 0.5, 0.25, 0] as $step)
+                            <div class="viz-gridline">
+                                <span>{{ number_format($maxGross * $step, 0, '.', ' ') }}</span>
+                            </div>
+                        @endforeach
+                    </div>
+                    <div class="viz-bars">
+                        @foreach ($monthlyRevenue as $row)
+                            @php
+                                $profitPct = $maxGross > 0 ? ($row['platform_profit'] / $maxGross) * 100 : 0;
+                                $payoutPct = $maxGross > 0 ? ($row['teacher_payouts'] / $maxGross) * 100 : 0;
+                            @endphp
+                            <div class="viz-col" tabindex="0">
+                                <div class="viz-col-total">{{ number_format($row['gross_revenue'], 0, '.', ' ') }}</div>
+                                <div class="viz-stack">
+                                    <div class="viz-seg viz-seg-1" style="height:{{ $profitPct }}%;"></div>
+                                    <div class="viz-seg viz-seg-2" style="height:{{ $payoutPct }}%;"></div>
+                                </div>
+                                <div class="viz-col-label">{{ $row['label'] }}</div>
+                                <div class="viz-tooltip">
+                                    <strong>{{ $row['label'] }}</strong>
+                                    <div>Jami tushum: {{ number_format($row['gross_revenue'], 0, '.', ' ') }} so'm</div>
+                                    <div>Platforma foydasi: {{ number_format($row['platform_profit'], 0, '.', ' ') }} so'm</div>
+                                    <div>O'qituvchilarga: {{ number_format($row['teacher_payouts'], 0, '.', ' ') }} so'm</div>
+                                    <div>Xaridlar: {{ $row['purchases_count'] }} ta</div>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+
+                <div class="table-wrap viz-table-wrap">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Oy</th>
+                                <th>Jami tushum</th>
+                                <th>Platforma foydasi</th>
+                                <th>O'qituvchilarga to'langan</th>
+                                <th>Xaridlar</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($monthlyRevenue as $row)
+                                <tr>
+                                    <td class="cell-strong" data-label="Oy">{{ $row['label'] }}</td>
+                                    <td data-label="Jami tushum">{{ number_format($row['gross_revenue'], 0, '.', ' ') }} so'm</td>
+                                    <td data-label="Platforma foydasi">{{ number_format($row['platform_profit'], 0, '.', ' ') }} so'm</td>
+                                    <td data-label="O'qituvchilarga">{{ number_format($row['teacher_payouts'], 0, '.', ' ') }} so'm</td>
+                                    <td class="cell-muted" data-label="Xaridlar">{{ $row['purchases_count'] }}</td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            @endif
+        </div>
+
         <div class="card fade-up" style="animation-delay:.1s;">
             <div class="card-head">
                 <div class="card-title">Eng faol o'qituvchilar</div>
@@ -258,6 +337,169 @@
             .stat-card { padding: 15px; }
             .stat-num { font-size: 1.3rem; }
             .card { padding: 16px; }
+        }
+
+        /* Oylik statistika — stacked column chart. Palette: validated categorical
+           slots 1 (blue) & 2 (orange) from the dataviz reference palette. */
+        .viz-root {
+            --series-1: #2a78d6;
+            --series-2: #eb6834;
+        }
+
+        [data-theme="dark"] .viz-root {
+            --series-1: #3987e5;
+            --series-2: #d95926;
+        }
+
+        .viz-legend {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .viz-legend-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: .78rem;
+            font-weight: 600;
+            color: var(--muted);
+            white-space: nowrap;
+        }
+
+        .viz-legend-item i {
+            width: 10px;
+            height: 10px;
+            border-radius: 3px;
+            display: inline-block;
+        }
+
+        .viz-chart {
+            display: flex;
+            gap: 12px;
+            margin: 8px 0 20px;
+        }
+
+        .viz-gridlines {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            height: 220px;
+            padding-bottom: 34px;
+            flex-shrink: 0;
+        }
+
+        .viz-gridline {
+            text-align: right;
+        }
+
+        .viz-gridline span {
+            font-size: .7rem;
+            color: var(--muted);
+            font-variant-numeric: tabular-nums;
+            white-space: nowrap;
+        }
+
+        .viz-bars {
+            flex: 1;
+            display: flex;
+            align-items: flex-end;
+            gap: 4px;
+            height: 220px;
+            border-bottom: 1px solid var(--line);
+            background-image: repeating-linear-gradient(to top, var(--line) 0, var(--line) 1px, transparent 1px, transparent 25%);
+            position: relative;
+        }
+
+        .viz-col {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100%;
+            justify-content: flex-end;
+            position: relative;
+            min-width: 0;
+            outline: none;
+        }
+
+        .viz-col-total {
+            font-size: .72rem;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 4px;
+            font-variant-numeric: tabular-nums;
+            white-space: nowrap;
+        }
+
+        .viz-stack {
+            width: 100%;
+            max-width: 24px;
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            gap: 2px;
+        }
+
+        .viz-seg {
+            width: 100%;
+        }
+
+        .viz-seg-1 {
+            background: var(--series-1);
+            border-radius: 4px 4px 0 0;
+        }
+
+        .viz-seg-2 {
+            background: var(--series-2);
+            border-radius: 0;
+        }
+
+        .viz-col-label {
+            font-size: .68rem;
+            color: var(--muted);
+            margin-top: 8px;
+            white-space: nowrap;
+            font-weight: 600;
+        }
+
+        .viz-tooltip {
+            position: absolute;
+            bottom: calc(100% + 8px);
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--text);
+            color: var(--card);
+            padding: 10px 12px;
+            border-radius: 10px;
+            font-size: .74rem;
+            line-height: 1.5;
+            white-space: nowrap;
+            box-shadow: var(--shadow);
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity .15s;
+            z-index: 5;
+            pointer-events: none;
+        }
+
+        .viz-tooltip strong {
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        .viz-col:hover .viz-tooltip,
+        .viz-col:focus .viz-tooltip {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .viz-table-wrap { margin-top: 4px; }
+
+        @media (max-width:767px) {
+            .viz-gridlines { display: none; }
+            .viz-col-total { font-size: .64rem; }
+            .viz-col-label { font-size: .6rem; }
         }
     </style>
 @endsection

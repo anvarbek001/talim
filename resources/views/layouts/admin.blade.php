@@ -355,6 +355,9 @@
         <a href="{{ route('admin.purchases.index') }}" class="nav-link {{ request()->routeIs('admin.purchases.*') ? 'active' : '' }}">
             <i class="bi bi-receipt"></i> Xaridlar
         </a>
+        <a href="{{ route('admin.transactions.index') }}" class="nav-link {{ request()->routeIs('admin.transactions.*') ? 'active' : '' }}">
+            <i class="bi bi-credit-card-2-front"></i> Tranzaksiyalar
+        </a>
 
         <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display:none;">
             @csrf

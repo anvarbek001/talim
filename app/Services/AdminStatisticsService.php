@@ -16,6 +16,12 @@ class AdminStatisticsService
 {
     public const PLATFORM_COMMISSION_RATE = 0.20;
 
+    /** @var array<int, string> */
+    protected const UZ_MONTHS = [
+        1 => 'Yanvar', 2 => 'Fevral', 3 => 'Mart', 4 => 'Aprel', 5 => 'May', 6 => 'Iyun',
+        7 => 'Iyul', 8 => 'Avgust', 9 => 'Sentabr', 10 => 'Oktabr', 11 => 'Noyabr', 12 => 'Dekabr',
+    ];
+
     /**
      * Dashboard-wide counters, cached briefly — this aggregate runs 7 counts
      * across the whole platform, so a short TTL trades a little staleness
@@ -39,6 +45,40 @@ class AdminStatisticsService
                 'platform_profit' => round($grossRevenue * self::PLATFORM_COMMISSION_RATE),
                 'teacher_payouts' => round($grossRevenue * (1 - self::PLATFORM_COMMISSION_RATE)),
             ];
+        });
+    }
+
+    /**
+     * Per-month breakdown of gross revenue split into the platform's cut and
+     * teacher payouts, oldest month first. Grouped in PHP (not SQL date
+     * functions) so it behaves the same on MySQL and SQLite.
+     *
+     * @return Collection<int, array{month: string, label: string, gross_revenue: float, platform_profit: float, teacher_payouts: float, purchases_count: int}>
+     */
+    public function monthlyRevenue(int $months = 6): Collection
+    {
+        return Cache::remember("admin.stats.monthly_revenue.{$months}", 120, function () use ($months) {
+            $since = now()->subMonths($months - 1)->startOfMonth();
+
+            $purchases = Purchase::where('created_at', '>=', $since)->get(['price', 'created_at']);
+            $grouped = $purchases->groupBy(fn (Purchase $purchase) => $purchase->created_at->format('Y-m'));
+
+            return collect(range($months - 1, 0))
+                ->map(function (int $monthsAgo) use ($grouped) {
+                    $date = now()->subMonths($monthsAgo);
+                    $monthPurchases = $grouped->get($date->format('Y-m'), collect());
+                    $gross = (float) $monthPurchases->sum('price');
+
+                    return [
+                        'month' => $date->format('Y-m'),
+                        'label' => self::UZ_MONTHS[$date->month].' '.$date->year,
+                        'gross_revenue' => $gross,
+                        'platform_profit' => round($gross * self::PLATFORM_COMMISSION_RATE),
+                        'teacher_payouts' => round($gross * (1 - self::PLATFORM_COMMISSION_RATE)),
+                        'purchases_count' => $monthPurchases->count(),
+                    ];
+                })
+                ->values();
         });
     }
 

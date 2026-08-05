@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\BookController as AdminBookController;
 use App\Http\Controllers\Admin\LessonController as AdminLessonController;
 use App\Http\Controllers\Admin\PurchaseController as AdminPurchaseController;
 use App\Http\Controllers\Admin\TestController as AdminTestController;
+use App\Http\Controllers\Admin\TransactionController as AdminTransactionController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\BookController;
@@ -155,6 +156,10 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(fun
     Route::controller(AdminPurchaseController::class)->prefix('purchases')->name('purchases.')->group(function () {
         Route::get('/', 'index')->name('index');
         Route::delete('/{purchase}', 'destroy')->name('destroy');
+    });
+
+    Route::controller(AdminTransactionController::class)->prefix('transactions')->name('transactions.')->group(function () {
+        Route::get('/', 'index')->name('index');
     });
 });
 

@@ -21,7 +21,8 @@ class AdminController extends Controller implements HasMiddleware
         $topLessons = $this->statsServ->topByLessons();
         $topTests = $this->statsServ->topByTests();
         $teacherRevenue = $this->statsServ->teacherRevenue();
+        $monthlyRevenue = $this->statsServ->monthlyRevenue();
 
-        return view('admin.dashboard', compact('overview', 'topBooks', 'topLessons', 'topTests', 'teacherRevenue'));
+        return view('admin.dashboard', compact('overview', 'topBooks', 'topLessons', 'topTests', 'teacherRevenue', 'monthlyRevenue'));
     }
 }
