@@ -581,6 +581,9 @@
         </a>
 
         <div class="nav-eyebrow">Hisob</div>
+        <a href="{{ route('student-payments.index') }}" class="nav-link {{ request()->routeIs('student-payments.*') ? 'active' : '' }}">
+            <i class="bi bi-wallet2"></i> To'lovlarim
+        </a>
         <a href="{{ route('profile.edit') }}" class="nav-link {{ request()->routeIs('profile.*') ? 'active' : '' }}"><i class="bi bi-gear"></i> Sozlamalar</a>
 
         <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display:none;">
@@ -669,6 +672,7 @@
         <a href="{{ route('student-tests.index') }}" class="sheet-link"><i class="bi bi-patch-question"></i> Testlarim</a>
         <a href="{{ route('student-books.index') }}" class="sheet-link"><i class="bi bi-journal-bookmark-fill"></i> Kitoblarim</a>
         <a href="{{ route('student-statistics.index') }}" class="sheet-link"><i class="bi bi-graph-up"></i> Progressim</a>
+        <a href="{{ route('student-payments.index') }}" class="sheet-link"><i class="bi bi-wallet2"></i> To'lovlarim</a>
         <a href="{{ route('profile.edit') }}" class="sheet-link"><i class="bi bi-gear"></i> Sozlamalar</a>
         <div class="sheet-divider"></div>
         <a href="{{ route('logout') }}" class="sheet-link logout-link"

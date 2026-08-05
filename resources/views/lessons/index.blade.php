@@ -200,15 +200,15 @@
 
             <div class="upload-grid">
                 <div class="upload-col">
-                    <div class="field-label mb-8">Video dars</div>
-                    <label class="dropzone" id="videoDropzone" for="videoInput">
-                        <div class="dropzone-icon"><i class="bi bi-camera-reels"></i></div>
-                        <div class="dropzone-text">Videoni shu yerga tashlang yoki <span>tanlash uchun bosing</span></div>
-                        <div class="dropzone-hint">MP4, MOV — maksimal 1 GB</div>
-                        <input type="file" name="lesson_files[]" id="videoInput" accept="video/*" hidden>
-                    </label>
-                    <div class="file-list" id="videoFileList"></div>
-                    @error('lesson_files')
+                    <div class="field-label mb-8">Video darslar <span class="optional-tag">bir nechtasini qo'shish mumkin</span></div>
+
+                    <div id="videoRows"></div>
+
+                    <button type="button" class="btn-ghost" id="addVideoRowBtn">
+                        <i class="bi bi-plus-lg"></i> Video qo'shish
+                    </button>
+
+                    @error('videos')
                         <div class="field-error">{{ $message }}</div>
                     @enderror
                 </div>
@@ -225,6 +225,26 @@
                     <div class="file-list" id="bookFileList"></div>
                 </div>
             </div>
+
+            {{-- Har bir video qatori shu shablondan klonlanadi --}}
+            <template id="videoRowTemplate">
+                <div class="video-row" data-video-row>
+                    <div class="video-row-head">
+                        <input type="text" name="video_titles[]" class="text-control video-title-input"
+                            placeholder="Video nomi (masalan: 1-qism kirish)">
+                        <button type="button" class="btn-icon-remove" data-remove-video-row title="O'chirish">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </div>
+                    <label class="dropzone" data-video-dropzone>
+                        <div class="dropzone-icon"><i class="bi bi-camera-reels"></i></div>
+                        <div class="dropzone-text">Videoni shu yerga tashlang yoki <span>tanlash uchun bosing</span></div>
+                        <div class="dropzone-hint">MP4, MOV — maksimal 1 GB</div>
+                        <input type="file" name="videos[]" accept="video/*" hidden data-video-input>
+                    </label>
+                    <div class="file-list" data-video-file-list></div>
+                </div>
+            </template>
 
             <div class="form-actions">
                 <button type="button" class="btn-ghost" onclick="history.back()">Bekor qilish</button>
@@ -712,6 +732,50 @@
             grid-template-columns: 1fr 1fr;
             gap: 18px;
             margin-bottom: 20px;
+        }
+
+        #videoRows {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .video-row {
+            border: 1px solid var(--line);
+            border-radius: 14px;
+            padding: 12px;
+            background: var(--card);
+        }
+
+        .video-row-head {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
+        .video-title-input {
+            flex: 1;
+        }
+
+        .btn-icon-remove {
+            flex-shrink: 0;
+            width: 36px;
+            height: 36px;
+            border-radius: 9px;
+            border: 1px solid var(--line);
+            background: var(--bg-soft);
+            color: var(--muted);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: .2s;
+        }
+
+        .btn-icon-remove:hover {
+            border-color: var(--coral);
+            color: var(--coral);
+            background: var(--coral-soft, var(--bg-soft));
         }
 
         .dropzone {
@@ -1410,10 +1474,7 @@
                 return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
             }
 
-            function setupDropzone(dropzoneId, inputId, listId, multiple, iconClass) {
-                const dropzone = document.getElementById(dropzoneId);
-                const input = document.getElementById(inputId);
-                const list = document.getElementById(listId);
+            function setupDropzone(dropzone, input, list, multiple, iconClass) {
                 let dt = new DataTransfer();
 
                 function render() {
@@ -1467,8 +1528,34 @@
                 });
             }
 
-            setupDropzone('videoDropzone', 'videoInput', 'videoFileList', false, 'bi-camera-reels');
-            setupDropzone('bookDropzone', 'bookInput', 'bookFileList', true, 'bi-file-earmark-pdf');
+            setupDropzone(
+                document.getElementById('bookDropzone'),
+                document.getElementById('bookInput'),
+                document.getElementById('bookFileList'),
+                true, 'bi-file-earmark-pdf'
+            );
+
+            // Video darslar — "+ Video qo'shish" har safar shablondan yangi
+            // qator klonlaydi (o'z nomi + fayl tanlagichi bilan).
+            const videoRowsContainer = document.getElementById('videoRows');
+            const videoRowTemplate = document.getElementById('videoRowTemplate');
+
+            function addVideoRow() {
+                const fragment = videoRowTemplate.content.cloneNode(true);
+                const row = fragment.querySelector('[data-video-row]');
+                const dropzone = fragment.querySelector('[data-video-dropzone]');
+                const input = fragment.querySelector('[data-video-input]');
+                const list = fragment.querySelector('[data-video-file-list]');
+
+                videoRowsContainer.appendChild(fragment);
+                setupDropzone(dropzone, input, list, false, 'bi-camera-reels');
+
+                row.querySelector('[data-remove-video-row]').addEventListener('click', () => row.remove());
+            }
+
+            document.getElementById('addVideoRowBtn').addEventListener('click', addVideoRow);
+
+            addVideoRow(); // boshida bitta bo'sh qator ko'rsatiladi
 
             document.getElementById('lessonForm').addEventListener('submit', function() {
                 const btn = document.getElementById('submitBtn');

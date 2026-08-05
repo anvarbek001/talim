@@ -349,7 +349,7 @@
     <!-- NAVBAR -->
     <nav class="navbar navbar-expand-lg py-3 sticky-top">
         <div class="container">
-            <a class="navbar-brand" href="{{ route('welcome') }}">Dars<span>lik</span></a>
+            <a class="navbar-brand" href="{{ route('welcome') }}">Dars<span>Qil</span></a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
                 <span class="navbar-toggler-icon"></span>
             </button>
@@ -593,7 +593,7 @@
         <div class="container">
             <div class="row gy-4">
                 <div class="col-lg-4">
-                    <h5 class="text-white mb-3">Dars<span style="color:var(--gold);">lik</span></h5>
+                    <h5 class="text-white mb-3">Dars<span style="color:var(--gold);">Qil</span></h5>
                     <p class="small">O'qituvchilar video darslar joylaydigan, o'quvchilar esa obuna orqali
                         o'rganadigan ta'lim platformasi.</p>
                 </div>

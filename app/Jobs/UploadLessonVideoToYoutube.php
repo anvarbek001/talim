@@ -30,7 +30,7 @@ class UploadLessonVideoToYoutube implements ShouldQueue
 
         $youtubeId = $youtubeService->upload(
             Storage::disk('local')->path($tempPath),
-            $lessonFile->lesson->title,
+            $lessonFile->title ?: $lessonFile->lesson->title,
             $lessonFile->lesson->description ?? ''
         );
 

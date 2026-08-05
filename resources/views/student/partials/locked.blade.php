@@ -29,12 +29,20 @@
 
                 <div class="locked-price">{{ number_format($purchasable->price, 0, '.', ' ') }} <span>so'm</span></div>
 
-                <form action="{{ route('student-purchases.store', [$type, $id]) }}" method="POST">
-                    @csrf
-                    <button type="submit" class="locked-buy-btn">
-                        <i class="bi bi-bag-check"></i> Sotib olish
-                    </button>
-                </form>
+                <div class="locked-buy-row">
+                    <form action="{{ route('student-purchases.store', [$type, $id]) }}" method="POST">
+                        @csrf
+                        <button type="submit" class="locked-buy-btn locked-buy-btn-outline">
+                            <i class="bi bi-wallet2"></i> Sotib olish (balans)
+                        </button>
+                    </form>
+                    <form action="{{ route('click.pay', [$type, $id]) }}" method="POST">
+                        @csrf
+                        <button type="submit" class="locked-buy-btn">
+                            <i class="bi bi-bag-check"></i> Sotib olish (Click)
+                        </button>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
@@ -147,6 +155,24 @@
 
         .locked-buy-btn:hover {
             background: #5A4BD6;
+        }
+
+        .locked-buy-row {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .locked-buy-btn-outline {
+            background: transparent;
+            border: 1.5px solid var(--line);
+            color: var(--muted);
+        }
+
+        .locked-buy-btn-outline:hover {
+            border-color: var(--primary);
+            color: var(--primary);
         }
     </style>
 @endsection

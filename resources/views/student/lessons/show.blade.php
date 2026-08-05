@@ -1,8 +1,9 @@
 @extends('layouts.student')
 
 @php
-    $videoFile = $lesson->lessonfiles->first(fn ($f) => $f->isVideo() && $f->embedUrl());
-    $pendingVideo = $lesson->lessonfiles->first(fn ($f) => $f->isVideo() && $f->isPending());
+    $videos = $lesson->lessonfiles->filter(fn ($f) => $f->isVideo())->values();
+    $videoFile = $videos->first(fn ($f) => $f->embedUrl()) ?? $videos->first();
+    $pendingVideo = $videoFile && $videoFile->isPending();
     $bookFiles = $lesson->lessonfiles->filter(fn ($f) => ! $f->isVideo());
     $accent = $lesson->science->color ?? '#6C5CE7';
 @endphp
@@ -16,23 +17,27 @@
         <div class="watch-grid">
             <div>
                 <div class="card fade-up watch-card" style="animation-delay:.04s;">
-                    <div class="watch-video">
-                        @if ($videoFile)
+                    <div class="watch-video" data-lesson-video style="background:linear-gradient(135deg,{{ $accent }},#9C8CFF);">
+                        @if ($videoFile && $videoFile->embedUrl())
                             <iframe src="{{ $videoFile->embedUrl() }}" loading="lazy" allowfullscreen
                                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                                 referrerpolicy="strict-origin-when-cross-origin"></iframe>
                         @elseif ($pendingVideo)
-                            <div class="watch-video-placeholder" style="background:linear-gradient(135deg,{{ $accent }},#9C8CFF);">
+                            <div class="watch-video-placeholder">
                                 <i class="bi bi-arrow-repeat"></i>
                                 <span>Video YouTube'ga yuklanmoqda, biroz kuting...</span>
                             </div>
                         @else
-                            <div class="watch-video-placeholder" style="background:linear-gradient(135deg,{{ $accent }},#9C8CFF);">
+                            <div class="watch-video-placeholder">
                                 <i class="bi bi-camera-reels-fill"></i>
                                 <span>Bu darsda video mavjud emas</span>
                             </div>
                         @endif
                     </div>
+
+                    @if ($videoFile && $videoFile->title && $videos->count() <= 1)
+                        <div class="watch-video-title">{{ $videoFile->title }}</div>
+                    @endif
 
                     <div class="watch-body">
                         <div class="watch-head">
@@ -88,6 +93,25 @@
             </div>
 
             <div>
+                @if ($videos->count() > 1)
+                    <div class="card fade-up" style="animation-delay:.06s;margin-bottom:18px;">
+                        <div class="card-head">
+                            <div class="card-title">Bu darsdagi videolar</div>
+                        </div>
+                        <div class="lesson-video-list">
+                            @foreach ($videos as $video)
+                                <button type="button"
+                                    class="lesson-video-item {{ $video->is($videoFile) ? 'is-active' : '' }}"
+                                    data-video-embed="{{ $video->embedUrl() }}"
+                                    data-video-status="{{ $video->status }}">
+                                    <i class="bi {{ $video->isPending() ? 'bi-arrow-repeat' : ($video->isFailed() ? 'bi-exclamation-triangle-fill' : 'bi-play-circle-fill') }}"></i>
+                                    <span>{{ $video->title ?: $lesson->title }}</span>
+                                </button>
+                            @endforeach
+                        </div>
+                    </div>
+                @endif
+
                 <div class="card fade-up" style="animation-delay:.1s;">
                     <div class="card-head">
                         <div class="card-title">Shu mavzudagi boshqa darslar</div>
@@ -351,5 +375,79 @@
             font-size: .84rem;
             color: var(--muted);
         }
+
+        .watch-video-title {
+            padding: 10px 22px 0;
+            font-size: .84rem;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .lesson-video-list {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            max-height: 260px;
+            overflow-y: auto;
+        }
+
+        .lesson-video-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: .82rem;
+            font-weight: 600;
+            color: var(--muted);
+            padding: 8px;
+            border-radius: 8px;
+            text-align: left;
+            transition: .2s;
+        }
+
+        .lesson-video-item span {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .lesson-video-item:hover {
+            background: var(--bg-soft);
+            color: var(--primary);
+        }
+
+        .lesson-video-item.is-active {
+            background: var(--primary-soft, var(--bg-soft));
+            color: var(--primary);
+        }
     </style>
+
+    <script>
+        // Bitta darsda bir nechta video bo'lsa, ro'yxatdagi videoga bosilganda
+        // asosiy pleer o'sha videoga almashadi (sahifa qayta yuklanmaydi).
+        document.addEventListener('click', function(e) {
+            const btn = e.target.closest('.lesson-video-item');
+            if (!btn) return;
+
+            const videoBox = document.querySelector('[data-lesson-video]');
+            if (!videoBox) return;
+
+            const embedUrl = btn.dataset.videoEmbed;
+            const status = btn.dataset.videoStatus;
+
+            if (embedUrl) {
+                videoBox.innerHTML = `<iframe src="${embedUrl}" loading="lazy" allowfullscreen
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    referrerpolicy="strict-origin-when-cross-origin"></iframe>`;
+            } else if (status === 'pending') {
+                videoBox.innerHTML = `<div class="watch-video-placeholder">
+                    <i class="bi bi-arrow-repeat"></i><span>Video YouTube'ga yuklanmoqda, biroz kuting...</span></div>`;
+            } else if (status === 'failed') {
+                videoBox.innerHTML = `<div class="watch-video-placeholder">
+                    <i class="bi bi-exclamation-triangle-fill"></i><span>Video yuklashda xatolik yuz berdi</span></div>`;
+            }
+
+            document.querySelectorAll('.lesson-video-item').forEach(el => el.classList.remove('is-active'));
+            btn.classList.add('is-active');
+        });
+    </script>
 @endsection

@@ -9,6 +9,7 @@ class LessonFile extends Model
 {
     protected $fillable = [
         'lesson_id',
+        'title',  // video nomi (type = youtube bo'lsa) — bitta darsda bir nechta video bo'lishi mumkin
         'type',  // 'file' yoki 'youtube'
         'lesson_file',  // diskdagi yo'l (type = file bo'lsa, yoki youtube uchun vaqtinchalik pending fayl yo'li)
         'youtube_id',  // YouTube video ID (type = youtube bo'lsa)

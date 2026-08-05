@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\TestController as AdminTestController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\BookController;
+use App\Http\Controllers\ClickPaymentController;
 use App\Http\Controllers\DtmTestController;
 use App\Http\Controllers\LessonController;
 use App\Http\Controllers\ProfileController;
@@ -15,6 +16,7 @@ use App\Http\Controllers\SertifikatTestController;
 use App\Http\Controllers\StudentBookController;
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\StudentLessonController;
+use App\Http\Controllers\StudentPaymentController;
 use App\Http\Controllers\StudentPurchaseController;
 use App\Http\Controllers\StudentStatisticsController;
 use App\Http\Controllers\StudentTestController;
@@ -108,6 +110,17 @@ Route::controller(StudentBookController::class)->group(function () {
 
 Route::controller(StudentStatisticsController::class)->group(function () {
     Route::get('/student/statistics', 'index')->name('student-statistics.index');
+});
+
+Route::controller(StudentPaymentController::class)->middleware('auth')->group(function () {
+    Route::get('/student/payments', 'index')->name('student-payments.index');
+});
+
+Route::controller(ClickPaymentController::class)->prefix('payments/click')->name('click.')->group(function () {
+    Route::post('/prepare', 'prepare')->name('prepare');
+    Route::post('/complete', 'complete')->name('complete');
+    Route::post('/pay/{type}/{id}', 'pay')->name('pay');
+    Route::post('/topup', 'topUp')->name('topup');
 });
 
 Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(function () {

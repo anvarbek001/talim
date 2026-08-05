@@ -45,33 +45,14 @@
             <div class="mine-grid">
                 @foreach ($lessons as $index => $lesson)
                     @php
-                        $videoFile = $lesson->lessonfiles->first(fn($f) => $f->isVideo() && $f->embedUrl());
-                        $pendingVideo = $lesson->lessonfiles->first(fn($f) => $f->isVideo() && $f->isPending());
-                        $failedVideo = $lesson->lessonfiles->first(fn($f) => $f->isVideo() && $f->isFailed());
+                        $videos = $lesson->lessonfiles->filter(fn($f) => $f->isVideo())->values();
+                        $primaryVideo = $videos->first(fn($f) => $f->embedUrl()) ?? $videos->first();
                         $bookFiles = $lesson->lessonfiles->filter(fn($f) => !$f->isVideo());
                         $accent = $lesson->science->color ?? '#6C5CE7';
                     @endphp
-                    <div class="lesson-card fade-up" style="animation-delay:{{ min($index * 0.06, 0.3) }}s;">
-                        <div class="lesson-video">
-                            @if ($videoFile)
-                                <iframe src="{{ $videoFile->embedUrl() }}" loading="lazy" allowfullscreen
-                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                    referrerpolicy="strict-origin-when-cross-origin"></iframe>
-                            @elseif ($pendingVideo)
-                                <div class="lesson-video-placeholder" style="background:linear-gradient(135deg,{{ $accent }},#9C8CFF);">
-                                    <i class="bi bi-arrow-repeat"></i>
-                                    <span>Video YouTube'ga yuklanmoqda...</span>
-                                </div>
-                            @elseif ($failedVideo)
-                                <div class="lesson-video-placeholder" style="background:linear-gradient(135deg,var(--coral),#FF9B7B);">
-                                    <i class="bi bi-exclamation-triangle-fill"></i>
-                                    <span>Video yuklashda xatolik yuz berdi</span>
-                                </div>
-                            @else
-                                <div class="lesson-video-placeholder" style="background:linear-gradient(135deg,{{ $accent }},#9C8CFF);">
-                                    <i class="bi bi-camera-reels-fill"></i>
-                                </div>
-                            @endif
+                    <div class="lesson-card fade-up" style="animation-delay:{{ min($index * 0.06, 0.3) }}s;" data-lesson-card>
+                        <div class="lesson-video" data-lesson-video style="background:linear-gradient(135deg,{{ $accent }},#9C8CFF);">
+                            @include('lessons.partials._video-frame', ['video' => $primaryVideo, 'accent' => $accent])
                         </div>
 
                         <div class="lesson-card-body">
@@ -91,6 +72,23 @@
 
                             @if ($lesson->description)
                                 <div class="lesson-card-desc">{{ \Illuminate\Support\Str::limit($lesson->description, 110) }}</div>
+                            @endif
+
+                            @if ($videos->count() > 1)
+                                <div class="lesson-video-list">
+                                    @foreach ($videos as $video)
+                                        <button type="button"
+                                            class="lesson-video-item {{ $video->is($primaryVideo) ? 'is-active' : '' }}"
+                                            data-video-title="{{ $video->title ?: $lesson->title }}"
+                                            data-video-embed="{{ $video->embedUrl() }}"
+                                            data-video-status="{{ $video->status }}">
+                                            <i class="bi {{ $video->isPending() ? 'bi-arrow-repeat' : ($video->isFailed() ? 'bi-exclamation-triangle-fill' : 'bi-play-circle-fill') }}"></i>
+                                            <span>{{ $video->title ?: $lesson->title }}</span>
+                                        </button>
+                                    @endforeach
+                                </div>
+                            @elseif ($primaryVideo && $primaryVideo->title)
+                                <div class="lesson-video-single-title">{{ $primaryVideo->title }}</div>
                             @endif
 
                             @if ($bookFiles->isNotEmpty())
@@ -307,6 +305,51 @@
             margin-bottom: 10px;
         }
 
+        .lesson-video-single-title {
+            font-size: .78rem;
+            font-weight: 600;
+            color: var(--muted);
+            margin-bottom: 6px;
+        }
+
+        .lesson-video-list {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            margin-bottom: 8px;
+            max-height: 140px;
+            overflow-y: auto;
+        }
+
+        .lesson-video-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: .8rem;
+            font-weight: 600;
+            color: var(--muted);
+            padding: 6px 8px;
+            border-radius: 8px;
+            text-align: left;
+            transition: .2s;
+        }
+
+        .lesson-video-item span {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .lesson-video-item:hover {
+            background: var(--bg-soft);
+            color: var(--primary);
+        }
+
+        .lesson-video-item.is-active {
+            background: var(--primary-soft, var(--bg-soft));
+            color: var(--primary);
+        }
+
         .lesson-files {
             display: flex;
             flex-direction: column;
@@ -383,4 +426,35 @@
             color: var(--coral);
         }
     </style>
+
+    <script>
+        // Bir darsda bir nechta video bo'lsa, ro'yxatdagi nomga bosilganda
+        // asosiy pleer o'sha videoga almashadi (sahifa qayta yuklanmaydi).
+        document.addEventListener('click', function(e) {
+            const btn = e.target.closest('.lesson-video-item');
+            if (!btn) return;
+
+            const card = btn.closest('[data-lesson-card]');
+            const videoBox = card?.querySelector('[data-lesson-video]');
+            if (!videoBox) return;
+
+            const embedUrl = btn.dataset.videoEmbed;
+            const status = btn.dataset.videoStatus;
+
+            if (embedUrl) {
+                videoBox.innerHTML = `<iframe src="${embedUrl}" loading="lazy" allowfullscreen
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    referrerpolicy="strict-origin-when-cross-origin"></iframe>`;
+            } else if (status === 'pending') {
+                videoBox.innerHTML = `<div class="lesson-video-placeholder">
+                    <i class="bi bi-arrow-repeat"></i><span>Video YouTube'ga yuklanmoqda...</span></div>`;
+            } else if (status === 'failed') {
+                videoBox.innerHTML = `<div class="lesson-video-placeholder" style="background:linear-gradient(135deg,var(--coral),#FF9B7B);">
+                    <i class="bi bi-exclamation-triangle-fill"></i><span>Video yuklashda xatolik yuz berdi</span></div>`;
+            }
+
+            card.querySelectorAll('.lesson-video-item').forEach(el => el.classList.remove('is-active'));
+            btn.classList.add('is-active');
+        });
+    </script>
 @endsection

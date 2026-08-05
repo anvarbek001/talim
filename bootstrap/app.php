@@ -15,6 +15,12 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'admin' => EnsureUserIsAdmin::class,
         ]);
+
+        // Click.uz calls these directly (no session/CSRF token of ours).
+        $middleware->validateCsrfTokens(except: [
+            'payments/click/prepare',
+            'payments/click/complete',
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

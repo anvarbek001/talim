@@ -72,12 +72,20 @@
                                 {{ $item['price'] > 0 ? number_format($item['price'], 0, '.', ' ')." so'm" : 'Bepul' }}
                             </div>
                             @if ($item['price'] > 0 && ! $item['purchased'])
-                                <form action="{{ route('student-purchases.store', [$item['purchase_type'], $item['purchase_id']]) }}" method="POST">
-                                    @csrf
-                                    <button type="submit" class="btn-primary test-card-btn">
-                                        <i class="bi bi-bag-check"></i> Sotib olish
-                                    </button>
-                                </form>
+                                <div class="buy-btn-row">
+                                    <form action="{{ route('student-purchases.store', [$item['purchase_type'], $item['purchase_id']]) }}" method="POST">
+                                        @csrf
+                                        <button type="submit" class="btn-outline test-card-btn">
+                                            <i class="bi bi-wallet2"></i> Sotib olish
+                                        </button>
+                                    </form>
+                                    <form action="{{ route('click.pay', [$item['purchase_type'], $item['purchase_id']]) }}" method="POST">
+                                        @csrf
+                                        <button type="submit" class="btn-primary test-card-btn">
+                                            <i class="bi bi-bag-check"></i> Click
+                                        </button>
+                                    </form>
+                                </div>
                             @else
                                 <form action="{{ route('student-tests.start', [$item['type'], $item['id']]) }}" method="POST">
                                     @csrf
@@ -327,6 +335,33 @@
 
         .btn-primary:hover {
             background: #5A4BD6;
+        }
+
+        .btn-outline {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 11px 16px;
+            border-radius: 10px;
+            border: 1.5px solid var(--line);
+            background: transparent;
+            color: var(--muted);
+            font-weight: 700;
+            font-size: .88rem;
+        }
+
+        .btn-outline:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .buy-btn-row {
+            display: flex;
+            gap: 8px;
+        }
+
+        .buy-btn-row form {
+            flex: 1;
         }
 
         .table-wrap {

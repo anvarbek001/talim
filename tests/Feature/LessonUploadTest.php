@@ -48,7 +48,8 @@ test('video file is stored temporarily and uploaded to youtube via a queued job'
 
     $response = $this->actingAs($user)->post(route('lessons.store'), [
         'topic_id' => $topic->id,
-        'lesson_files' => [$video],
+        'videos' => [$video],
+        'video_titles' => ['1-qism kirish'],
     ]);
 
     $response->assertRedirect(route('lesson'));
@@ -62,10 +63,39 @@ test('video file is stored temporarily and uploaded to youtube via a queued job'
     // QUEUE_CONNECTION=sync in testing, so the job already ran inline.
     expect(LessonFile::where('lesson_id', $lesson->id)
         ->where('type', 'youtube')
+        ->where('title', '1-qism kirish')
         ->where('youtube_id', 'FAKE_YT_ID')
         ->where('status', 'ready')
         ->where('lesson_file', '')
         ->exists())->toBeTrue();
+});
+
+test('a topic can have several named videos uploaded at once', function () {
+    Storage::fake('local');
+
+    $this->mock(YoutubeUploadService::class, function ($mock) {
+        $mock->shouldReceive('upload')->twice()->andReturn('YT_ID_1', 'YT_ID_2');
+    });
+
+    $user = User::factory()->create();
+    $topic = makeTopic($user);
+    $videoOne = UploadedFile::fake()->create('qism1.mp4', 400, 'video/mp4');
+    $videoTwo = UploadedFile::fake()->create('qism2.mp4', 400, 'video/mp4');
+
+    $response = $this->actingAs($user)->post(route('lessons.store'), [
+        'topic_id' => $topic->id,
+        'videos' => [$videoOne, $videoTwo],
+        'video_titles' => ['1-qism', '2-qism'],
+    ]);
+
+    $response->assertRedirect(route('lesson'));
+    $response->assertSessionHasNoErrors();
+
+    $lesson = Lesson::first();
+    $videos = LessonFile::where('lesson_id', $lesson->id)->where('type', 'youtube')->get();
+
+    expect($videos)->toHaveCount(2);
+    expect($videos->pluck('title')->all())->toBe(['1-qism', '2-qism']);
 });
 
 test('a lesson file starts as pending and turns failed if the youtube upload throws', function () {
@@ -84,7 +114,7 @@ test('a lesson file starts as pending and turns failed if the youtube upload thr
     try {
         $this->actingAs($user)->post(route('lessons.store'), [
             'topic_id' => $topic->id,
-            'lesson_files' => [$video],
+            'videos' => [$video],
         ]);
     } catch (Exception $e) {
         // sync queue re-throws the job's exception into the request — expected here.
@@ -128,7 +158,7 @@ test('lesson upload requires a topic and at least one file', function () {
 
     $response = $this->actingAs($user)->post(route('lessons.store'), []);
 
-    $response->assertSessionHasErrors(['topic_id', 'lesson_files']);
+    $response->assertSessionHasErrors(['topic_id', 'videos']);
 });
 
 test('my lessons page only shows the authenticated user\'s own lessons with a youtube embed', function () {

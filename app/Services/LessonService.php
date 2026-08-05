@@ -73,26 +73,32 @@ class LessonService
                 'description' => $topic->description ?? '',
             ]);
 
-            foreach ($validated['lesson_files'] as $file) {
-                if (str_starts_with($file->getMimeType(), 'video/')) {
-                    // Video — diskka vaqtincha saqlab, YouTube'ga yuklashni
-                    // fon jarayoniga (queue) topshiramiz — so'rovni bloklamaslik uchun
-                    $tempPath = $file->store("lessons/{$lesson->id}/pending", 'local');
-                    $lessonFile = $lesson->lessonfiles()->create([
-                        'type' => 'youtube',
-                        'youtube_id' => null,
-                        'lesson_file' => $tempPath,
-                        'status' => 'pending',
-                    ]);
-                    UploadLessonVideoToYoutube::dispatch($lessonFile->id)->afterCommit();
-                } else {
-                    // Kitob/qo'llanma — oddiy diskka saqlaymiz
-                    $path = $file->store("lessons/{$lesson->id}", 'public');
-                    $lesson->lessonfiles()->create([
-                        'type' => 'file',
-                        'lesson_file' => $path,
-                    ]);
-                }
+            // Bitta mavzuga bir nechta nomlangan video biriktirish mumkin —
+            // har bir video o'zining sarlavhasi bilan yuklanadi.
+            $titles = $validated['video_titles'] ?? [];
+            foreach ($validated['videos'] ?? [] as $index => $file) {
+                $title = trim((string) ($titles[$index] ?? '')) ?: ($lesson->title.' — '.($index + 1).'-video');
+
+                // Video — diskka vaqtincha saqlab, YouTube'ga yuklashni
+                // fon jarayoniga (queue) topshiramiz — so'rovni bloklamaslik uchun
+                $tempPath = $file->store("lessons/{$lesson->id}/pending", 'local');
+                $lessonFile = $lesson->lessonfiles()->create([
+                    'title' => $title,
+                    'type' => 'youtube',
+                    'youtube_id' => null,
+                    'lesson_file' => $tempPath,
+                    'status' => 'pending',
+                ]);
+                UploadLessonVideoToYoutube::dispatch($lessonFile->id)->afterCommit();
+            }
+
+            foreach ($validated['lesson_files'] ?? [] as $file) {
+                // Kitob/qo'llanma — oddiy diskka saqlaymiz
+                $path = $file->store("lessons/{$lesson->id}", 'public');
+                $lesson->lessonfiles()->create([
+                    'type' => 'file',
+                    'lesson_file' => $path,
+                ]);
             }
 
             return $lesson;

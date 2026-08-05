@@ -57,6 +57,7 @@ test('a student can open a free book without purchasing', function () {
 test('a student can open a book after purchasing it', function () {
     $teacher = User::factory()->create();
     $student = User::factory()->create();
+    $student->forceFill(['balance' => 10000])->save();
     $book = makeBook($teacher, 10000);
 
     $this->actingAs($student)->post(route('student-purchases.store', ['book', $book->id]));
@@ -115,12 +116,24 @@ test('the stream response uses inline disposition for a free book', function () 
 test('purchasing the same book twice does not create a duplicate purchase', function () {
     $teacher = User::factory()->create();
     $student = User::factory()->create();
+    $student->forceFill(['balance' => 10000])->save();
     $book = makeBook($teacher, 10000);
 
     $this->actingAs($student)->post(route('student-purchases.store', ['book', $book->id]));
     $this->actingAs($student)->post(route('student-purchases.store', ['book', $book->id]));
 
     expect(Purchase::where('user_id', $student->id)->where('purchasable_id', $book->id)->where('purchasable_type', Book::class)->count())->toBe(1);
+});
+
+test('a student without enough balance cannot purchase a book', function () {
+    $teacher = User::factory()->create();
+    $student = User::factory()->create();
+    $book = makeBook($teacher, 10000);
+
+    $response = $this->actingAs($student)->post(route('student-purchases.store', ['book', $book->id]));
+
+    $response->assertSessionHas('error');
+    expect(Purchase::where('user_id', $student->id)->where('purchasable_id', $book->id)->exists())->toBeFalse();
 });
 
 test('a student cannot purchase a free book', function () {

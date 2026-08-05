@@ -132,6 +132,7 @@ test('a student who purchased a priced lesson can watch it beyond the free previ
     }
     $lockedLesson = end($lessons);
     $lockedLesson->section->update(['price' => 15000]);
+    $student->forceFill(['balance' => 15000])->save();
 
     app(PurchaseService::class)->purchase($student, $lockedLesson->section);
 

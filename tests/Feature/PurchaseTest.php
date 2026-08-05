@@ -83,11 +83,13 @@ function makePurchaseTopicTest(User $teacher, int $sectionPrice): TopicTest
 test('a student can purchase a test\'s section and then start the test', function () {
     $teacher = User::factory()->create();
     $student = User::factory()->create();
+    $student->forceFill(['balance' => 10000])->save();
     $test = makePurchaseTopicTest($teacher, 10000);
 
     $this->actingAs($student)->post(route('student-purchases.store', ['section', $test->section_id]));
 
     expect(Purchase::where('user_id', $student->id)->where('purchasable_id', $test->section_id)->exists())->toBeTrue();
+    expect($student->fresh()->balance)->toBe(0);
 
     $response = $this->actingAs($student)->post(route('student-tests.start', ['topic', $test->id]));
     $response->assertRedirect();
@@ -116,15 +118,30 @@ test('a test in a free section is startable without any purchase', function () {
     $response->assertRedirectContains('attempts');
 });
 
-test('purchasing the same section twice does not create a duplicate purchase or error', function () {
+test('purchasing the same section twice does not create a duplicate purchase or double-charge the balance', function () {
     $teacher = User::factory()->create();
     $student = User::factory()->create();
+    $student->forceFill(['balance' => 10000])->save();
     $test = makePurchaseTopicTest($teacher, 10000);
 
     $this->actingAs($student)->post(route('student-purchases.store', ['section', $test->section_id]));
     $this->actingAs($student)->post(route('student-purchases.store', ['section', $test->section_id]));
 
     expect(Purchase::where('user_id', $student->id)->where('purchasable_id', $test->section_id)->count())->toBe(1);
+    expect($student->fresh()->balance)->toBe(0);
+});
+
+test('a student without enough balance cannot purchase a paid section', function () {
+    $teacher = User::factory()->create();
+    $student = User::factory()->create();
+    $student->forceFill(['balance' => 5000])->save();
+    $test = makePurchaseTopicTest($teacher, 10000);
+
+    $response = $this->actingAs($student)->post(route('student-purchases.store', ['section', $test->section_id]));
+
+    $response->assertSessionHas('error');
+    expect(Purchase::where('user_id', $student->id)->where('purchasable_id', $test->section_id)->exists())->toBeFalse();
+    expect($student->fresh()->balance)->toBe(5000);
 });
 
 test('a student cannot purchase a free section', function () {
@@ -138,6 +155,7 @@ test('a student cannot purchase a free section', function () {
 test('purchasing a section unlocks both its lessons and its topic test', function () {
     $teacher = User::factory()->create();
     $student = User::factory()->create();
+    $student->forceFill(['balance' => 12000])->save();
     $test = makePurchaseTopicTest($teacher, 12000);
     $section = $test->section;
 
