@@ -62,7 +62,6 @@
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
             "@php artisan package:discover --ansi"
         ],
-        "pre-autoload-dump": "Google\\Task\\Composer::cleanup",
         "post-update-cmd": [
             "@php artisan vendor:publish --tag=laravel-assets --ansi --force",
             "@php artisan boost:update --ansi"
@@ -82,10 +81,7 @@
     "extra": {
         "laravel": {
             "dont-discover": []
-        },
-        "google/apiclient-services": [
-            "YouTube"
-        ]
+        }
     },
     "config": {
         "optimize-autoloader": true,
