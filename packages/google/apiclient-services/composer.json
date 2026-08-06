@@ -1,0 +1,20 @@
+{
+    "name": "google/apiclient-services",
+    "type": "library",
+    "version": "0.453.0",
+    "description": "Trimmed to only the YouTube service (see packages/README.md) to avoid the full ~37,000-file upstream package exceeding shared-hosting inode quotas.",
+    "keywords": ["google"],
+    "homepage": "http://developers.google.com/api-client-library/php",
+    "license": "Apache-2.0",
+    "require": {
+        "php": "^8.1"
+    },
+    "autoload": {
+        "psr-4": {
+            "Google\\Service\\": "src"
+        },
+        "files": [
+            "autoload.php"
+        ]
+    }
+}
