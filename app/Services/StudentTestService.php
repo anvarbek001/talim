@@ -4,6 +4,8 @@ namespace App\Services;
 
 use App\Models\DtmTest;
 use App\Models\DtmTestQuestion;
+use App\Models\LanguageExamTest;
+use App\Models\LanguageExamTestWrittenQuestion;
 use App\Models\SertifikatTest;
 use App\Models\SertifikatTestWrittenQuestion;
 use App\Models\TestAttempt;
@@ -22,6 +24,19 @@ class StudentTestService
         'topic' => TopicTest::class,
         'dtm' => DtmTest::class,
         'sertifikat' => SertifikatTest::class,
+        'language_exam' => LanguageExamTest::class,
+    ];
+
+    /**
+     * Maps a written-question model class to the relation name it exposes
+     * back to its parent test, used to generalize grading across test types
+     * that support essay/written questions.
+     *
+     * @var array<class-string<Model>, string>
+     */
+    protected const WRITTEN_QUESTION_RELATIONS = [
+        SertifikatTestWrittenQuestion::class => 'sertifikatTest',
+        LanguageExamTestWrittenQuestion::class => 'languageExamTest',
     ];
 
     public function catalog(int $userId): Collection
@@ -82,10 +97,28 @@ class StudentTestService
                 'created_at' => $t->created_at,
             ]);
 
+        $languageExamTests = $purchasesFor(LanguageExamTest::with(['science', 'questions', 'writtenQuestions']))->get()
+            ->map(fn (LanguageExamTest $t) => [
+                'type' => 'language_exam',
+                'id' => $t->id,
+                'title' => $t->title,
+                'science' => $t->science,
+                'extra' => $t->examTypeLabel().($t->level ? ' | '.$t->level : ''),
+                'questions_count' => $t->questions->count(),
+                'has_written' => $t->writtenQuestions->isNotEmpty(),
+                'duration_minutes' => $t->duration_minutes,
+                'price' => $t->price,
+                'purchased' => $t->purchases->isNotEmpty(),
+                'purchase_type' => 'language_exam',
+                'purchase_id' => $t->id,
+                'created_at' => $t->created_at,
+            ]);
+
         return collect()
             ->concat($topicTests)
             ->concat($dtmTests)
             ->concat($sertifikatTests)
+            ->concat($languageExamTests)
             ->sortByDesc('created_at')
             ->values();
     }
@@ -114,7 +147,7 @@ class StudentTestService
             $query->with('science');
         }
 
-        if ($class === SertifikatTest::class) {
+        if ($class === SertifikatTest::class || $class === LanguageExamTest::class) {
             $query->with('writtenQuestions');
         }
 
@@ -156,7 +189,7 @@ class StudentTestService
 
         $attempt->load(['testable.questions.options', 'testable.user']);
 
-        if ($attempt->testable instanceof SertifikatTest) {
+        if ($attempt->testable instanceof SertifikatTest || $attempt->testable instanceof LanguageExamTest) {
             $attempt->testable->load('writtenQuestions');
         }
 
@@ -197,13 +230,13 @@ class StudentTestService
                 ]);
             }
 
-            if ($testable instanceof SertifikatTest) {
+            if ($testable instanceof SertifikatTest || $testable instanceof LanguageExamTest) {
                 foreach ($testable->writtenQuestions as $writtenQuestion) {
                     $text = trim((string) ($writtenAnswers[$writtenQuestion->id] ?? ''));
 
                     TestAttemptAnswer::create([
                         'test_attempt_id' => $attempt->id,
-                        'questionable_type' => SertifikatTestWrittenQuestion::class,
+                        'questionable_type' => $writtenQuestion::class,
                         'questionable_id' => $writtenQuestion->id,
                         'answer_text' => $text !== '' ? $text : null,
                         'score' => null,
@@ -235,26 +268,34 @@ class StudentTestService
     {
         return TestAttemptAnswer::whereHasMorph(
             'questionable',
-            [SertifikatTestWrittenQuestion::class],
-            function ($query) use ($teacherId) {
-                $query->whereHas('sertifikatTest', fn ($q) => $q->where('user_id', $teacherId));
+            array_keys(self::WRITTEN_QUESTION_RELATIONS),
+            function ($query, $type) use ($teacherId) {
+                $relation = self::WRITTEN_QUESTION_RELATIONS[$type];
+                $query->whereHas($relation, fn ($q) => $q->where('user_id', $teacherId));
             }
         )
             ->whereNull('graded_at')
-            ->with(['questionable.sertifikatTest', 'attempt.user'])
+            ->with(['attempt.user'])
+            ->with(['questionable' => function ($morphTo) {
+                $morphTo->morphWith(collect(self::WRITTEN_QUESTION_RELATIONS)
+                    ->mapWithKeys(fn ($relation, $type) => [$type => [$relation]])
+                    ->all());
+            }])
             ->latest()
             ->get();
     }
 
     public function gradeWrittenAnswer(TestAttemptAnswer $answer, int $score, int $teacherId): TestAttemptAnswer
     {
-        if ($answer->questionable_type !== SertifikatTestWrittenQuestion::class) {
+        $relation = self::WRITTEN_QUESTION_RELATIONS[$answer->questionable_type] ?? null;
+
+        if ($relation === null) {
             throw new Exception('Bu javob yozma savolga tegishli emas', 422);
         }
 
-        $writtenQuestion = $answer->questionable()->with('sertifikatTest')->first();
+        $writtenQuestion = $answer->questionable()->with($relation)->first();
 
-        if (! $writtenQuestion || $writtenQuestion->sertifikatTest->user_id !== $teacherId) {
+        if (! $writtenQuestion || $writtenQuestion->{$relation}->user_id !== $teacherId) {
             throw new Exception('Bu javobni baholay olmaysiz', 403);
         }
 

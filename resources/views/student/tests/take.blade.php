@@ -71,7 +71,7 @@
                 </div>
             @endforeach
 
-            @if ($testable instanceof \App\Models\SertifikatTest && $testable->writtenQuestions->isNotEmpty())
+            @if (($testable instanceof \App\Models\SertifikatTest || $testable instanceof \App\Models\LanguageExamTest) && $testable->writtenQuestions->isNotEmpty())
                 <div class="card fade-up q-card" style="animation-delay:.32s;">
                     <div class="q-written-head"><i class="bi bi-pencil-square"></i> Yozma qism</div>
                     @foreach ($testable->writtenQuestions as $writtenQuestion)

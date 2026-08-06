@@ -11,6 +11,9 @@ use Illuminate\Support\Facades\Storage;
 
 beforeEach(function () {
     $this->seed(RolePermissionSeeder::class);
+    // Video darslar hozircha o'chirilgan (config/features.php) — bu fayl
+    // o'sha funksiyaning o'zi hali ishlashini tekshiradi.
+    config(['features.lessons_enabled' => true]);
 });
 
 function makeLessonTopic(User $teacher): Topic

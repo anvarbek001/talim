@@ -5,6 +5,7 @@
         \App\Models\TopicTest::class => 'Mavzu testi',
         \App\Models\DtmTest::class => 'DTM testi',
         \App\Models\SertifikatTest::class => 'Sertifikat testi',
+        \App\Models\LanguageExamTest::class => 'Til imtihoni',
         default => 'Test',
     };
     $pendingAttempts = $students->flatMap(fn ($row) => $row['attempts'])->filter(fn ($a) => $a->hasPendingGrading());

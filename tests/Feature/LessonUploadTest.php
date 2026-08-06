@@ -11,6 +11,12 @@ use App\Services\YoutubeUploadService;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 
+beforeEach(function () {
+    // Video darslar hozircha o'chirilgan (config/features.php) — bu fayl
+    // o'sha funksiyaning o'zi hali ishlashini tekshiradi.
+    config(['features.lessons_enabled' => true]);
+});
+
 function makeTopic(User $user): Topic
 {
     $science = new Science(['title' => 'Matematika', 'icon' => 'bi-calculator']);

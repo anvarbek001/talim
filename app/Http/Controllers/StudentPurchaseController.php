@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Book;
 use App\Models\DtmTest;
+use App\Models\LanguageExamTest;
 use App\Models\Section;
 use App\Models\SertifikatTest;
 use App\Services\PurchaseService;
@@ -17,6 +18,7 @@ class StudentPurchaseController extends Controller implements HasMiddleware
         'section' => Section::class,
         'dtm' => DtmTest::class,
         'sertifikat' => SertifikatTest::class,
+        'language_exam' => LanguageExamTest::class,
         'book' => Book::class,
     ];
 

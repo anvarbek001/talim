@@ -5,6 +5,7 @@
         \App\Models\TopicTest::class => ['Mavzu', 'var(--primary)'],
         \App\Models\DtmTest::class => ['DTM', 'var(--amber)'],
         \App\Models\SertifikatTest::class => ['Sertifikat', 'var(--mint)'],
+        \App\Models\LanguageExamTest::class => ['Til imtihoni', 'var(--coral)'],
         default => ['Test', 'var(--muted)'],
     };
 @endphp

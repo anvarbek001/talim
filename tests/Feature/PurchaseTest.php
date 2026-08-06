@@ -11,6 +11,12 @@ use App\Models\User;
 use App\Services\PurchaseService;
 use App\Services\TopicTestService;
 
+beforeEach(function () {
+    // Video darslar hozircha o'chirilgan (config/features.php) — shu fayldagi
+    // ba'zi testlar sotib olingan bo'limning darslarni ham ochishini tekshiradi.
+    config(['features.lessons_enabled' => true]);
+});
+
 function makePurchaseTopic(User $teacher, int $sectionPrice = 0): Topic
 {
     $science = new Science(['title' => 'Matematika', 'icon' => 'bi-calculator']);

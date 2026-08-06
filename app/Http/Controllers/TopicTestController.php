@@ -6,6 +6,7 @@ use App\Exports\TestQuestionsTemplateExport;
 use App\Http\Requests\TopicTestRequest;
 use App\Models\TopicTest;
 use App\Services\DtmTestService;
+use App\Services\LanguageExamTestService;
 use App\Services\ReferenceDataService;
 use App\Services\SectionService;
 use App\Services\SertifikatTestService;
@@ -27,6 +28,7 @@ class TopicTestController extends Controller implements HasMiddleware
         protected TopicTestService $topicTestServ,
         protected DtmTestService $dtmTestServ,
         protected SertifikatTestService $sertifikatTestServ,
+        protected LanguageExamTestService $languageExamTestServ,
         protected SectionService $sectionServ,
         protected TopicService $topicServ,
         protected TestQuestionFileParser $fileParser,
@@ -63,10 +65,11 @@ class TopicTestController extends Controller implements HasMiddleware
         $topicTests = $this->topicTestServ->myTests(Auth::id(), $filters);
         $dtmTests = $this->dtmTestServ->myTests(Auth::id(), $filters);
         $sertifikatTests = $this->sertifikatTestServ->myTests(Auth::id(), $filters);
+        $languageExamTests = $this->languageExamTestServ->myTests(Auth::id(), $filters);
 
         return view('tests.index', compact(
             'sciences', 'grades', 'sections', 'topics',
-            'topicTests', 'dtmTests', 'sertifikatTests'
+            'topicTests', 'dtmTests', 'sertifikatTests', 'languageExamTests'
         ));
     }
 

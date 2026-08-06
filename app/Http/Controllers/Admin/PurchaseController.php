@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Book;
 use App\Models\DtmTest;
+use App\Models\LanguageExamTest;
 use App\Models\Purchase;
 use App\Models\Section;
 use App\Models\SertifikatTest;
@@ -26,6 +27,7 @@ class PurchaseController extends Controller implements HasMiddleware
         Section::class => "Bo'lim",
         DtmTest::class => 'DTM testi',
         SertifikatTest::class => 'Sertifikat testi',
+        LanguageExamTest::class => 'Til imtihoni',
     ];
 
     public static function middleware(): array

@@ -3,13 +3,15 @@
     <div class="page">
         <!-- STAT CARDS -->
         <div class="stats-grid">
-            <div class="stat-card fade-up" style="animation-delay:.02s;">
-                <div class="stat-icon" style="background:var(--primary-soft);color:var(--primary);"><i
-                        class="bi bi-camera-reels"></i></div>
-                <div class="stat-num" data-count="86">0</div>
-                <div class="stat-lbl">Jami darslarim</div>
-                <div class="stat-delta up"><i class="bi bi-arrow-up-short"></i> +4 shu oy</div>
-            </div>
+            @if (config('features.lessons_enabled'))
+                <div class="stat-card fade-up" style="animation-delay:.02s;">
+                    <div class="stat-icon" style="background:var(--primary-soft);color:var(--primary);"><i
+                            class="bi bi-camera-reels"></i></div>
+                    <div class="stat-num" data-count="86">0</div>
+                    <div class="stat-lbl">Jami darslarim</div>
+                    <div class="stat-delta up"><i class="bi bi-arrow-up-short"></i> +4 shu oy</div>
+                </div>
+            @endif
             <div class="stat-card fade-up" style="animation-delay:.08s;">
                 <div class="stat-icon" style="background:var(--mint-soft);color:var(--mint);"><i class="bi bi-people"></i>
                 </div>
@@ -36,46 +38,48 @@
         <div class="grid-main">
             <!-- LEFT -->
             <div>
-                <div class="card fade-up" style="animation-delay:.1s;">
-                    <div class="card-head">
-                        <div class="card-title">So'nggi darslar</div>
-                        <a href="#" class="card-link">Barchasini ko'rish</a>
-                    </div>
+                @if (config('features.lessons_enabled'))
+                    <div class="card fade-up" style="animation-delay:.1s;">
+                        <div class="card-head">
+                            <div class="card-title">So'nggi darslar</div>
+                            <a href="#" class="card-link">Barchasini ko'rish</a>
+                        </div>
 
-                    <div class="lesson-row">
-                        <div class="lesson-thumb" style="background:linear-gradient(135deg,var(--primary),#9C8CFF);"><i
-                                class="bi bi-play-fill"></i></div>
-                        <div class="lesson-info">
-                            <div class="lesson-title">Kvadrat tenglamalar — 3-qism</div>
-                            <div class="lesson-sub">Matematika · 24:18</div>
+                        <div class="lesson-row">
+                            <div class="lesson-thumb" style="background:linear-gradient(135deg,var(--primary),#9C8CFF);"><i
+                                    class="bi bi-play-fill"></i></div>
+                            <div class="lesson-info">
+                                <div class="lesson-title">Kvadrat tenglamalar — 3-qism</div>
+                                <div class="lesson-sub">Matematika · 24:18</div>
+                            </div>
+                            <div class="lesson-views"><i class="bi bi-eye"></i> 1,204</div>
+                            <span class="badge-pill on">Nashr etilgan</span>
                         </div>
-                        <div class="lesson-views"><i class="bi bi-eye"></i> 1,204</div>
-                        <span class="badge-pill on">Nashr etilgan</span>
-                    </div>
 
-                    <div class="lesson-row">
-                        <div class="lesson-thumb" style="background:linear-gradient(135deg,var(--mint),#33D6A0);">
-                            <i class="bi bi-play-fill"></i>
+                        <div class="lesson-row">
+                            <div class="lesson-thumb" style="background:linear-gradient(135deg,var(--mint),#33D6A0);">
+                                <i class="bi bi-play-fill"></i>
+                            </div>
+                            <div class="lesson-info">
+                                <div class="lesson-title">Trigonometriya asoslari</div>
+                                <div class="lesson-sub">Matematika · 31:05</div>
+                            </div>
+                            <div class="lesson-views"><i class="bi bi-eye"></i> 892</div>
+                            <span class="badge-pill on">Nashr etilgan</span>
                         </div>
-                        <div class="lesson-info">
-                            <div class="lesson-title">Trigonometriya asoslari</div>
-                            <div class="lesson-sub">Matematika · 31:05</div>
-                        </div>
-                        <div class="lesson-views"><i class="bi bi-eye"></i> 892</div>
-                        <span class="badge-pill on">Nashr etilgan</span>
-                    </div>
 
-                    <div class="lesson-row">
-                        <div class="lesson-thumb" style="background:linear-gradient(135deg,var(--amber),#FFCB6B);"><i
-                                class="bi bi-play-fill"></i></div>
-                        <div class="lesson-info">
-                            <div class="lesson-title">Integral — kirish darsi</div>
-                            <div class="lesson-sub">Matematika · 19:42</div>
+                        <div class="lesson-row">
+                            <div class="lesson-thumb" style="background:linear-gradient(135deg,var(--amber),#FFCB6B);"><i
+                                    class="bi bi-play-fill"></i></div>
+                            <div class="lesson-info">
+                                <div class="lesson-title">Integral — kirish darsi</div>
+                                <div class="lesson-sub">Matematika · 19:42</div>
+                            </div>
+                            <div class="lesson-views"><i class="bi bi-eye"></i> —</div>
+                            <span class="badge-pill wait">Ko'rib chiqilmoqda</span>
                         </div>
-                        <div class="lesson-views"><i class="bi bi-eye"></i> —</div>
-                        <span class="badge-pill wait">Ko'rib chiqilmoqda</span>
                     </div>
-                </div>
+                @endif
 
                 <div class="card fade-up" style="animation-delay:.16s;">
                     <div class="card-head">
@@ -155,10 +159,12 @@
                     <div class="card-head">
                         <div class="card-title">Tezkor amallar</div>
                     </div>
-                    <a href="#" class="qa-btn">
-                        <div class="qa-icon" style="background:var(--primary-soft);color:var(--primary);"><i
-                                class="bi bi-cloud-upload"></i></div> Video yuklash
-                    </a>
+                    @if (config('features.lessons_enabled'))
+                        <a href="#" class="qa-btn">
+                            <div class="qa-icon" style="background:var(--primary-soft);color:var(--primary);"><i
+                                    class="bi bi-cloud-upload"></i></div> Video yuklash
+                        </a>
+                    @endif
                     <a href="#" class="qa-btn">
                         <div class="qa-icon" style="background:var(--mint-soft);color:var(--mint);"><i
                                 class="bi bi-patch-question"></i></div> Test yaratish

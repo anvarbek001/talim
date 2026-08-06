@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Book;
 use App\Models\DtmTest;
+use App\Models\LanguageExamTest;
 use App\Models\Lesson;
 use App\Models\Purchase;
 use App\Models\SertifikatTest;
@@ -38,7 +39,7 @@ class AdminStatisticsService
                 'teachers_count' => User::role('teacher')->count(),
                 'students_count' => User::role('student')->count(),
                 'lessons_count' => Lesson::count(),
-                'tests_count' => TopicTest::count() + DtmTest::count() + SertifikatTest::count(),
+                'tests_count' => TopicTest::count() + DtmTest::count() + SertifikatTest::count() + LanguageExamTest::count(),
                 'books_count' => Book::count(),
                 'purchases_count' => Purchase::count(),
                 'gross_revenue' => $grossRevenue,
@@ -116,11 +117,11 @@ class AdminStatisticsService
     public function topByTests(int $limit = 5): Collection
     {
         return User::role('teacher')
-            ->withCount(['topicTests', 'dtmTests', 'sertifikatTests'])
+            ->withCount(['topicTests', 'dtmTests', 'sertifikatTests', 'languageExamTests'])
             ->get()
             ->map(fn (User $teacher) => [
                 'teacher' => $teacher,
-                'tests_count' => $teacher->topic_tests_count + $teacher->dtm_tests_count + $teacher->sertifikat_tests_count,
+                'tests_count' => $teacher->topic_tests_count + $teacher->dtm_tests_count + $teacher->sertifikat_tests_count + $teacher->language_exam_tests_count,
             ])
             ->filter(fn (array $row) => $row['tests_count'] > 0)
             ->sortByDesc('tests_count')
@@ -147,7 +148,7 @@ class AdminStatisticsService
         // Batch-load every teacher's content counts up front instead of
         // running 5 count queries per teacher inside the map() below.
         $teacherStats = User::whereIn('id', $purchasesByTeacher->keys())
-            ->withCount(['lessons', 'topicTests', 'dtmTests', 'sertifikatTests', 'books'])
+            ->withCount(['lessons', 'topicTests', 'dtmTests', 'sertifikatTests', 'languageExamTests', 'books'])
             ->get()
             ->keyBy('id');
 
@@ -160,7 +161,7 @@ class AdminStatisticsService
                 return [
                     'teacher' => $teacher,
                     'lessons_count' => $stats->lessons_count,
-                    'tests_count' => $stats->topic_tests_count + $stats->dtm_tests_count + $stats->sertifikat_tests_count,
+                    'tests_count' => $stats->topic_tests_count + $stats->dtm_tests_count + $stats->sertifikat_tests_count + $stats->language_exam_tests_count,
                     'books_count' => $stats->books_count,
                     'purchases_count' => $purchases->count(),
                     'gross' => $gross,

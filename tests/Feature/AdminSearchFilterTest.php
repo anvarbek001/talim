@@ -9,6 +9,9 @@ use Database\Seeders\RolePermissionSeeder;
 
 beforeEach(function () {
     $this->seed(RolePermissionSeeder::class);
+    // Video darslar hozircha o'chirilgan (config/features.php) — shu fayldagi
+    // lesson filtri testi o'sha funksiyaning o'zi hali ishlashini tekshiradi.
+    config(['features.lessons_enabled' => true]);
 });
 
 test('admin can filter users by role and search term', function () {

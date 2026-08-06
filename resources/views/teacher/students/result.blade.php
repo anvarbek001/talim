@@ -1,8 +1,9 @@
 @extends('layouts.teacher')
 
 @php
-    $mcqAnswers = $attempt->answers->filter(fn($a) => $a->questionable_type !== \App\Models\SertifikatTestWrittenQuestion::class);
-    $writtenAnswers = $attempt->answers->filter(fn($a) => $a->questionable_type === \App\Models\SertifikatTestWrittenQuestion::class);
+    $writtenTypes = [\App\Models\SertifikatTestWrittenQuestion::class, \App\Models\LanguageExamTestWrittenQuestion::class];
+    $mcqAnswers = $attempt->answers->filter(fn($a) => ! in_array($a->questionable_type, $writtenTypes, true));
+    $writtenAnswers = $attempt->answers->filter(fn($a) => in_array($a->questionable_type, $writtenTypes, true));
     $mcqScore = round($mcqAnswers->sum('score'), 2);
     $mcqMax = round($mcqAnswers->sum('max_score'), 2);
     $pending = $attempt->hasPendingGrading();

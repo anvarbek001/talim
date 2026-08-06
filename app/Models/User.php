@@ -88,6 +88,11 @@ class User extends Authenticatable
         return $this->hasMany(SertifikatTest::class);
     }
 
+    public function languageExamTests(): HasMany
+    {
+        return $this->hasMany(LanguageExamTest::class);
+    }
+
     public function savedLessons(): BelongsToMany
     {
         return $this->belongsToMany(Lesson::class, 'saved_lessons')->withTimestamps();

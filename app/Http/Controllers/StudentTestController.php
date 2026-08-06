@@ -67,7 +67,7 @@ class StudentTestController extends Controller implements HasMiddleware
             $purchasable = $testable instanceof TopicTest ? $testable->section : $testable;
 
             if (! $this->purchaseServ->hasAccess(Auth::user(), $purchasable)) {
-                $contentLabels = ['topic' => 'Mavzu testi', 'dtm' => 'DTM testi', 'sertifikat' => 'Sertifikat testi'];
+                $contentLabels = ['topic' => 'Mavzu testi', 'dtm' => 'DTM testi', 'sertifikat' => 'Sertifikat testi', 'language_exam' => 'Til imtihoni'];
 
                 return view('student.partials.locked', [
                     'purchasable' => $purchasable,

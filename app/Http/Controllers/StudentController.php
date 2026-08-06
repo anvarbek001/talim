@@ -25,11 +25,14 @@ class StudentController extends Controller
 
         $userId = Auth::id();
 
-        $recentLessons = $this->lessonServ->catalog()->take(8);
-        $savedLessons = $this->lessonServ->saved($userId)->take(8);
+        // Video darslar vaqtincha o'chirilgan — shu bilan bog'liq ma'lumotlar
+        // bo'sh to'plam sifatida uzatiladi, view esa buni his qilmaydi.
+        $lessonsEnabled = config('features.lessons_enabled');
+        $recentLessons = $lessonsEnabled ? $this->lessonServ->catalog()->take(8) : collect();
+        $savedLessons = $lessonsEnabled ? $this->lessonServ->saved($userId)->take(8) : collect();
+        $sciences = $lessonsEnabled ? $this->lessonServ->sciencesWithLessons()->take(8) : collect();
         $stats = $this->statisticsServ->forUser($userId);
         $leaderboard = $this->statisticsServ->leaderboard(5);
-        $sciences = $this->lessonServ->sciencesWithLessons()->take(8);
 
         return view('student_dashboard', compact('recentLessons', 'savedLessons', 'stats', 'leaderboard', 'sciences'));
     }

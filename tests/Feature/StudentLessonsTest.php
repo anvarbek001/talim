@@ -8,6 +8,12 @@ use App\Models\Topic;
 use App\Models\User;
 use App\Services\PurchaseService;
 
+beforeEach(function () {
+    // Video darslar hozircha o'chirilgan (config/features.php) — bu fayl
+    // o'sha funksiyaning o'zi hali ishlashini tekshiradi.
+    config(['features.lessons_enabled' => true]);
+});
+
 function makeLessonForBrowsing(User $teacher, string $scienceTitle = 'Matematika', string $lessonTitle = 'Kvadrat tenglamalar'): Lesson
 {
     $science = Science::firstOrCreate(['title' => $scienceTitle], ['icon' => 'bi-calculator', 'color' => '#6C5CE7']);

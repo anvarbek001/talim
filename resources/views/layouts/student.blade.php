@@ -567,9 +567,11 @@
         <a href="{{ route('student_dashboard') }}" class="nav-link {{ request()->routeIs('student_dashboard') ? 'active' : '' }}">
             <i class="bi bi-grid-1x2-fill"></i> Bosh sahifa
         </a>
-        <a href="{{ route('student-lessons.index') }}" class="nav-link {{ request()->routeIs('student-lessons.*') ? 'active' : '' }}">
-            <i class="bi bi-camera-reels"></i> Darslarim
-        </a>
+        @if (config('features.lessons_enabled'))
+            <a href="{{ route('student-lessons.index') }}" class="nav-link {{ request()->routeIs('student-lessons.*') ? 'active' : '' }}">
+                <i class="bi bi-camera-reels"></i> Darslarim
+            </a>
+        @endif
         <a href="{{ route('student-tests.index') }}" class="nav-link {{ request()->routeIs('student-tests.*') ? 'active' : '' }}">
             <i class="bi bi-patch-question"></i> Testlarim
         </a>
@@ -646,9 +648,11 @@
         <a href="{{ route('student_dashboard') }}" class="bn-link {{ request()->routeIs('student_dashboard') ? 'active' : '' }}">
             <i class="bi bi-grid-1x2-fill"></i><span>Bosh</span>
         </a>
-        <a href="{{ route('student-lessons.index') }}" class="bn-link {{ request()->routeIs('student-lessons.*') ? 'active' : '' }}">
-            <i class="bi bi-camera-reels"></i><span>Darslar</span>
-        </a>
+        @if (config('features.lessons_enabled'))
+            <a href="{{ route('student-lessons.index') }}" class="bn-link {{ request()->routeIs('student-lessons.*') ? 'active' : '' }}">
+                <i class="bi bi-camera-reels"></i><span>Darslar</span>
+            </a>
+        @endif
         <a href="{{ route('student-tests.index') }}" class="bn-link {{ request()->routeIs('student-tests.*') ? 'active' : '' }}">
             <i class="bi bi-patch-question"></i><span>Testlar</span>
         </a>
@@ -668,7 +672,9 @@
         <div class="sheet-title">Barcha bo'limlar</div>
         <a href="#" class="sheet-link"><i class="bi bi-bell"></i> Bildirishnomalar</a>
         <a href="{{ route('student_dashboard') }}" class="sheet-link"><i class="bi bi-grid-1x2-fill"></i> Bosh sahifa</a>
-        <a href="{{ route('student-lessons.index') }}" class="sheet-link"><i class="bi bi-camera-reels"></i> Darslarim</a>
+        @if (config('features.lessons_enabled'))
+            <a href="{{ route('student-lessons.index') }}" class="sheet-link"><i class="bi bi-camera-reels"></i> Darslarim</a>
+        @endif
         <a href="{{ route('student-tests.index') }}" class="sheet-link"><i class="bi bi-patch-question"></i> Testlarim</a>
         <a href="{{ route('student-books.index') }}" class="sheet-link"><i class="bi bi-journal-bookmark-fill"></i> Kitoblarim</a>
         <a href="{{ route('student-statistics.index') }}" class="sheet-link"><i class="bi bi-graph-up"></i> Progressim</a>

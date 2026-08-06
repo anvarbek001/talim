@@ -5,12 +5,14 @@ namespace App\Providers;
 use App\Repositories\BookRepository;
 use App\Repositories\Contracts\BookRepositoryInterface;
 use App\Repositories\Contracts\DtmTestRepositoryInterface;
+use App\Repositories\Contracts\LanguageExamTestRepositoryInterface;
 use App\Repositories\Contracts\LessonRepositoryInterface;
 use App\Repositories\Contracts\SectionRepositoryInterface;
 use App\Repositories\Contracts\SertifikatTestRepositoryInterface;
 use App\Repositories\Contracts\TopicRepositoryInterface;
 use App\Repositories\Contracts\TopicTestRepositoryInterface;
 use App\Repositories\DtmTestRepository;
+use App\Repositories\LanguageExamTestRepository;
 use App\Repositories\LessonRepository;
 use App\Repositories\SectionRepository;
 use App\Repositories\SertifikatTestRepository;
@@ -32,6 +34,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(TopicTestRepositoryInterface::class, TopicTestRepository::class);
         $this->app->bind(DtmTestRepositoryInterface::class, DtmTestRepository::class);
         $this->app->bind(SertifikatTestRepositoryInterface::class, SertifikatTestRepository::class);
+        $this->app->bind(LanguageExamTestRepositoryInterface::class, LanguageExamTestRepository::class);
         $this->app->bind(BookRepositoryInterface::class, BookRepository::class);
     }
 

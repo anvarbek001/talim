@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\DtmTest;
+use App\Models\LanguageExamTest;
 use App\Models\Lesson;
 use App\Models\SertifikatTest;
 use App\Models\TestAttempt;
@@ -19,6 +20,7 @@ class StudentStatisticsService
         TopicTest::class => 'Mavzu testi',
         DtmTest::class => 'DTM testi',
         SertifikatTest::class => 'Sertifikat testi',
+        LanguageExamTest::class => 'Til imtihoni',
     ];
 
     /**

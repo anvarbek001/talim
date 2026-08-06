@@ -280,12 +280,14 @@
     <div class="page">
         <!-- STATS -->
         <div class="stats-grid">
-            <div class="stat-card fade-up" style="animation-delay:.02s;">
-                <div class="stat-icon" style="background:var(--mint-soft);color:var(--mint);"><i
-                        class="bi bi-camera-reels"></i></div>
-                <div class="stat-num" data-count="{{ $stats['total_lessons'] }}">0</div>
-                <div class="stat-lbl">Platformadagi darslar</div>
-            </div>
+            @if (config('features.lessons_enabled'))
+                <div class="stat-card fade-up" style="animation-delay:.02s;">
+                    <div class="stat-icon" style="background:var(--mint-soft);color:var(--mint);"><i
+                            class="bi bi-camera-reels"></i></div>
+                    <div class="stat-num" data-count="{{ $stats['total_lessons'] }}">0</div>
+                    <div class="stat-lbl">Platformadagi darslar</div>
+                </div>
+            @endif
             <div class="stat-card fade-up" style="animation-delay:.08s;">
                 <div class="stat-icon" style="background:var(--primary-soft);color:var(--primary);"><i
                         class="bi bi-patch-question"></i></div>
@@ -298,97 +300,103 @@
                 <div class="stat-num" data-count="{{ $stats['average_percent'] }}">0</div>
                 <div class="stat-lbl">O'rtacha ball (%)</div>
             </div>
-            <div class="stat-card fade-up" style="animation-delay:.2s;">
-                <div class="stat-icon" style="background:var(--amber-soft);color:#8A6100;"><i
-                        class="bi bi-bookmark-heart"></i></div>
-                <div class="stat-num" data-count="{{ $stats['saved_lessons_count'] }}">0</div>
-                <div class="stat-lbl">Saqlangan darslar</div>
-            </div>
+            @if (config('features.lessons_enabled'))
+                <div class="stat-card fade-up" style="animation-delay:.2s;">
+                    <div class="stat-icon" style="background:var(--amber-soft);color:#8A6100;"><i
+                            class="bi bi-bookmark-heart"></i></div>
+                    <div class="stat-num" data-count="{{ $stats['saved_lessons_count'] }}">0</div>
+                    <div class="stat-lbl">Saqlangan darslar</div>
+                </div>
+            @endif
         </div>
 
-        <!-- SUBJECTS -->
-        <div class="card fade-up" style="animation-delay:.06s;">
-            <div class="card-head">
-                <div class="card-title">Fanlar</div>
-                <a href="{{ route('student-lessons.index') }}" class="card-link">Barchasini ko'rish</a>
+        @if (config('features.lessons_enabled'))
+            <!-- SUBJECTS -->
+            <div class="card fade-up" style="animation-delay:.06s;">
+                <div class="card-head">
+                    <div class="card-title">Fanlar</div>
+                    <a href="{{ route('student-lessons.index') }}" class="card-link">Barchasini ko'rish</a>
+                </div>
+                @if ($sciences->isEmpty())
+                    <div style="font-size:.84rem;color:var(--muted);">Hozircha fan bo'yicha dars yo'q.</div>
+                @else
+                    <div class="subject-grid">
+                        @foreach ($sciences as $science)
+                            <div class="subject-card">
+                                <a href="{{ route('student-lessons.teachers', $science) }}" class="subject-card-main">
+                                    <div class="subject-icon" style="background:{{ $science->color }}1A;color:{{ $science->color }};">
+                                        <i class="bi {{ $science->icon }}"></i>
+                                    </div>
+                                    <div class="subject-title">{{ $science->title }}</div>
+                                    <div class="subject-count">{{ $science->lessons_count }} ta dars</div>
+                                </a>
+                                <a href="{{ route('student-tests.index', ['science' => $science->id]) }}" class="subject-tests-link">
+                                    <i class="bi bi-patch-question"></i> Testlar
+                                </a>
+                            </div>
+                        @endforeach
+                    </div>
+                @endif
             </div>
-            @if ($sciences->isEmpty())
-                <div style="font-size:.84rem;color:var(--muted);">Hozircha fan bo'yicha dars yo'q.</div>
-            @else
-                <div class="subject-grid">
-                    @foreach ($sciences as $science)
-                        <div class="subject-card">
-                            <a href="{{ route('student-lessons.teachers', $science) }}" class="subject-card-main">
-                                <div class="subject-icon" style="background:{{ $science->color }}1A;color:{{ $science->color }};">
-                                    <i class="bi {{ $science->icon }}"></i>
+
+            <!-- RECENT LESSONS -->
+            <div class="card fade-up" style="animation-delay:.1s;">
+                <div class="card-head">
+                    <div class="card-title">So'nggi darslar</div>
+                    <a href="{{ route('student-lessons.index') }}" class="card-link">Barchasini ko'rish</a>
+                </div>
+                @if ($recentLessons->isEmpty())
+                    <div style="font-size:.84rem;color:var(--muted);">Hozircha dars yo'q.</div>
+                @else
+                    <div class="rec-scroll">
+                        @foreach ($recentLessons as $item)
+                            <a href="{{ route('student-lessons.show', $item) }}" class="rec-card">
+                                <div class="rec-thumb"
+                                    style="background:linear-gradient(135deg,{{ $item->science->color ?? '#6C5CE7' }},#9C8CFF);">
+                                    <i class="bi bi-play-fill"></i>
                                 </div>
-                                <div class="subject-title">{{ $science->title }}</div>
-                                <div class="subject-count">{{ $science->lessons_count }} ta dars</div>
+                                <div class="rec-body">
+                                    <div class="rec-title">{{ $item->title }}</div>
+                                    <div class="rec-sub">{{ $item->science->title ?? '—' }}</div>
+                                </div>
                             </a>
-                            <a href="{{ route('student-tests.index', ['science' => $science->id]) }}" class="subject-tests-link">
-                                <i class="bi bi-patch-question"></i> Testlar
-                            </a>
-                        </div>
-                    @endforeach
-                </div>
-            @endif
-        </div>
-
-        <!-- RECENT LESSONS -->
-        <div class="card fade-up" style="animation-delay:.1s;">
-            <div class="card-head">
-                <div class="card-title">So'nggi darslar</div>
-                <a href="{{ route('student-lessons.index') }}" class="card-link">Barchasini ko'rish</a>
+                        @endforeach
+                    </div>
+                @endif
             </div>
-            @if ($recentLessons->isEmpty())
-                <div style="font-size:.84rem;color:var(--muted);">Hozircha dars yo'q.</div>
-            @else
-                <div class="rec-scroll">
-                    @foreach ($recentLessons as $item)
-                        <a href="{{ route('student-lessons.show', $item) }}" class="rec-card">
-                            <div class="rec-thumb"
-                                style="background:linear-gradient(135deg,{{ $item->science->color ?? '#6C5CE7' }},#9C8CFF);">
-                                <i class="bi bi-play-fill"></i>
-                            </div>
-                            <div class="rec-body">
-                                <div class="rec-title">{{ $item->title }}</div>
-                                <div class="rec-sub">{{ $item->science->title ?? '—' }}</div>
-                            </div>
-                        </a>
-                    @endforeach
-                </div>
-            @endif
-        </div>
+        @endif
 
         <div class="grid-main">
             <!-- LEFT -->
             <div>
-                <div class="card fade-up" style="animation-delay:.16s;">
-                    <div class="card-head">
-                        <div class="card-title">Saqlangan darslarim</div>
-                        <a href="{{ route('student-lessons.index', ['saved' => 1]) }}" class="card-link">Ko'proq</a>
+                @if (config('features.lessons_enabled'))
+                    <div class="card fade-up" style="animation-delay:.16s;">
+                        <div class="card-head">
+                            <div class="card-title">Saqlangan darslarim</div>
+                            <a href="{{ route('student-lessons.index', ['saved' => 1]) }}" class="card-link">Ko'proq</a>
+                        </div>
+                        @if ($savedLessons->isEmpty())
+                            <div style="font-size:.84rem;color:var(--muted);">
+                                Hali dars saqlamagansiz — <a href="{{ route('student-lessons.index') }}" style="color:var(--primary);font-weight:600;">darslarni ko'ring</a>.
+                            </div>
+                        @else
+                            <div class="rec-scroll">
+                                @foreach ($savedLessons as $item)
+                                    <a href="{{ route('student-lessons.show', $item) }}" class="rec-card">
+                                        <div class="rec-thumb"
+                                            style="background:linear-gradient(135deg,{{ $item->science->color ?? '#6C5CE7' }},#9C8CFF);">
+                                            <i class="bi bi-bookmark-heart-fill"></i>
+                                        </div>
+                                        <div class="rec-body">
+                                            <div class="rec-title">{{ $item->title }}</div>
+                                            <div class="rec-sub">{{ $item->science->title ?? '—' }}</div>
+                                        </div>
+                                    </a>
+                                @endforeach
+                            </div>
+                        @endif
                     </div>
-                    @if ($savedLessons->isEmpty())
-                        <div style="font-size:.84rem;color:var(--muted);">
-                            Hali dars saqlamagansiz — <a href="{{ route('student-lessons.index') }}" style="color:var(--primary);font-weight:600;">darslarni ko'ring</a>.
-                        </div>
-                    @else
-                        <div class="rec-scroll">
-                            @foreach ($savedLessons as $item)
-                                <a href="{{ route('student-lessons.show', $item) }}" class="rec-card">
-                                    <div class="rec-thumb"
-                                        style="background:linear-gradient(135deg,{{ $item->science->color ?? '#6C5CE7' }},#9C8CFF);">
-                                        <i class="bi bi-bookmark-heart-fill"></i>
-                                    </div>
-                                    <div class="rec-body">
-                                        <div class="rec-title">{{ $item->title }}</div>
-                                        <div class="rec-sub">{{ $item->science->title ?? '—' }}</div>
-                                    </div>
-                                </a>
-                            @endforeach
-                        </div>
-                    @endif
-                </div>
+                @endif
 
                 <div class="card fade-up" style="animation-delay:.22s;">
                     <div class="card-head">

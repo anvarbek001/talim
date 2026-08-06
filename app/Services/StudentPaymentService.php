@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Book;
 use App\Models\DtmTest;
+use App\Models\LanguageExamTest;
 use App\Models\Purchase;
 use App\Models\Section;
 use App\Models\SertifikatTest;
@@ -22,6 +23,7 @@ class StudentPaymentService
         Section::class => "Bo'lim",
         DtmTest::class => 'DTM testi',
         SertifikatTest::class => 'Sertifikat testi',
+        LanguageExamTest::class => 'Til imtihoni',
     ];
 
     public function history(int $userId): LengthAwarePaginator

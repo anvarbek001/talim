@@ -4,10 +4,12 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\DtmTest;
+use App\Models\LanguageExamTest;
 use App\Models\SertifikatTest;
 use App\Models\TopicTest;
 use App\Models\User;
 use App\Services\DtmTestService;
+use App\Services\LanguageExamTestService;
 use App\Services\SertifikatTestService;
 use App\Services\TopicTestService;
 use Exception;
@@ -22,6 +24,7 @@ class TestController extends Controller implements HasMiddleware
         protected TopicTestService $topicTestServ,
         protected DtmTestService $dtmTestServ,
         protected SertifikatTestService $sertifikatTestServ,
+        protected LanguageExamTestService $languageExamTestServ,
     ) {}
 
     public static function middleware(): array
@@ -39,14 +42,16 @@ class TestController extends Controller implements HasMiddleware
         $topicTests = $this->topicTestServ->all($filters + ['page_name' => 'topic_page']);
         $dtmTests = $this->dtmTestServ->all($filters + ['page_name' => 'dtm_page']);
         $sertifikatTests = $this->sertifikatTestServ->all($filters + ['page_name' => 'sertifikat_page']);
+        $languageExamTests = $this->languageExamTestServ->all($filters + ['page_name' => 'language_exam_page']);
 
         $teachers = User::where(fn ($query) => $query
             ->whereHas('topicTests')
             ->orWhereHas('dtmTests')
             ->orWhereHas('sertifikatTests')
+            ->orWhereHas('languageExamTests')
         )->orderBy('name')->get();
 
-        return view('admin.tests.index', compact('topicTests', 'dtmTests', 'sertifikatTests', 'teachers'));
+        return view('admin.tests.index', compact('topicTests', 'dtmTests', 'sertifikatTests', 'languageExamTests', 'teachers'));
     }
 
     public function destroyTopic(TopicTest $topicTest): RedirectResponse
@@ -80,5 +85,16 @@ class TestController extends Controller implements HasMiddleware
         }
 
         return redirect()->route('admin.tests.index')->with('success', "Sertifikat testi o'chirildi");
+    }
+
+    public function destroyLanguageExam(LanguageExamTest $languageExamTest): RedirectResponse
+    {
+        try {
+            $this->languageExamTestServ->delete($languageExamTest);
+        } catch (Exception $e) {
+            return redirect()->route('admin.tests.index')->with('error', $e->getMessage());
+        }
+
+        return redirect()->route('admin.tests.index')->with('success', "Til imtihoni o'chirildi");
     }
 }

@@ -888,12 +888,14 @@
         <a href="{{ route('dashboard') }}" class="nav-link {{ request()->routeIs('dashboard') ? 'active' : '' }}">
             <i class="bi bi-grid-1x2-fill"></i> Bosh sahifa
         </a>
-        <a href="{{ route('lessons.mine') }}" class="nav-link {{ request()->routeIs('lessons.mine') ? 'active' : '' }}">
-            <i class="bi bi-collection-play"></i> Mening darslarim
-        </a>
-        <a href="{{ route('lesson') }}" class="nav-link {{ request()->routeIs('lesson') ? 'active' : '' }}">
-            <i class="bi bi-cloud-upload"></i> Dars joylash
-        </a>
+        @if (config('features.lessons_enabled'))
+            <a href="{{ route('lessons.mine') }}" class="nav-link {{ request()->routeIs('lessons.mine') ? 'active' : '' }}">
+                <i class="bi bi-collection-play"></i> Mening darslarim
+            </a>
+            <a href="{{ route('lesson') }}" class="nav-link {{ request()->routeIs('lesson') ? 'active' : '' }}">
+                <i class="bi bi-cloud-upload"></i> Dars joylash
+            </a>
+        @endif
         <a href="{{ route('tests.index') }}" class="nav-link {{ request()->routeIs('tests.index') ? 'active' : '' }}">
             <i class="bi bi-patch-question"></i> Testlarim
         </a>
@@ -971,12 +973,14 @@
         <a href="{{ route('dashboard') }}" class="bn-link {{ request()->routeIs('dashboard') ? 'active' : '' }}">
             <i class="bi bi-grid-1x2-fill"></i><span>Bosh</span>
         </a>
-        <a href="{{ route('lessons.mine') }}" class="bn-link {{ request()->routeIs('lessons.mine') ? 'active' : '' }}">
-            <i class="bi bi-collection-play"></i><span>Darslarim</span>
-        </a>
-        <a href="{{ route('lesson') }}" class="bn-link {{ request()->routeIs('lesson') ? 'active' : '' }}">
-            <i class="bi bi-cloud-upload"></i><span>Joylash</span>
-        </a>
+        @if (config('features.lessons_enabled'))
+            <a href="{{ route('lessons.mine') }}" class="bn-link {{ request()->routeIs('lessons.mine') ? 'active' : '' }}">
+                <i class="bi bi-collection-play"></i><span>Darslarim</span>
+            </a>
+            <a href="{{ route('lesson') }}" class="bn-link {{ request()->routeIs('lesson') ? 'active' : '' }}">
+                <i class="bi bi-cloud-upload"></i><span>Joylash</span>
+            </a>
+        @endif
         <a href="{{ route('tests.index') }}" class="bn-link {{ request()->routeIs('tests.index') ? 'active' : '' }}">
             <i class="bi bi-mortarboard"></i><span>Testlarim</span>
         </a>

@@ -5,6 +5,12 @@ use App\Models\Grade;
 use App\Models\Science;
 use App\Models\User;
 
+beforeEach(function () {
+    // Video darslar hozircha o'chirilgan (config/features.php) — shu fayldagi
+    // lesson filtri testlari o'sha funksiyaning o'zi hali ishlashini tekshiradi.
+    config(['features.lessons_enabled' => true]);
+});
+
 test('student books catalog can be filtered by title', function () {
     $teacher = User::factory()->create();
     $student = User::factory()->create();

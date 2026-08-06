@@ -6,7 +6,7 @@
         <div class="page-head fade-up">
             <div>
                 <h1>Testlarim</h1>
-                <p class="page-sub">Mavzu, DTM va sertifikat testlarini shu yerdan yarating hamda boshqaring.</p>
+                <p class="page-sub">Mavzu, DTM, sertifikat va til imtihoni testlarini shu yerdan yarating hamda boshqaring.</p>
             </div>
         </div>
 
@@ -17,6 +17,7 @@
             <button type="button" class="test-tab active" data-tab="topic"><i class="bi bi-bookmark"></i> Mavzu testi</button>
             <button type="button" class="test-tab" data-tab="dtm"><i class="bi bi-mortarboard"></i> DTM testi</button>
             <button type="button" class="test-tab" data-tab="sertifikat"><i class="bi bi-patch-check"></i> Sertifikat testi</button>
+            <button type="button" class="test-tab" data-tab="language_exam"><i class="bi bi-translate"></i> Til imtihoni</button>
         </div>
 
         {{-- ========================================================= --}}
@@ -232,6 +233,91 @@
                 </button>
             </div>
         </form>
+
+        {{-- ========================================================= --}}
+        {{-- TIL IMTIHONI FORMASI --}}
+        {{-- ========================================================= --}}
+        <form action="{{ route('language-exam-tests.store') }}" method="POST" enctype="multipart/form-data" class="card fade-up qb-form"
+            id="languageExamTestForm" data-tab-panel="language_exam" data-qb-auto data-wq-auto style="display:none;animation-delay:.08s;">
+            @csrf
+            <div class="card-head">
+                <div class="step-badge step-badge-alt"><i class="bi bi-translate"></i></div>
+                <div>
+                    <div class="card-title">Til imtihoni yaratish</div>
+                    <div class="card-sub-text">IELTS, CEFR va boshqa til imtihonlariga mos test tuzing</div>
+                </div>
+            </div>
+
+            <div class="form-grid form-grid-3 mb-16">
+                <div class="field">
+                    <label class="field-label">Til</label>
+                    <select name="science_id" class="select-control" required>
+                        <option value="" disabled selected>Til tanlang</option>
+                        @foreach ($sciences as $science)
+                            <option value="{{ $science->id }}">{{ $science->title }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="field">
+                    <label class="field-label">Imtihon turi</label>
+                    <select name="exam_type" class="select-control" required>
+                        <option value="" disabled selected>Imtihon turini tanlang</option>
+                        @foreach (\App\Models\LanguageExamTest::EXAM_TYPES as $value => $label)
+                            <option value="{{ $value }}">{{ $label }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="field">
+                    <label class="field-label">Daraja <span class="optional-tag">ixtiyoriy</span></label>
+                    <input type="text" name="level" class="text-control" placeholder="Masalan: B2, Band 6.5">
+                </div>
+            </div>
+
+            <div class="form-grid form-grid-2 mb-16">
+                <div class="field">
+                    <label class="field-label">Davomiylik (daqiqa)</label>
+                    <input type="number" name="duration_minutes" class="text-control" min="1" max="240" value="60"
+                        required>
+                </div>
+            </div>
+
+            <div class="form-grid form-grid-2 mb-16">
+                @include('tests.partials.pricing-toggle', ['prefix' => 'language_exam_test'])
+            </div>
+
+            <div class="form-grid mb-16">
+                <div class="field mb-12">
+                    <label class="field-label">Test nomi</label>
+                    <input type="text" name="title" class="text-control" placeholder="Masalan: IELTS Academic — Reading"
+                        required>
+                </div>
+                <div class="field">
+                    <label class="field-label">Tavsif <span class="optional-tag">ixtiyoriy</span></label>
+                    <textarea name="description" class="text-control" rows="2" placeholder="Test haqida qisqacha..."></textarea>
+                </div>
+            </div>
+
+            @include('tests.partials.questions-mode', ['prefix' => 'language_exam'])
+
+            <div class="wq-section">
+                <div class="wq-section-head">
+                    <div>
+                        <div class="wq-section-title"><i class="bi bi-pencil-square"></i> Yozma qism <span class="optional-tag">ixtiyoriy</span></div>
+                        <div class="card-sub-text">Erkin javob talab qiladigan savollar — o'quvchi javobini o'qituvchi qo'lda baholaydi</div>
+                    </div>
+                </div>
+                <div class="wq-list"></div>
+                <button type="button" class="btn-ghost wq-add-question mb-16">
+                    <i class="bi bi-plus-lg"></i> Yozma savol qo'shish
+                </button>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn-primary">
+                    <i class="bi bi-check-circle"></i> Til imtihonini saqlash
+                </button>
+            </div>
+        </form>
     </div>
 
     {{-- ========================================================= --}}
@@ -300,6 +386,16 @@
                         'edit' => [
                             'title' => $t->title, 'description' => $t->description, 'duration_minutes' => $t->duration_minutes, 'price' => $t->price,
                             'science_id' => $t->science_id, 'level' => $t->level,
+                            'questions' => $questionsPayload($t),
+                            'written_questions' => $t->writtenQuestions->map(fn ($w) => ['text' => $w->question, 'max_score' => $w->max_score])->values()->all(),
+                        ],
+                    ]))
+                    ->concat($languageExamTests->map(fn ($t) => [
+                        'type' => 'Til imtihoni', 'kind' => 'language_exam', 'route' => 'language-exam-tests.destroy', 'updateRoute' => 'language-exam-tests.update',
+                        'model' => $t, 'science' => $t->science, 'extra' => $t->examTypeLabel().($t->level ? ' | '.$t->level : ''),
+                        'edit' => [
+                            'title' => $t->title, 'description' => $t->description, 'duration_minutes' => $t->duration_minutes, 'price' => $t->price,
+                            'science_id' => $t->science_id, 'exam_type' => $t->exam_type, 'level' => $t->level,
                             'questions' => $questionsPayload($t),
                             'written_questions' => $t->writtenQuestions->map(fn ($w) => ['text' => $w->question, 'max_score' => $w->max_score])->values()->all(),
                         ],
@@ -552,6 +648,81 @@
                 </div>
                 <div class="modal-actions">
                     <button type="button" class="btn-ghost" data-modal-close="editSertifikatTestModal">Bekor qilish</button>
+                    <button type="submit" class="btn-primary"><i class="bi bi-check-circle"></i> Saqlash</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="editLanguageExamTestModal">
+        <div class="modal-box">
+            <form action="" method="POST" class="qb-form" id="editLanguageExamTestForm">
+                @csrf
+                @method('PUT')
+                <div class="modal-head">
+                    <div class="modal-title"><i class="bi bi-translate"></i> Til imtihonini tahrirlash</div>
+                    <button type="button" class="modal-close" data-modal-close="editLanguageExamTestModal"><i class="bi bi-x-lg"></i></button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-grid form-grid-3 mb-16">
+                        <div class="field">
+                            <label class="field-label">Til</label>
+                            <select name="science_id" class="select-control" required id="edit_language_exam_test_science_id">
+                                @foreach ($sciences as $science)
+                                    <option value="{{ $science->id }}">{{ $science->title }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="field">
+                            <label class="field-label">Imtihon turi</label>
+                            <select name="exam_type" class="select-control" required id="edit_language_exam_test_exam_type">
+                                @foreach (\App\Models\LanguageExamTest::EXAM_TYPES as $value => $label)
+                                    <option value="{{ $value }}">{{ $label }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="field">
+                            <label class="field-label">Daraja <span class="optional-tag">ixtiyoriy</span></label>
+                            <input type="text" name="level" class="text-control" id="edit_language_exam_test_level">
+                        </div>
+                    </div>
+                    <div class="form-grid form-grid-2 mb-16">
+                        <div class="field">
+                            <label class="field-label">Davomiylik (daqiqa)</label>
+                            <input type="number" name="duration_minutes" class="text-control" min="1" max="240" required
+                                id="edit_language_exam_test_duration">
+                        </div>
+                    </div>
+
+                    <div class="form-grid form-grid-2 mb-16">
+                        @include('tests.partials.pricing-toggle', ['prefix' => 'edit_language_exam_test'])
+                    </div>
+                    <div class="form-grid mb-16">
+                        <div class="field mb-12">
+                            <label class="field-label">Test nomi</label>
+                            <input type="text" name="title" class="text-control" required id="edit_language_exam_test_title">
+                        </div>
+                        <div class="field">
+                            <label class="field-label">Tavsif <span class="optional-tag">ixtiyoriy</span></label>
+                            <textarea name="description" class="text-control" rows="2" id="edit_language_exam_test_description"></textarea>
+                        </div>
+                    </div>
+                    <div class="qb-list"></div>
+                    <button type="button" class="btn-ghost qb-add-question mb-16">
+                        <i class="bi bi-plus-lg"></i> Savol qo'shish
+                    </button>
+                    <div class="wq-section">
+                        <div class="wq-section-head">
+                            <div class="wq-section-title"><i class="bi bi-pencil-square"></i> Yozma qism <span class="optional-tag">ixtiyoriy</span></div>
+                        </div>
+                        <div class="wq-list"></div>
+                        <button type="button" class="btn-ghost wq-add-question">
+                            <i class="bi bi-plus-lg"></i> Yozma savol qo'shish
+                        </button>
+                    </div>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn-ghost" data-modal-close="editLanguageExamTestModal">Bekor qilish</button>
                     <button type="submit" class="btn-primary"><i class="bi bi-check-circle"></i> Saqlash</button>
                 </div>
             </form>
@@ -1833,6 +2004,7 @@
                 topic: document.getElementById('editTopicTestModal'),
                 dtm: document.getElementById('editDtmTestModal'),
                 sertifikat: document.getElementById('editSertifikatTestModal'),
+                language_exam: document.getElementById('editLanguageExamTestModal'),
             };
 
             function openModal(el) {
@@ -1899,6 +2071,20 @@
                 window.WrittenQuestionBuilder.initForm(form, payload.written_questions || []);
             }
 
+            function fillLanguageExamModal(payload) {
+                const form = document.getElementById('editLanguageExamTestForm');
+                document.getElementById('edit_language_exam_test_science_id').value = payload.science_id;
+                document.getElementById('edit_language_exam_test_exam_type').value = payload.exam_type;
+                document.getElementById('edit_language_exam_test_level').value = payload.level || '';
+                document.getElementById('edit_language_exam_test_duration').value = payload.duration_minutes;
+                document.getElementById('edit_language_exam_test_price').value = payload.price;
+                setPricingMode('edit_language_exam_test', payload.price > 0 ? 'paid' : 'free');
+                document.getElementById('edit_language_exam_test_title').value = payload.title;
+                document.getElementById('edit_language_exam_test_description').value = payload.description || '';
+                window.TestQuestionBuilder.initForm(form, payload.questions);
+                window.WrittenQuestionBuilder.initForm(form, payload.written_questions || []);
+            }
+
             const editTopicSelect = document.getElementById('edit_topic_test_topic_id');
             editTopicSelect?.addEventListener('change', () => {
                 const opt = editTopicSelect.options[editTopicSelect.selectedIndex];
@@ -1920,6 +2106,7 @@
                     if (kind === 'topic') fillTopicModal(payload);
                     else if (kind === 'dtm') fillDtmModal(payload);
                     else if (kind === 'sertifikat') fillSertifikatModal(payload);
+                    else if (kind === 'language_exam') fillLanguageExamModal(payload);
 
                     openModal(modal);
                 });

@@ -2,6 +2,7 @@
 
 use App\Models\DtmTest;
 use App\Models\Grade;
+use App\Models\LanguageExamTest;
 use App\Models\Science;
 use App\Models\Section;
 use App\Models\SertifikatTest;
@@ -117,4 +118,21 @@ test('an admin can delete another teachers sertifikat test', function () {
 
     $response->assertRedirect(route('admin.tests.index'));
     expect(SertifikatTest::find($test->id))->toBeNull();
+});
+
+test('an admin can delete another teachers language exam test', function () {
+    $admin = User::factory()->create();
+    $admin->assignRole('admin');
+    $teacher = User::factory()->create();
+    $teacher->assignRole('teacher');
+    $science = Science::create(['title' => 'Ingliz tili', 'icon' => 'bi-book', 'color' => '#000']);
+    $test = LanguageExamTest::create([
+        'user_id' => $teacher->id, 'science_id' => $science->id, 'exam_type' => 'IELTS', 'title' => 'IELTS testi',
+        'duration_minutes' => 60, 'price' => 0,
+    ]);
+
+    $response = $this->actingAs($admin)->delete(route('admin.tests.language-exam.destroy', $test));
+
+    $response->assertRedirect(route('admin.tests.index'));
+    expect(LanguageExamTest::find($test->id))->toBeNull();
 });

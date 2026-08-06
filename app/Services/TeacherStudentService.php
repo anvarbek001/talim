@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\DtmTest;
+use App\Models\LanguageExamTest;
 use App\Models\SertifikatTest;
 use App\Models\TestAttempt;
 use App\Models\TopicTest;
@@ -24,13 +25,15 @@ class TeacherStudentService
         $topicTestIds = TopicTest::where('user_id', $teacherId)->pluck('id');
         $dtmTestIds = DtmTest::where('user_id', $teacherId)->pluck('id');
         $sertifikatTestIds = SertifikatTest::where('user_id', $teacherId)->pluck('id');
+        $languageExamTestIds = LanguageExamTest::where('user_id', $teacherId)->pluck('id');
 
         $attempts = TestAttempt::with(['user', 'testable'])
             ->where('status', 'submitted')
-            ->where(function ($query) use ($topicTestIds, $dtmTestIds, $sertifikatTestIds) {
+            ->where(function ($query) use ($topicTestIds, $dtmTestIds, $sertifikatTestIds, $languageExamTestIds) {
                 $query->where(fn ($q) => $q->where('testable_type', TopicTest::class)->whereIn('testable_id', $topicTestIds))
                     ->orWhere(fn ($q) => $q->where('testable_type', DtmTest::class)->whereIn('testable_id', $dtmTestIds))
-                    ->orWhere(fn ($q) => $q->where('testable_type', SertifikatTest::class)->whereIn('testable_id', $sertifikatTestIds));
+                    ->orWhere(fn ($q) => $q->where('testable_type', SertifikatTest::class)->whereIn('testable_id', $sertifikatTestIds))
+                    ->orWhere(fn ($q) => $q->where('testable_type', LanguageExamTest::class)->whereIn('testable_id', $languageExamTestIds));
             })
             ->latest('submitted_at')
             ->get();

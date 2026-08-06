@@ -346,9 +346,11 @@
         <a href="{{ route('admin.books.index') }}" class="nav-link {{ request()->routeIs('admin.books.*') ? 'active' : '' }}">
             <i class="bi bi-file-earmark-pdf"></i> Kitoblar
         </a>
-        <a href="{{ route('admin.lessons.index') }}" class="nav-link {{ request()->routeIs('admin.lessons.*') ? 'active' : '' }}">
-            <i class="bi bi-camera-reels"></i> Video darslar
-        </a>
+        @if (config('features.lessons_enabled'))
+            <a href="{{ route('admin.lessons.index') }}" class="nav-link {{ request()->routeIs('admin.lessons.*') ? 'active' : '' }}">
+                <i class="bi bi-camera-reels"></i> Video darslar
+            </a>
+        @endif
         <a href="{{ route('admin.tests.index') }}" class="nav-link {{ request()->routeIs('admin.tests.*') ? 'active' : '' }}">
             <i class="bi bi-patch-question"></i> Testlar
         </a>

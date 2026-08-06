@@ -2,6 +2,12 @@
 
 use App\Models\User;
 
+beforeEach(function () {
+    // Video darslar hozircha o'chirilgan (config/features.php) — bu test
+    // o'sha funksiyaning o'zi hali ishlashini tekshiradi.
+    config(['features.lessons_enabled' => true]);
+});
+
 test('the student dashboard shows a subjects section linking to lessons and tests', function () {
     $teacher = User::factory()->create();
     $student = User::factory()->create();

@@ -10,6 +10,7 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\BookController;
 use App\Http\Controllers\ClickPaymentController;
 use App\Http\Controllers\DtmTestController;
+use App\Http\Controllers\LanguageExamTestController;
 use App\Http\Controllers\LessonController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SectionController;
@@ -43,7 +44,8 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-Route::controller(LessonController::class)->group(function () {
+// Video darslar — vaqtincha o'chirilgan (config/features.php: lessons_enabled).
+Route::controller(LessonController::class)->middleware('lessons.enabled')->group(function () {
     Route::get('/lesson', 'index')->name('lesson');
     Route::post('/lesson', 'store')->name('lessons.store');
     Route::get('/my-lessons', 'myLessons')->name('lessons.mine');
@@ -89,6 +91,12 @@ Route::controller(SertifikatTestController::class)->group(function () {
     Route::delete('/tests/sertifikat/{sertifikatTest}', 'destroy')->name('sertifikat-tests.destroy');
 });
 
+Route::controller(LanguageExamTestController::class)->group(function () {
+    Route::post('/tests/language-exam', 'store')->name('language-exam-tests.store');
+    Route::put('/tests/language-exam/{languageExamTest}', 'update')->name('language-exam-tests.update');
+    Route::delete('/tests/language-exam/{languageExamTest}', 'destroy')->name('language-exam-tests.destroy');
+});
+
 Route::controller(StudentTestController::class)->group(function () {
     Route::get('/student/tests', 'index')->name('student-tests.index');
     Route::post('/student/tests/{type}/{id}', 'start')->name('student-tests.start');
@@ -97,7 +105,8 @@ Route::controller(StudentTestController::class)->group(function () {
     Route::get('/student/tests/attempts/{attempt}/result', 'result')->name('student-tests.result');
 });
 
-Route::controller(StudentLessonController::class)->group(function () {
+// Video darslar — vaqtincha o'chirilgan (config/features.php: lessons_enabled).
+Route::controller(StudentLessonController::class)->middleware('lessons.enabled')->group(function () {
     Route::get('/student/lessons', 'index')->name('student-lessons.index');
     Route::get('/student/lessons/science/{science}', 'teachers')->name('student-lessons.teachers');
     Route::get('/student/lessons/science/{science}/teacher/{teacher}', 'byTeacher')->name('student-lessons.by-teacher');
@@ -140,7 +149,8 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(fun
         Route::delete('/{book}', 'destroy')->name('destroy');
     });
 
-    Route::controller(AdminLessonController::class)->prefix('lessons')->name('lessons.')->group(function () {
+    // Video darslar — vaqtincha o'chirilgan (config/features.php: lessons_enabled).
+    Route::controller(AdminLessonController::class)->middleware('lessons.enabled')->prefix('lessons')->name('lessons.')->group(function () {
         Route::get('/', 'index')->name('index');
         Route::put('/{lesson}', 'update')->name('update');
         Route::delete('/{lesson}', 'destroy')->name('destroy');
@@ -151,6 +161,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(fun
         Route::delete('/topic/{topicTest}', 'destroyTopic')->name('topic.destroy');
         Route::delete('/dtm/{dtmTest}', 'destroyDtm')->name('dtm.destroy');
         Route::delete('/sertifikat/{sertifikatTest}', 'destroySertifikat')->name('sertifikat.destroy');
+        Route::delete('/language-exam/{languageExamTest}', 'destroyLanguageExam')->name('language-exam.destroy');
     });
 
     Route::controller(AdminPurchaseController::class)->prefix('purchases')->name('purchases.')->group(function () {

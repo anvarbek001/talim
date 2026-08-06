@@ -27,6 +27,7 @@
                 <option value="topic" {{ request('type') === 'topic' ? 'selected' : '' }}>Mavzu testi</option>
                 <option value="dtm" {{ request('type') === 'dtm' ? 'selected' : '' }}>DTM testi</option>
                 <option value="sertifikat" {{ request('type') === 'sertifikat' ? 'selected' : '' }}>Sertifikat testi</option>
+                <option value="language_exam" {{ request('type') === 'language_exam' ? 'selected' : '' }}>Til imtihoni</option>
             </select>
             <button type="submit" class="test-filter-btn"><i class="bi bi-search"></i> Qidirish</button>
             @if (request('q') || request('science') || request('type'))
@@ -52,7 +53,8 @@
                                 <span class="test-type-chip test-type-{{ $item['type'] }}">
                                     @if ($item['type'] === 'topic') <i class="bi bi-bookmark"></i> Mavzu
                                     @elseif ($item['type'] === 'dtm') <i class="bi bi-mortarboard"></i> DTM
-                                    @else <i class="bi bi-patch-check"></i> Sertifikat
+                                    @elseif ($item['type'] === 'sertifikat') <i class="bi bi-patch-check"></i> Sertifikat
+                                    @else <i class="bi bi-translate"></i> Til imtihoni
                                     @endif
                                 </span>
                                 @if ($item['has_written'])
@@ -263,6 +265,11 @@
         .test-type-sertifikat {
             background: var(--mint-soft);
             color: var(--mint);
+        }
+
+        .test-type-language_exam {
+            background: var(--coral-soft);
+            color: var(--coral);
         }
 
         .test-written-chip {

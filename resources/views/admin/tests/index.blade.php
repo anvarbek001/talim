@@ -6,7 +6,7 @@
         <div class="page-head fade-up">
             <div>
                 <h1>Testlar</h1>
-                <p class="page-sub">Barcha o'qituvchilarning mavzu, DTM va sertifikat testlarini ko'rish va o'chirish.</p>
+                <p class="page-sub">Barcha o'qituvchilarning mavzu, DTM, sertifikat va til imtihoni testlarini ko'rish va o'chirish.</p>
             </div>
             <a href="{{ route('tests.index') }}" class="btn btn-primary"><i class="bi bi-plus-lg"></i> Test qo'shish</a>
         </div>
@@ -166,6 +166,53 @@
                     </table>
                 </div>
                 {{ $sertifikatTests->links() }}
+            @endif
+        </div>
+
+        <div class="card fade-up" style="animation-delay:.14s;">
+            <div class="card-head">
+                <div class="card-title">Til imtihonlari</div>
+                <div class="card-sub-text">{{ $languageExamTests->total() }} ta</div>
+            </div>
+            @if ($languageExamTests->isEmpty())
+                <div class="empty-hint"><i class="bi bi-info-circle"></i> Hali til imtihoni yaratilmagan.</div>
+            @else
+                <div class="table-wrap">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Nomi</th>
+                                <th>O'qituvchi</th>
+                                <th>Til</th>
+                                <th>Turi</th>
+                                <th>Daraja</th>
+                                <th>Davomiyligi</th>
+                                <th>Amallar</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($languageExamTests as $test)
+                                <tr>
+                                    <td class="cell-strong" data-label="Nomi">{{ $test->title }}</td>
+                                    <td data-label="O'qituvchi">{{ $test->user->name }}</td>
+                                    <td class="cell-muted" data-label="Til">{{ $test->science?->title }}</td>
+                                    <td class="cell-muted" data-label="Turi">{{ $test->examTypeLabel() }}</td>
+                                    <td class="cell-muted" data-label="Daraja">{{ $test->level }}</td>
+                                    <td data-label="Davomiyligi">{{ $test->duration_minutes }} daqiqa</td>
+                                    <td class="actions-cell">
+                                        <form action="{{ route('admin.tests.language-exam.destroy', $test) }}" method="POST"
+                                            onsubmit="return confirm('Rostdan ham o\'chirmoqchimisiz?');">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="btn btn-danger btn-sm"><i class="bi bi-trash"></i></button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+                {{ $languageExamTests->links() }}
             @endif
         </div>
     </div>
