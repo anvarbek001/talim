@@ -104,6 +104,78 @@ test('a topic can have several named videos uploaded at once', function () {
     expect($videos->pluck('title')->all())->toBe(['1-qism', '2-qism']);
 });
 
+test('a youtube link is stored directly as a ready video without uploading', function () {
+    $this->mock(YoutubeUploadService::class, function ($mock) {
+        $mock->shouldNotReceive('upload');
+    });
+
+    $user = User::factory()->create();
+    $topic = makeTopic($user);
+
+    $response = $this->actingAs($user)->post(route('lessons.store'), [
+        'topic_id' => $topic->id,
+        'video_urls' => ['https://www.youtube.com/watch?v=dQw4w9WgXcQ'],
+        'video_titles' => ['Havola orqali video'],
+    ]);
+
+    $response->assertRedirect(route('lesson'));
+    $response->assertSessionHasNoErrors();
+
+    $lesson = Lesson::first();
+    expect(LessonFile::where('lesson_id', $lesson->id)
+        ->where('type', 'youtube')
+        ->where('title', 'Havola orqali video')
+        ->where('youtube_id', 'dQw4w9WgXcQ')
+        ->where('status', 'ready')
+        ->where('lesson_file', '')
+        ->exists())->toBeTrue();
+});
+
+test('a video row can mix an uploaded file and a youtube link across the same lesson', function () {
+    Storage::fake('local');
+
+    $this->mock(YoutubeUploadService::class, function ($mock) {
+        $mock->shouldReceive('upload')->once()->andReturn('UPLOADED_ID');
+    });
+
+    $user = User::factory()->create();
+    $topic = makeTopic($user);
+    $video = UploadedFile::fake()->create('dars.mp4', 500, 'video/mp4');
+
+    $response = $this->actingAs($user)->post(route('lessons.store'), [
+        'topic_id' => $topic->id,
+        'videos' => [$video, null],
+        'video_urls' => [null, 'https://youtu.be/AbCdEfGhIjK'],
+        'video_titles' => ['Fayl orqali', 'Havola orqali'],
+    ]);
+
+    $response->assertRedirect(route('lesson'));
+    $response->assertSessionHasNoErrors();
+
+    $lesson = Lesson::first();
+    $videos = LessonFile::where('lesson_id', $lesson->id)->where('type', 'youtube')->get();
+
+    expect($videos)->toHaveCount(2);
+    expect($videos->firstWhere('title', 'Fayl orqali')->youtube_id)->toBe('UPLOADED_ID');
+    expect($videos->firstWhere('title', 'Havola orqali')->youtube_id)->toBe('AbCdEfGhIjK');
+});
+
+test('an invalid youtube link fails validation', function () {
+    $this->mock(YoutubeUploadService::class, function ($mock) {
+        $mock->shouldNotReceive('upload');
+    });
+
+    $user = User::factory()->create();
+    $topic = makeTopic($user);
+
+    $response = $this->actingAs($user)->post(route('lessons.store'), [
+        'topic_id' => $topic->id,
+        'video_urls' => ['https://example.com/not-a-youtube-link'],
+    ]);
+
+    $response->assertSessionHasErrors(['video_urls.0']);
+});
+
 test('a lesson file starts as pending and turns failed if the youtube upload throws', function () {
     Storage::fake('local');
 
@@ -131,7 +203,8 @@ test('a lesson file starts as pending and turns failed if the youtube upload thr
     expect($lessonFile->status)->toBe('failed');
 });
 
-test('non video file is stored on disk instead of youtube', function () {
+test('non video file is stored privately instead of youtube, never on the public disk', function () {
+    Storage::fake('local');
     Storage::fake('public');
 
     $this->mock(YoutubeUploadService::class, function ($mock) {
@@ -152,7 +225,8 @@ test('non video file is stored on disk instead of youtube', function () {
 
     $lessonFile = LessonFile::where('type', 'file')->first();
     expect($lessonFile)->not->toBeNull();
-    Storage::disk('public')->assertExists($lessonFile->lesson_file);
+    Storage::disk('local')->assertExists($lessonFile->lesson_file);
+    Storage::disk('public')->assertMissing($lessonFile->lesson_file);
 });
 
 test('lesson upload requires a topic and at least one file', function () {

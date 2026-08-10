@@ -9,6 +9,7 @@ use App\Models\LanguageExamTest;
 use App\Models\Purchase;
 use App\Models\Section;
 use App\Models\SertifikatTest;
+use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controllers\HasMiddleware;
@@ -28,6 +29,7 @@ class PurchaseController extends Controller implements HasMiddleware
         DtmTest::class => 'DTM testi',
         SertifikatTest::class => 'Sertifikat testi',
         LanguageExamTest::class => 'Til imtihoni',
+        User::class => "O'qituvchi obunasi",
     ];
 
     public static function middleware(): array

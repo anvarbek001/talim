@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Support\Youtube;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
@@ -27,9 +28,17 @@ class LessonRequest extends FormRequest
         return [
             'topic_id' => 'required|integer|exists:topics,id',
             'videos' => 'nullable|array',
-            'videos.*' => 'file|max:1048576|mimes:mp4,mov,avi,wmv,flv,mkv,webm',
+            'videos.*' => 'nullable|file|max:1048576|mimes:mp4,mov,avi,wmv,flv,mkv,webm',
             'video_titles' => 'nullable|array',
             'video_titles.*' => 'nullable|string|max:255',
+            // Fayl o'rniga tayyor YouTube havolasini kiritish uchun — har bir video
+            // qatori "fayl yuklash" yoki "YouTube havola" rejimidan birida bo'ladi.
+            'video_urls' => 'nullable|array',
+            'video_urls.*' => ['nullable', 'string', 'max:500', function ($attribute, $value, $fail) {
+                if (filled($value) && ! Youtube::extractVideoId($value)) {
+                    $fail("Havola to'g'ri YouTube video havolasi bo'lishi kerak.");
+                }
+            }],
             'lesson_files' => 'nullable|array',
             'lesson_files.*' => 'file|max:1048576|mimes:pdf,doc,docx,ppt,pptx',
         ];
@@ -44,6 +53,7 @@ class LessonRequest extends FormRequest
             'videos.*.max' => 'Video hajmi 1 GB dan oshmasligi kerak.',
             'videos.*.mimes' => 'Video formati qo\'llab-quvvatlanmaydi.',
             'video_titles.*.max' => 'Video nomi :max ta belgidan oshmasligi kerak.',
+            'video_urls.*.max' => 'Havola :max ta belgidan oshmasligi kerak.',
             'lesson_files.*.file' => 'Yuklangan narsa fayl bo\'lishi kerak.',
             'lesson_files.*.max' => 'Fayl hajmi 1 GB dan oshmasligi kerak.',
             'lesson_files.*.mimes' => 'Fayl formati qo\'llab-quvvatlanmaydi.',
@@ -55,6 +65,7 @@ class LessonRequest extends FormRequest
         return [
             'topic_id' => 'mavzu',
             'videos' => 'videolar',
+            'video_urls' => 'YouTube havolalari',
             'lesson_files' => 'fayllar',
         ];
     }
@@ -65,7 +76,9 @@ class LessonRequest extends FormRequest
     public function withValidator($validator): void
     {
         $validator->after(function ($validator) {
-            if (! $this->hasFile('videos') && ! $this->hasFile('lesson_files')) {
+            $hasVideoUrl = collect($this->input('video_urls', []))->filter(fn ($url) => filled($url))->isNotEmpty();
+
+            if (! $this->hasFile('videos') && ! $hasVideoUrl && ! $this->hasFile('lesson_files')) {
                 $validator->errors()->add('videos', 'Kamida bitta video yoki fayl biriktirish majburiy.');
             }
         });

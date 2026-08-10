@@ -17,6 +17,10 @@
             <div class="card fade-up settings-card" style="animation-delay:.04s;">
                 @include('profile.partials.update-profile-information-form')
             </div>
+
+            <div class="card fade-up settings-card" style="animation-delay:.07s;">
+                @include('profile.partials.update-subscription-price-form')
+            </div>
         @endif
 
         <div class="card fade-up settings-card" style="animation-delay:.1s;">

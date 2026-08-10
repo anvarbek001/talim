@@ -8,6 +8,7 @@ use App\Models\LanguageExamTest;
 use App\Models\Purchase;
 use App\Models\Section;
 use App\Models\SertifikatTest;
+use App\Models\User;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 class StudentPaymentService
@@ -24,6 +25,7 @@ class StudentPaymentService
         DtmTest::class => 'DTM testi',
         SertifikatTest::class => 'Sertifikat testi',
         LanguageExamTest::class => 'Til imtihoni',
+        User::class => "O'qituvchi obunasi",
     ];
 
     public function history(int $userId): LengthAwarePaginator

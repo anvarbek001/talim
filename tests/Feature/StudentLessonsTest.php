@@ -86,6 +86,34 @@ test('a student can drill down from science to teacher to lessons', function () 
     $byTeacherResponse->assertSee($lesson->grade->title);
 });
 
+test('the teachers listing shows a subscribe button when the teacher set a subscription price', function () {
+    $teacher = User::factory()->create(['name' => 'Ismoil Rahimov', 'subscription_price' => 30000]);
+    $student = User::factory()->create();
+    $lesson = makeLessonForBrowsing($teacher);
+
+    $response = $this->actingAs($student)->get(route('student-lessons.teachers', $lesson->science));
+
+    $response->assertOk();
+    $response->assertSee('30 000 so');
+    $response->assertDontSee('Obuna faol');
+});
+
+test('the teachers listing shows "obuna faol" once the student has subscribed to that teacher', function () {
+    $this->seed(\Database\Seeders\RolePermissionSeeder::class);
+    $teacher = User::factory()->create(['name' => 'Ismoil Rahimov', 'subscription_price' => 30000]);
+    $teacher->assignRole('teacher');
+    $student = User::factory()->create();
+    $student->forceFill(['balance' => 30000])->save();
+    $lesson = makeLessonForBrowsing($teacher);
+
+    $this->actingAs($student)->post(route('student-purchases.store', ['teacher', $teacher->id]));
+
+    $response = $this->actingAs($student)->get(route('student-lessons.teachers', $lesson->science));
+
+    $response->assertOk();
+    $response->assertSee('Obuna faol');
+});
+
 test('a student can open a free-preview lesson and watch it', function () {
     $teacher = User::factory()->create();
     $student = User::factory()->create();

@@ -50,6 +50,28 @@ class ProfileController extends Controller
     }
 
     /**
+     * O'qituvchi o'zining oylik "hammasi kiradi" obuna narxini belgilaydi —
+     * shu narxni to'lagan o'quvchi uning barcha bo'lim/kitoblaridan 1 oy
+     * bepul foydalanadi (PurchaseService::hasAccess).
+     */
+    public function updateSubscriptionPrice(Request $request): RedirectResponse
+    {
+        abort_unless($request->user()->hasRole('teacher'), 403);
+
+        $validated = $request->validate([
+            'subscription_price' => 'required|integer|min:0',
+        ], [
+            'subscription_price.required' => "Obuna narxini kiriting (taklif qilmasangiz 0 kiriting).",
+            'subscription_price.integer' => "Narx butun son bo'lishi kerak.",
+            'subscription_price.min' => "Narx manfiy bo'lishi mumkin emas.",
+        ]);
+
+        $request->user()->update($validated);
+
+        return Redirect::route('profile.edit')->with('status', 'subscription-price-updated');
+    }
+
+    /**
      * Delete the user's account.
      */
     public function destroy(Request $request): RedirectResponse

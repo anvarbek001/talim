@@ -136,6 +136,37 @@ test('a student without enough balance cannot purchase a book', function () {
     expect(Purchase::where('user_id', $student->id)->where('purchasable_id', $book->id)->exists())->toBeFalse();
 });
 
+test('the catalog hides the buy buttons for a book covered by an active teacher subscription', function () {
+    $this->seed(\Database\Seeders\RolePermissionSeeder::class);
+    $teacher = User::factory()->create(['subscription_price' => 20000]);
+    $teacher->assignRole('teacher');
+    $student = User::factory()->create();
+    $student->forceFill(['balance' => 20000])->save();
+    $book = makeBook($teacher, 15000);
+
+    $this->actingAs($student)->post(route('student-purchases.store', ['teacher', $teacher->id]));
+
+    $response = $this->actingAs($student)->get(route('student-books.index'));
+
+    $response->assertOk();
+    $response->assertDontSee('Sotib olish');
+});
+
+test('the catalog shows the buy buttons again once a book purchase has expired', function () {
+    $teacher = User::factory()->create();
+    $student = User::factory()->create();
+    $student->forceFill(['balance' => 10000])->save();
+    $book = makeBook($teacher, 10000);
+
+    $this->actingAs($student)->post(route('student-purchases.store', ['book', $book->id]));
+    Purchase::where('user_id', $student->id)->where('purchasable_id', $book->id)->update(['expires_at' => now()->subDay()]);
+
+    $response = $this->actingAs($student)->get(route('student-books.index'));
+
+    $response->assertOk();
+    $response->assertSee('Sotib olish');
+});
+
 test('a student cannot purchase a free book', function () {
     $teacher = User::factory()->create();
     $student = User::factory()->create();

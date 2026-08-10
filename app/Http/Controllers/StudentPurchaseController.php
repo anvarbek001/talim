@@ -7,6 +7,7 @@ use App\Models\DtmTest;
 use App\Models\LanguageExamTest;
 use App\Models\Section;
 use App\Models\SertifikatTest;
+use App\Models\User;
 use App\Services\PurchaseService;
 use Exception;
 use Illuminate\Routing\Controllers\HasMiddleware;
@@ -20,6 +21,8 @@ class StudentPurchaseController extends Controller implements HasMiddleware
         'sertifikat' => SertifikatTest::class,
         'language_exam' => LanguageExamTest::class,
         'book' => Book::class,
+        // O'qituvchining o'ziga obuna bo'lish — barcha bo'lim/kitoblarini ochadi.
+        'teacher' => User::class,
     ];
 
     public function __construct(protected PurchaseService $purchaseServ) {}
@@ -37,12 +40,18 @@ class StudentPurchaseController extends Controller implements HasMiddleware
 
         $purchasable = $class::findOrFail($id);
 
+        if ($type === 'teacher') {
+            abort_unless($purchasable->hasRole('teacher'), 404);
+        }
+
         try {
             $this->purchaseServ->purchase(Auth::user(), $purchasable);
         } catch (Exception $e) {
             return back()->with('error', $e->getMessage());
         }
 
-        return back()->with('success', 'Xarid muvaffaqiyatli amalga oshirildi');
+        return back()->with('success', $type === 'teacher'
+            ? "O'qituvchiga obuna muvaffaqiyatli amalga oshirildi"
+            : 'Xarid muvaffaqiyatli amalga oshirildi');
     }
 }

@@ -49,7 +49,12 @@ class StudentLessonController extends Controller implements HasMiddleware
     {
         $teachers = $this->lessonServ->teachersForScience($science);
 
-        return view('student.lessons.teachers', compact('science', 'teachers'));
+        $subscribedTeacherIds = $teachers
+            ->filter(fn (User $teacher) => $this->purchaseServ->hasActiveTeacherSubscription(Auth::user(), $teacher->id))
+            ->pluck('id')
+            ->all();
+
+        return view('student.lessons.teachers', compact('science', 'teachers', 'subscribedTeacherIds'));
     }
 
     public function byTeacher(Request $request, Science $science, User $teacher)

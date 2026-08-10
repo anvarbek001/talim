@@ -64,6 +64,7 @@
                                 <th>Turi</th>
                                 <th>Narxi</th>
                                 <th>Sana</th>
+                                <th>Amal qilish muddati</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -73,6 +74,15 @@
                                     <td class="cell-muted" data-label="Turi">{{ $typeLabels[$payment->purchasable_type] ?? class_basename($payment->purchasable_type) }}</td>
                                     <td data-label="Narxi">{{ number_format($payment->price, 0, '.', ' ') }} so'm</td>
                                     <td class="cell-muted" data-label="Sana">{{ $payment->created_at->format('d.m.Y H:i') }}</td>
+                                    <td data-label="Muddati">
+                                        @if ($payment->expires_at === null)
+                                            <span class="cell-muted">Muddatsiz</span>
+                                        @elseif ($payment->isActive())
+                                            <span class="expiry-badge expiry-badge-active">{{ $payment->expires_at->format('d.m.Y') }} gacha</span>
+                                        @else
+                                            <span class="expiry-badge expiry-badge-expired">Muddati tugagan</span>
+                                        @endif
+                                    </td>
                                 </tr>
                             @endforeach
                         </tbody>
@@ -297,6 +307,26 @@
 
         .pay-table tr:last-child td {
             border-bottom: none;
+        }
+
+        .expiry-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 3px 9px;
+            border-radius: 20px;
+            font-size: .74rem;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .expiry-badge-active {
+            background: var(--mint-soft);
+            color: var(--mint);
+        }
+
+        .expiry-badge-expired {
+            background: var(--coral-soft);
+            color: var(--coral);
         }
 
         @media (max-width:640px) {

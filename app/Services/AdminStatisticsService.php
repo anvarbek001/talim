@@ -131,19 +131,26 @@ class AdminStatisticsService
 
     /**
      * Ranks teachers by revenue earned across all their purchasable content
-     * (sections, DTM/sertifikat tests, books). A purchase's owning teacher
-     * is only reachable through its polymorphic `purchasable->user`, so
-     * purchases are eager-loaded and grouped in PHP rather than joined in
-     * SQL across four differently-shaped tables.
+     * (sections, DTM/sertifikat tests, books, teacher-level subscriptions).
+     * A purchase's owning teacher is normally only reachable through its
+     * polymorphic `purchasable->user` — except a teacher-subscription
+     * purchase, whose `purchasable` *is* the teacher directly. Purchases are
+     * eager-loaded (per-morph-type via Purchase::purchasable()'s morphWith)
+     * and grouped in PHP rather than joined in SQL across differently-shaped
+     * tables.
      *
      * @return Collection<int, array{teacher: User, lessons_count: int, tests_count: int, books_count: int, purchases_count: int, gross: float, earning: float, platform_cut: float}>
      */
     public function teacherRevenue(): Collection
     {
-        $purchasesByTeacher = Purchase::with('purchasable.user')
+        $teacherOf = fn (Purchase $purchase) => $purchase->purchasable instanceof User
+            ? $purchase->purchasable
+            : $purchase->purchasable?->user;
+
+        $purchasesByTeacher = Purchase::with('purchasable')
             ->get()
-            ->filter(fn (Purchase $purchase) => $purchase->purchasable && $purchase->purchasable->user)
-            ->groupBy(fn (Purchase $purchase) => $purchase->purchasable->user_id);
+            ->filter(fn (Purchase $purchase) => $teacherOf($purchase) !== null)
+            ->groupBy(fn (Purchase $purchase) => $teacherOf($purchase)->id);
 
         // Batch-load every teacher's content counts up front instead of
         // running 5 count queries per teacher inside the map() below.
@@ -153,8 +160,8 @@ class AdminStatisticsService
             ->keyBy('id');
 
         return $purchasesByTeacher
-            ->map(function (Collection $purchases) use ($teacherStats) {
-                $teacher = $purchases->first()->purchasable->user;
+            ->map(function (Collection $purchases) use ($teacherStats, $teacherOf) {
+                $teacher = $teacherOf($purchases->first());
                 $stats = $teacherStats->get($teacher->id);
                 $gross = (float) $purchases->sum('price');
 

@@ -38,9 +38,10 @@
                         <button type="button" class="mode-btn active" data-pricing-mode="free">Bepul</button>
                         <button type="button" class="mode-btn" data-pricing-mode="paid">Pullik</button>
                     </div>
+                    <div class="field-hint">Bu narx 1 oy uchun amal qiladi — muddat tugagach, o'quvchi qayta sotib olishi kerak bo'ladi.</div>
                 </div>
                 <div class="field" id="pricePanel" style="display:none;">
-                    <label class="field-label">Narx (so'm)</label>
+                    <label class="field-label">Narx (so'm) — 1 oylik</label>
                     <input type="number" name="price" id="price_input" class="text-control" min="1"
                         value="{{ old('price', 0) }}">
                     @error('price')
@@ -114,6 +115,12 @@
             font-size: .76rem;
             color: var(--coral);
             margin-top: 2px;
+        }
+
+        .field-hint {
+            font-size: .74rem;
+            color: var(--muted);
+            margin-top: 6px;
         }
 
         .optional-tag {

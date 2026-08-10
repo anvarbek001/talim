@@ -94,7 +94,7 @@
                             @if ($bookFiles->isNotEmpty())
                                 <div class="lesson-files">
                                     @foreach ($bookFiles as $file)
-                                        <a href="{{ asset('storage/' . $file->lesson_file) }}" target="_blank"
+                                        <a href="{{ route('lesson-files.stream', $file) }}" target="_blank"
                                             class="lesson-file-chip">
                                             <i class="bi bi-file-earmark-pdf"></i>
                                             <span>{{ basename($file->lesson_file) }}</span>

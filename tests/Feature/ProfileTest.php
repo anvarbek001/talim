@@ -81,6 +81,31 @@ test('a teacher sees the avatar upload and delete-account sections on the settin
     $response->assertSee(__('Update Password'));
 });
 
+test('a teacher can set their monthly subscription price', function () {
+    $this->seed(RolePermissionSeeder::class);
+    $teacher = User::factory()->create(['subscription_price' => 0]);
+    $teacher->assignRole('teacher');
+
+    $response = $this->actingAs($teacher)->patch(route('profile.subscription-price'), [
+        'subscription_price' => 45000,
+    ]);
+
+    $response->assertRedirect(route('profile.edit'));
+    expect($teacher->fresh()->subscription_price)->toBe(45000);
+});
+
+test('a student cannot set a subscription price', function () {
+    $this->seed(RolePermissionSeeder::class);
+    $student = User::factory()->create();
+    $student->assignRole('student');
+
+    $response = $this->actingAs($student)->patch(route('profile.subscription-price'), [
+        'subscription_price' => 45000,
+    ]);
+
+    $response->assertForbidden();
+});
+
 test('a student only sees the password and theme sections on the settings page', function () {
     $this->seed(RolePermissionSeeder::class);
     $student = User::factory()->create();

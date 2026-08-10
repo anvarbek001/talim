@@ -12,6 +12,7 @@ use App\Http\Controllers\ClickPaymentController;
 use App\Http\Controllers\DtmTestController;
 use App\Http\Controllers\LanguageExamTestController;
 use App\Http\Controllers\LessonController;
+use App\Http\Controllers\LessonFileController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SectionController;
 use App\Http\Controllers\SertifikatTestController;
@@ -41,6 +42,7 @@ Route::controller(StudentController::class)->group(function () {
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::patch('/profile/subscription-price', [ProfileController::class, 'updateSubscriptionPrice'])->name('profile.subscription-price');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
@@ -50,6 +52,10 @@ Route::controller(LessonController::class)->middleware('lessons.enabled')->group
     Route::post('/lesson', 'store')->name('lessons.store');
     Route::get('/my-lessons', 'myLessons')->name('lessons.mine');
 });
+
+Route::get('/lesson-files/{lessonFile}/stream', [LessonFileController::class, 'stream'])
+    ->middleware('lessons.enabled')
+    ->name('lesson-files.stream');
 
 Route::controller(BookController::class)->group(function () {
     Route::get('/books', 'index')->name('book');

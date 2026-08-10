@@ -88,10 +88,10 @@
                                 <button type="button" class="mode-btn active" data-pricing-mode="free">Bepul</button>
                                 <button type="button" class="mode-btn" data-pricing-mode="paid">Pullik</button>
                             </div>
-                            <div class="field-hint">Bu bo'lim ostidagi barcha video darslar va mavzu testlari shu narx bilan sotiladi.</div>
+                            <div class="field-hint">Bu bo'lim ostidagi barcha video darslar va mavzu testlari shu narx bilan sotiladi — narx 1 oy uchun amal qiladi, muddat tugagach o'quvchi qayta sotib olishi kerak bo'ladi.</div>
                         </div>
                         <div class="field" id="sectionPricePanel" style="display:none;">
-                            <label class="field-label">Narx (so'm)</label>
+                            <label class="field-label">Narx (so'm) — 1 oylik</label>
                             <input type="number" name="price" id="section_price" class="text-control" min="1"
                                 value="{{ old('price', 0) }}">
                             @error('price')
@@ -236,13 +236,39 @@
                             <i class="bi bi-trash"></i>
                         </button>
                     </div>
-                    <label class="dropzone" data-video-dropzone>
-                        <div class="dropzone-icon"><i class="bi bi-camera-reels"></i></div>
-                        <div class="dropzone-text">Videoni shu yerga tashlang yoki <span>tanlash uchun bosing</span></div>
-                        <div class="dropzone-hint">MP4, MOV — maksimal 1 GB</div>
-                        <input type="file" name="videos[]" accept="video/*" hidden data-video-input>
-                    </label>
-                    <div class="file-list" data-video-file-list></div>
+
+                    <div class="mode-toggle video-source-toggle" data-video-source-toggle>
+                        <button type="button" class="mode-btn active" data-source-mode="file">
+                            <i class="bi bi-upload"></i> Fayl yuklash
+                        </button>
+                        <button type="button" class="mode-btn" data-source-mode="url">
+                            <i class="bi bi-youtube"></i> YouTube havola
+                        </button>
+                    </div>
+
+                    <div data-video-file-panel>
+                        <label class="dropzone" data-video-dropzone>
+                            <div class="dropzone-icon"><i class="bi bi-camera-reels"></i></div>
+                            <div class="dropzone-text">Videoni shu yerga tashlang yoki <span>tanlash uchun bosing</span></div>
+                            <div class="dropzone-hint">MP4, MOV — maksimal 1 GB</div>
+                            <input type="file" name="videos[]" accept="video/*" hidden data-video-input>
+                        </label>
+                        <div class="file-list" data-video-file-list></div>
+                    </div>
+
+                    <div class="field video-url-panel" data-video-url-panel style="display:none;">
+                        <input type="url" name="video_urls[]" class="text-control" data-video-url-input
+                            placeholder="https://www.youtube.com/watch?v=...">
+                        <div class="field-hint">
+                            <i class="bi bi-info-circle"></i> YouTube'da avvaldan joylangan videoning havolasi — u qayta
+                            yuklanmaydi, faqat saytga biriktiriladi.
+                        </div>
+                        <div class="field-hint field-hint-warning">
+                            <i class="bi bi-exclamation-triangle"></i> Videoning YouTube'dagi ko'rinishi <b>Public</b>
+                            yoki <b>Unlisted</b> (havola bilan ko'rish) bo'lishi shart — <b>Private</b> (maxfiy) qilib
+                            qo'yilgan bo'lsa, boshqa foydalanuvchilar saytda uni ko'ra olmaydi.
+                        </div>
+                    </div>
                 </div>
             </template>
 
@@ -446,8 +472,9 @@
                             </div>
                         </div>
                         <div class="field" id="editSectionPricePanel">
-                            <label class="field-label">Narx (so'm)</label>
+                            <label class="field-label">Narx (so'm) — 1 oylik</label>
                             <input type="number" name="price" id="edit_section_price" class="text-control" min="1">
+                            <div class="field-hint">Narx 1 oy uchun amal qiladi.</div>
                         </div>
                     </div>
 
@@ -756,6 +783,40 @@
 
         .video-title-input {
             flex: 1;
+        }
+
+        .video-source-toggle {
+            width: 100%;
+            margin-bottom: 10px;
+        }
+
+        .video-source-toggle .mode-btn {
+            flex: 1;
+            justify-content: center;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .video-url-panel {
+            margin-top: 2px;
+        }
+
+        .field-hint-warning {
+            color: #8A6100;
+            background: var(--amber-soft);
+            border: 1px dashed #E0B24C;
+            border-radius: 8px;
+            padding: 8px 10px;
+            margin-top: 6px;
+            display: flex;
+            align-items: flex-start;
+            gap: 6px;
+        }
+
+        .field-hint-warning i {
+            margin-top: 1px;
+            flex-shrink: 0;
         }
 
         .btn-icon-remove {
@@ -1526,6 +1587,14 @@
                 dropzone.addEventListener('drop', (e) => {
                     if (e.dataTransfer.files.length) addFiles(e.dataTransfer.files);
                 });
+
+                return {
+                    reset() {
+                        dt = new DataTransfer();
+                        input.files = dt.files;
+                        render();
+                    }
+                };
             }
 
             setupDropzone(
@@ -1546,11 +1615,36 @@
                 const dropzone = fragment.querySelector('[data-video-dropzone]');
                 const input = fragment.querySelector('[data-video-input]');
                 const list = fragment.querySelector('[data-video-file-list]');
+                const sourceToggle = fragment.querySelector('[data-video-source-toggle]');
+                const filePanel = fragment.querySelector('[data-video-file-panel]');
+                const urlPanel = fragment.querySelector('[data-video-url-panel]');
+                const urlInput = fragment.querySelector('[data-video-url-input]');
 
                 videoRowsContainer.appendChild(fragment);
-                setupDropzone(dropzone, input, list, false, 'bi-camera-reels');
+                const dzApi = setupDropzone(dropzone, input, list, false, 'bi-camera-reels');
 
                 row.querySelector('[data-remove-video-row]').addEventListener('click', () => row.remove());
+
+                // Har bir video qatori "Fayl yuklash" yoki "YouTube havola"
+                // rejimlaridan birida bo'ladi — o'tishda ikkinchi rejimning
+                // qiymati tozalanadi, shu bilan ikkalasi bir vaqtda yuborilmaydi.
+                sourceToggle.addEventListener('click', (e) => {
+                    const btn = e.target.closest('.mode-btn');
+                    if (!btn) return;
+                    const mode = btn.dataset.sourceMode;
+
+                    sourceToggle.querySelectorAll('.mode-btn').forEach(b => b.classList.toggle('active', b === btn));
+
+                    if (mode === 'url') {
+                        filePanel.style.display = 'none';
+                        urlPanel.style.display = '';
+                        dzApi.reset();
+                    } else {
+                        filePanel.style.display = '';
+                        urlPanel.style.display = 'none';
+                        urlInput.value = '';
+                    }
+                });
             }
 
             document.getElementById('addVideoRowBtn').addEventListener('click', addVideoRow);

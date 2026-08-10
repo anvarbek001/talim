@@ -81,7 +81,7 @@
                             <div class="watch-files">
                                 <div class="watch-files-title">Qo'shimcha materiallar</div>
                                 @foreach ($bookFiles as $file)
-                                    <a href="{{ asset('storage/'.$file->lesson_file) }}" target="_blank" class="lesson-file-chip">
+                                    <a href="{{ route('lesson-files.stream', $file) }}" target="_blank" class="lesson-file-chip">
                                         <i class="bi bi-file-earmark-pdf"></i>
                                         <span>{{ basename($file->lesson_file) }}</span>
                                     </a>

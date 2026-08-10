@@ -3,12 +3,14 @@
 namespace App\Models;
 
 use App\Contracts\Purchasable;
+use App\Contracts\Subscribable;
+use App\Contracts\TeacherOwned;
 use App\Models\Concerns\IsPurchasable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class Book extends Model implements Purchasable
+class Book extends Model implements Purchasable, Subscribable, TeacherOwned
 {
     use IsPurchasable;
 
@@ -27,5 +29,10 @@ class Book extends Model implements Purchasable
     public function files(): HasMany
     {
         return $this->hasMany(BookFile::class);
+    }
+
+    public function teacherId(): int
+    {
+        return $this->user_id;
     }
 }

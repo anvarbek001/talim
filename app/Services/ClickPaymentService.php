@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Contracts\Subscribable;
 use App\Models\Book;
 use App\Models\ClickTransaction;
 use App\Models\DtmTest;
@@ -32,6 +33,7 @@ class ClickPaymentService
         'sertifikat' => SertifikatTest::class,
         'language_exam' => LanguageExamTest::class,
         'book' => Book::class,
+        'teacher' => User::class,
     ];
 
     public const MIN_TOPUP_AMOUNT = 5000;
@@ -47,6 +49,10 @@ class ClickPaymentService
         abort_if($class === null, 404);
 
         $purchasable = $class::findOrFail($id);
+
+        if ($type === 'teacher') {
+            abort_unless($purchasable->hasRole('teacher'), 404);
+        }
 
         abort_if($purchasable->isFree(), 422, "Bu material bepul — to'lov qilish shart emas");
         abort_if($purchasable->isPurchasedBy($user), 422, 'Bu material allaqachon sotib olingan');
@@ -236,17 +242,26 @@ class ClickPaymentService
                 'click_paydoc_id' => $params['click_paydoc_id'] ?? null,
             ]);
 
-            $alreadyPurchased = Purchase::where('user_id', $transaction->user_id)
+            // Subscribable turlar (bo'lim/kitob/o'qituvchi obunasi) uchun 1 oylik
+            // muddat o'rnatiladi — mavjud (muddati o'tgan) xarid bo'lsa, yangilanadi.
+            $expiresAt = is_a($transaction->purchasable_type, Subscribable::class, true)
+                ? now()->addMonth()
+                : null;
+
+            $existing = Purchase::where('user_id', $transaction->user_id)
                 ->where('purchasable_type', $transaction->purchasable_type)
                 ->where('purchasable_id', $transaction->purchasable_id)
-                ->exists();
+                ->first();
 
-            if (! $alreadyPurchased) {
+            if ($existing) {
+                $existing->update(['price' => $transaction->amount, 'expires_at' => $expiresAt]);
+            } else {
                 Purchase::create([
                     'user_id' => $transaction->user_id,
                     'purchasable_type' => $transaction->purchasable_type,
                     'purchasable_id' => $transaction->purchasable_id,
                     'price' => $transaction->amount,
+                    'expires_at' => $expiresAt,
                 ]);
             }
         });

@@ -3,7 +3,11 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Contracts\Purchasable;
+use App\Contracts\Subscribable;
+use App\Models\Concerns\IsPurchasable;
 use Database\Factories\UserFactory;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -12,10 +16,15 @@ use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Str;
 use Spatie\Permission\Traits\HasRoles;
 
-class User extends Authenticatable
+/**
+ * A teacher's own `purchases()` (via IsPurchasable) are the students
+ * subscribed *to them* — buying full monthly access to all of the
+ * teacher's sections and books at once (see PurchaseService).
+ */
+class User extends Authenticatable implements Purchasable, Subscribable
 {
     /** @use HasFactory<UserFactory> */
-    use HasFactory, HasRoles, Notifiable;
+    use HasFactory, HasRoles, IsPurchasable, Notifiable;
 
     /**
      * The attributes that are mass assignable.
@@ -27,6 +36,7 @@ class User extends Authenticatable
         'email',
         'password',
         'avatar',
+        'subscription_price',
     ];
 
     /**
@@ -103,9 +113,23 @@ class User extends Authenticatable
         return $this->hasMany(TestAttempt::class);
     }
 
-    public function purchases(): HasMany
+    /**
+     * Purchasable::price — reused by IsPurchasable (isFree/isPurchasedBy)
+     * and PurchaseService when a student subscribes to this teacher.
+     */
+    protected function price(): Attribute
     {
-        return $this->hasMany(Purchase::class);
+        return Attribute::make(get: fn () => (int) $this->subscription_price);
+    }
+
+    /**
+     * Lets views that render any Purchasable generically (locked paywall,
+     * payment history, admin purchases) show a name for a teacher
+     * subscription the same way they show a Section/Book title.
+     */
+    protected function title(): Attribute
+    {
+        return Attribute::make(get: fn () => $this->name);
     }
 
     public function avatarUrl(): ?string

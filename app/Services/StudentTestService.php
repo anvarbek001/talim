@@ -43,6 +43,12 @@ class StudentTestService
     {
         $purchasesFor = fn ($query) => $query->with(['purchases' => fn ($q) => $q->where('user_id', $userId)]);
 
+        // "purchased" badge means *currently active*, not "ever bought" —
+        // a section's purchase can have expired (1 oylik obuna) since.
+        $isActive = fn ($purchases) => $purchases->contains(
+            fn (\App\Models\Purchase $p) => $p->expires_at === null || $p->expires_at->isFuture()
+        );
+
         $topicTests = TopicTest::with([
             'science', 'grade', 'topic', 'questions',
             'section' => fn ($q) => $q->with(['purchases' => fn ($pq) => $pq->where('user_id', $userId)]),
@@ -57,7 +63,7 @@ class StudentTestService
                 'has_written' => false,
                 'duration_minutes' => $t->duration_minutes,
                 'price' => $t->section->price,
-                'purchased' => $t->section->purchases->isNotEmpty(),
+                'purchased' => $isActive($t->section->purchases),
                 'purchase_type' => 'section',
                 'purchase_id' => $t->section_id,
                 'created_at' => $t->created_at,
@@ -74,7 +80,7 @@ class StudentTestService
                 'has_written' => false,
                 'duration_minutes' => $t->duration_minutes,
                 'price' => $t->price,
-                'purchased' => $t->purchases->isNotEmpty(),
+                'purchased' => $isActive($t->purchases),
                 'purchase_type' => 'dtm',
                 'purchase_id' => $t->id,
                 'created_at' => $t->created_at,
@@ -91,7 +97,7 @@ class StudentTestService
                 'has_written' => $t->writtenQuestions->isNotEmpty(),
                 'duration_minutes' => $t->duration_minutes,
                 'price' => $t->price,
-                'purchased' => $t->purchases->isNotEmpty(),
+                'purchased' => $isActive($t->purchases),
                 'purchase_type' => 'sertifikat',
                 'purchase_id' => $t->id,
                 'created_at' => $t->created_at,
@@ -108,7 +114,7 @@ class StudentTestService
                 'has_written' => $t->writtenQuestions->isNotEmpty(),
                 'duration_minutes' => $t->duration_minutes,
                 'price' => $t->price,
-                'purchased' => $t->purchases->isNotEmpty(),
+                'purchased' => $isActive($t->purchases),
                 'purchase_type' => 'language_exam',
                 'purchase_id' => $t->id,
                 'created_at' => $t->created_at,

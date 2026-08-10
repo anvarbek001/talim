@@ -88,7 +88,7 @@ test('an admin can update any teachers lesson', function () {
 });
 
 test('an admin can delete any teachers lesson and its files are removed from disk', function () {
-    Storage::fake('public');
+    Storage::fake('local');
     $admin = User::factory()->create();
     $admin->assignRole('admin');
     $teacher = User::factory()->create();
@@ -98,12 +98,12 @@ test('an admin can delete any teachers lesson and its files are removed from dis
         'user_id' => $teacher->id, 'science_id' => $topic->science_id, 'grade_id' => $topic->grade_id,
         'section_id' => $topic->section_id, 'topic_id' => $topic->id, 'title' => 'Dars', 'description' => 'x',
     ]);
-    Storage::disk('public')->put('lessons/1/file.pdf', 'content');
+    Storage::disk('local')->put('lessons/1/file.pdf', 'content');
     $lesson->lessonfiles()->create(['type' => 'file', 'lesson_file' => 'lessons/1/file.pdf']);
 
     $response = $this->actingAs($admin)->delete(route('admin.lessons.destroy', $lesson));
 
     $response->assertRedirect(route('admin.lessons.index'));
     expect(Lesson::find($lesson->id))->toBeNull();
-    Storage::disk('public')->assertMissing('lessons/1/file.pdf');
+    Storage::disk('local')->assertMissing('lessons/1/file.pdf');
 });

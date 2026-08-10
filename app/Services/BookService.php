@@ -83,6 +83,7 @@ class BookService
     public function catalog(int $userId, array $filters = []): LengthAwarePaginator
     {
         $q = $filters['q'] ?? null;
+        $user = User::find($userId);
 
         return Book::with(['user', 'files', 'purchases' => fn ($query) => $query->where('user_id', $userId)])
             ->when($q, fn ($query, $search) => $query->where(
@@ -99,7 +100,10 @@ class BookService
                 'author' => $book->user->name,
                 'files_count' => $book->files->count(),
                 'price' => $book->price,
-                'purchased' => $book->purchases->isNotEmpty(),
+                // "Sotib olingan" — o'zi sotib olgan bo'lsa yoki muallifning
+                // faol oylik obunasi bo'lsa ham (ikkalasi ham amal qilib turgan
+                // bo'lishi kerak — muddati o'tgan xarid endi hisoblanmaydi).
+                'purchased' => $user && $this->purchaseServ->hasAccess($user, $book),
                 'created_at' => $book->created_at,
             ]);
     }

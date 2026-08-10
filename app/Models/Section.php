@@ -3,12 +3,14 @@
 namespace App\Models;
 
 use App\Contracts\Purchasable;
+use App\Contracts\Subscribable;
+use App\Contracts\TeacherOwned;
 use App\Models\Concerns\IsPurchasable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class Section extends Model implements Purchasable
+class Section extends Model implements Purchasable, Subscribable, TeacherOwned
 {
     use IsPurchasable;
 
@@ -44,5 +46,10 @@ class Section extends Model implements Purchasable
     public function lessons(): HasMany
     {
         return $this->hasMany(Lesson::class);
+    }
+
+    public function teacherId(): int
+    {
+        return $this->user_id;
     }
 }

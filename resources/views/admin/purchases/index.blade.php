@@ -43,6 +43,7 @@
                                 <th>Nomi</th>
                                 <th>Narxi</th>
                                 <th>Sana</th>
+                                <th>Muddati</th>
                                 <th>Amallar</th>
                             </tr>
                         </thead>
@@ -50,10 +51,19 @@
                             @foreach ($purchases as $purchase)
                                 <tr>
                                     <td class="cell-strong" data-label="Xaridor">{{ $purchase->user->name }}</td>
-                                    <td class="cell-muted" data-label="Turi">{{ class_basename($purchase->purchasable_type) }}</td>
+                                    <td class="cell-muted" data-label="Turi">{{ $typeLabels[$purchase->purchasable_type] ?? class_basename($purchase->purchasable_type) }}</td>
                                     <td data-label="Nomi">{{ $purchase->purchasable->title ?? '—' }}</td>
                                     <td data-label="Narxi">{{ number_format($purchase->price, 0, '.', ' ') }} so'm</td>
                                     <td class="cell-muted" data-label="Sana">{{ $purchase->created_at->format('d.m.Y H:i') }}</td>
+                                    <td data-label="Muddati">
+                                        @if ($purchase->expires_at === null)
+                                            <span class="cell-muted">Muddatsiz</span>
+                                        @elseif ($purchase->isActive())
+                                            {{ $purchase->expires_at->format('d.m.Y') }}
+                                        @else
+                                            <span style="color:var(--coral);font-weight:600;">Tugagan</span>
+                                        @endif
+                                    </td>
                                     <td class="actions-cell">
                                         <form action="{{ route('admin.purchases.destroy', $purchase) }}" method="POST"
                                             onsubmit="return confirm('Rostdan ham o\'chirmoqchimisiz?');">

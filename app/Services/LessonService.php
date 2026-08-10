@@ -6,7 +6,9 @@ use App\Jobs\UploadLessonVideoToYoutube;
 use App\Models\Lesson;
 use App\Models\Topic;
 use App\Repositories\Contracts\LessonRepositoryInterface;
+use App\Support\Youtube;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
@@ -47,9 +49,10 @@ class LessonService
     {
         return DB::transaction(function () use ($lesson) {
             foreach ($lesson->lessonfiles as $file) {
-                if ($file->type === 'file' && $file->lesson_file) {
-                    Storage::disk('public')->delete($file->lesson_file);
-                } elseif ($file->isVideo() && $file->isPending() && $file->lesson_file) {
+                // Kitob/qo'llanma faylning o'zi ham, video uchun vaqtinchalik
+                // fayl ham — ikkalasi ham "local" (shaxsiy) diskda saqlanadi,
+                // hech qachon ochiq "public" diskka chiqarilmaydi.
+                if (($file->type === 'file' || ($file->isVideo() && $file->isPending())) && $file->lesson_file) {
                     Storage::disk('local')->delete($file->lesson_file);
                 }
             }
@@ -74,27 +77,53 @@ class LessonService
             ]);
 
             // Bitta mavzuga bir nechta nomlangan video biriktirish mumkin —
-            // har bir video o'zining sarlavhasi bilan yuklanadi.
+            // har bir video qatori "fayl yuklash" yoki tayyor "YouTube havola"
+            // rejimida bo'lishi mumkin, shu tufayli uchala massiv (video_titles,
+            // videos, video_urls) indeks bo'yicha birgalikda ko'rib chiqiladi.
             $titles = $validated['video_titles'] ?? [];
-            foreach ($validated['videos'] ?? [] as $index => $file) {
-                $title = trim((string) ($titles[$index] ?? '')) ?: ($lesson->title.' — '.($index + 1).'-video');
+            $files = $validated['videos'] ?? [];
+            $urls = $validated['video_urls'] ?? [];
+            $rowCount = max(count($titles), count($files), count($urls));
 
-                // Video — diskka vaqtincha saqlab, YouTube'ga yuklashni
-                // fon jarayoniga (queue) topshiramiz — so'rovni bloklamaslik uchun
-                $tempPath = $file->store("lessons/{$lesson->id}/pending", 'local');
-                $lessonFile = $lesson->lessonfiles()->create([
-                    'title' => $title,
-                    'type' => 'youtube',
-                    'youtube_id' => null,
-                    'lesson_file' => $tempPath,
-                    'status' => 'pending',
-                ]);
-                UploadLessonVideoToYoutube::dispatch($lessonFile->id)->afterCommit();
+            for ($index = 0; $index < $rowCount; $index++) {
+                $title = trim((string) ($titles[$index] ?? '')) ?: ($lesson->title.' — '.($index + 1).'-video');
+                $file = $files[$index] ?? null;
+                $url = trim((string) ($urls[$index] ?? ''));
+
+                if ($file instanceof UploadedFile && $file->isValid()) {
+                    // Video — diskka vaqtincha saqlab, YouTube'ga yuklashni
+                    // fon jarayoniga (queue) topshiramiz — so'rovni bloklamaslik uchun
+                    $tempPath = $file->store("lessons/{$lesson->id}/pending", 'local');
+                    $lessonFile = $lesson->lessonfiles()->create([
+                        'title' => $title,
+                        'type' => 'youtube',
+                        'youtube_id' => null,
+                        'lesson_file' => $tempPath,
+                        'status' => 'pending',
+                    ]);
+                    UploadLessonVideoToYoutube::dispatch($lessonFile->id)->afterCommit();
+                } elseif ($url !== '') {
+                    // Tayyor YouTube havolasi — qayta yuklamasdan, video ID'sini
+                    // havoladan ajratib olib to'g'ridan-to'g'ri "ready" sifatida saqlaymiz.
+                    $youtubeId = Youtube::extractVideoId($url);
+
+                    if ($youtubeId) {
+                        $lesson->lessonfiles()->create([
+                            'title' => $title,
+                            'type' => 'youtube',
+                            'youtube_id' => $youtubeId,
+                            'lesson_file' => '',
+                            'status' => 'ready',
+                        ]);
+                    }
+                }
             }
 
             foreach ($validated['lesson_files'] ?? [] as $file) {
-                // Kitob/qo'llanma — oddiy diskka saqlaymiz
-                $path = $file->store("lessons/{$lesson->id}", 'public');
+                // Kitob/qo'llanma — shaxsiy ("local") diskka saqlaymiz va faqat
+                // LessonFileController::stream orqali ko'rsatamiz, hech qachon
+                // ochiq havola bilan yuklab olib bo'lmasin (Book fayllari kabi).
+                $path = $file->store("lessons/{$lesson->id}", 'local');
                 $lesson->lessonfiles()->create([
                     'type' => 'file',
                     'lesson_file' => $path,
