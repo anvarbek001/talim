@@ -32,6 +32,23 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', [WelcomeController::class, 'index'])->name('welcome');
 
+// SEO: qidiruv tizimlari (Google/Yandex) uchun sitemap. Faqat ommaviy sahifalar kiritiladi —
+// dashboard, admin va boshqa auth-talab qiladigan sahifalar qasddan tashlab ketilgan.
+Route::get('/sitemap.xml', function () {
+    $urls = [
+        [
+            'loc' => url('/'),
+            'lastmod' => now()->toDateString(),
+            'changefreq' => 'weekly',
+            'priority' => '1.0',
+        ],
+    ];
+
+    return response()
+        ->view('sitemap', ['urls' => $urls])
+        ->header('Content-Type', 'text/xml');
+})->name('sitemap');
+
 Route::controller(TeacherController::class)->group(function () {
     Route::get('/dashboard', 'index')->middleware(['auth', 'verified'])->name('dashboard');
 });

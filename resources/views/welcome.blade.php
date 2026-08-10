@@ -4,14 +4,52 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DarsQil — Video darslar orqali o'rganing</title>
+
+    @php
+        $seoTitle = "DarsQil — Video darslar orqali onlayn ta'lim platformasi | Matematika, Fizika, DTM tayyorgarlik";
+        $seoDescription = "DarsQil'da tajribali o'qituvchilardan video darslarni tomosha qiling: matematika, "
+            ."fizika, dasturlash va boshqa fanlar. Obuna orqali onlayn ta'lim oling, DTM va sertifikat "
+            ."testlariga tayyorgarlik ko'ring. " . number_format($overview['lessons_count'], 0, '.', ' ')
+            ." ta video dars, " . number_format($overview['teachers_count'], 0, '.', ' ') ." ta o'qituvchi.";
+        $seoUrl = rtrim(config('seo.url'), '/') . '/';
+    @endphp
+    @include('partials.seo-meta')
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdn.jsdelivr.net">
     <link
         href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap"
         rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+
+    {{-- JSON-LD: Google va Yandex uchun structured data (rich snippet imkoniyati) --}}
+    <script type="application/ld+json">
+        {!! json_encode([
+            '@context' => 'https://schema.org',
+            '@type' => 'EducationalOrganization',
+            'name' => 'DarsQil',
+            'alternateName' => "DarsQil — onlayn ta'lim platformasi",
+            'url' => rtrim(config('seo.url'), '/') . '/',
+            'logo' => asset('favicon.ico'),
+            'description' => $seoDescription,
+            'address' => [
+                '@type' => 'PostalAddress',
+                'addressLocality' => 'Toshkent',
+                'addressCountry' => 'UZ',
+            ],
+        ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) !!}
+    </script>
+    <script type="application/ld+json">
+        {!! json_encode([
+            '@context' => 'https://schema.org',
+            '@type' => 'WebSite',
+            'name' => 'DarsQil',
+            'url' => rtrim(config('seo.url'), '/') . '/',
+            'inLanguage' => 'uz',
+        ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) !!}
+    </script>
 
     <style>
         :root {

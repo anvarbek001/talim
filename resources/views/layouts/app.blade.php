@@ -4,6 +4,8 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
+        {{-- Shaxsiy kabinet/dashboard sahifalari — foydalanuvchiga xos, umumiy qidiruvda ko'rinmasligi kerak. --}}
+        <meta name="robots" content="noindex, nofollow">
 
         <title>{{ config('app.name', 'Laravel') }}</title>
 

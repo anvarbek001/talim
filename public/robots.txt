@@ -1,2 +1,21 @@
 User-agent: *
-Disallow:
+Allow: /
+Disallow: /dashboard
+Disallow: /student_dashboard
+Disallow: /admin
+Disallow: /profile
+Disallow: /my-lessons
+Disallow: /my-books
+Disallow: /books/*/files/
+Disallow: /lesson-files/
+Disallow: /student/
+Disallow: /teacher/
+Disallow: /tests
+Disallow: /section
+Disallow: /topic
+Disallow: /pay/
+Disallow: /prepare
+Disallow: /complete
+Disallow: /topup
+
+Sitemap: https://darsqil.uz/sitemap.xml

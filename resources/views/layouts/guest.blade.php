@@ -4,6 +4,9 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
+        {{-- Kirish/ro'yxatdan o'tish kabi sahifalar qidiruv natijalarida reyting bermaydi —
+             shuning uchun indekslanmaydi, lekin havolalar orqali o'tish (follow) ruxsat etilgan. --}}
+        <meta name="robots" content="noindex, follow">
 
         <title>{{ config('app.name', 'Laravel') }}</title>
 
