@@ -46,7 +46,7 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-// Video darslar — vaqtincha o'chirilgan (config/features.php: lessons_enabled).
+// Video darslar — feature-flag orqali boshqariladi (config/features.php: lessons_enabled).
 Route::controller(LessonController::class)->middleware('lessons.enabled')->group(function () {
     Route::get('/lesson', 'index')->name('lesson');
     Route::post('/lesson', 'store')->name('lessons.store');
@@ -111,7 +111,7 @@ Route::controller(StudentTestController::class)->group(function () {
     Route::get('/student/tests/attempts/{attempt}/result', 'result')->name('student-tests.result');
 });
 
-// Video darslar — vaqtincha o'chirilgan (config/features.php: lessons_enabled).
+// Video darslar — feature-flag orqali boshqariladi (config/features.php: lessons_enabled).
 Route::controller(StudentLessonController::class)->middleware('lessons.enabled')->group(function () {
     Route::get('/student/lessons', 'index')->name('student-lessons.index');
     Route::get('/student/lessons/science/{science}', 'teachers')->name('student-lessons.teachers');
@@ -155,7 +155,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(fun
         Route::delete('/{book}', 'destroy')->name('destroy');
     });
 
-    // Video darslar — vaqtincha o'chirilgan (config/features.php: lessons_enabled).
+    // Video darslar — feature-flag orqali boshqariladi (config/features.php: lessons_enabled).
     Route::controller(AdminLessonController::class)->middleware('lessons.enabled')->prefix('lessons')->name('lessons.')->group(function () {
         Route::get('/', 'index')->name('index');
         Route::put('/{lesson}', 'update')->name('update');

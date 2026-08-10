@@ -7,12 +7,11 @@ return [
     | Video darslar (lessons)
     |--------------------------------------------------------------------------
     |
-    | Vaqtincha o'chirilgan — hozircha faqat testlar va kitoblar sotiladi.
-    | Kodning o'zi butunlay saqlanib qolgan; buni true qilib qo'yish
-    | (yoki .env'da FEATURE_LESSONS_ENABLED=true) bo'lim va navigatsiyani
-    | darhol qayta yoqadi.
+    | To'liq ishga tushirilgan. Kerak bo'lsa .env'da
+    | FEATURE_LESSONS_ENABLED=false qilib vaqtincha yopib qo'yish ham mumkin —
+    | kodning o'zi shu bayroq orqali butunlay saqlanib qoladi.
     |
     */
-    'lessons_enabled' => env('FEATURE_LESSONS_ENABLED', false),
+    'lessons_enabled' => env('FEATURE_LESSONS_ENABLED', true),
 
 ];
