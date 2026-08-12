@@ -35,6 +35,10 @@
             margin: 0;
         }
 
+        #live-room-root {
+            height: 100%;
+        }
+
         body {
             font-family: 'Inter', sans-serif;
             background: var(--navy-deep);
