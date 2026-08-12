@@ -23,6 +23,7 @@
         title: root.dataset.title,
         displayName: root.dataset.displayName,
         csrf: document.querySelector('meta[name="csrf-token"]').content,
+        identity: null, // join javobidan keyin to'ldiriladi
     };
 
     const $ = (id) => document.getElementById(id);
@@ -37,6 +38,12 @@
     let micEnabled = true;
     let camEnabled = true;
     let screenShareEnabled = false;
+    let handRaised = false;
+
+    // Masofadagi ishtirokchilarning mikrofon/qo'l holati — panel va
+    // video kataklaridagi belgilarni chizish uchun (Meet uslubidagi kuzatuv).
+    const remoteMicMuted = new Map();
+    const remoteHandRaised = new Map();
 
     let recording = false;
     let mediaRecorder = null;
@@ -135,6 +142,15 @@
             return;
         }
 
+        cfg.identity = data.identity;
+
+        // Google Meet uslubidagi "so'z berish" modeli: o'quvchilar darsga
+        // sukut bo'yicha jim (mikrofon o'chiq) holda qo'shiladi — domla
+        // qo'l ko'targanlarga so'z bergach mikrofon avtomatik yoqiladi.
+        if (!cfg.isModerator) {
+            micEnabled = false;
+        }
+
         if (typeof LivekitClient === 'undefined') {
             showError('Video kutubxonasi yuklanmadi. Internet aloqasini tekshirib, sahifani qayta yuklang.');
             return;
@@ -198,12 +214,32 @@
         tile = document.createElement('div');
         tile.className = 'tile' + (isLocal ? ' is-local' : '');
         tile.id = tileIdFor(identity);
+        tile.dataset.identity = identity;
+        tile.dataset.local = isLocal ? '1' : '0';
         tile.innerHTML = `
             <div class="tile-avatar">${(name || '?').substring(0, 1).toUpperCase()}</div>
-            <div class="tile-label"><span class="tile-name">${escapeHtml(name || 'Foydalanuvchi')}</span></div>
+            <div class="tile-hand-badge"><i class="bi bi-hand-index-thumb-fill"></i></div>
+            <div class="tile-label">
+                <i class="bi bi-mic-mute-fill mic-status-icon"></i>
+                <span class="tile-name">${escapeHtml(name || 'Foydalanuvchi')}</span>
+            </div>
         `;
         videoGrid.appendChild(tile);
         return tile;
+    }
+
+    function updateMicIcon(identity, muted) {
+        remoteMicMuted.set(identity, muted);
+        const tile = document.getElementById(tileIdFor(identity));
+        const icon = tile?.querySelector('.mic-status-icon');
+        if (icon) icon.className = 'bi mic-status-icon ' + (muted ? 'bi-mic-mute-fill' : 'bi-mic-fill');
+        updateParticipantsPanel();
+    }
+
+    function updateHandBadge(identity, raised) {
+        remoteHandRaised.set(identity, raised);
+        document.getElementById(tileIdFor(identity))?.classList.toggle('hand-raised', raised);
+        updateParticipantsPanel();
     }
 
     function escapeHtml(str) {
@@ -227,11 +263,14 @@
             if (avatar) avatar.remove();
             tile.querySelector('video')?.remove();
             tile.insertBefore(el, tile.firstChild);
-        } else if (track.kind === 'audio' && !isLocal) {
-            // Local mikrofonni ekranga chiqarmaymiz — aks holda o'z ovozini eshitadi (eho).
-            tile.querySelector('audio')?.remove();
-            const el = track.attach();
-            tile.appendChild(el);
+        } else if (track.kind === 'audio') {
+            if (!isLocal) {
+                // Local mikrofonni ekranga chiqarmaymiz — aks holda o'z ovozini eshitadi (eho).
+                tile.querySelector('audio')?.remove();
+                const el = track.attach();
+                tile.appendChild(el);
+            }
+            updateMicIcon(identity, track.isMuted);
         }
 
         updateParticipantsPanel();
@@ -269,6 +308,82 @@
             clearInterval(statusPollTimer);
             clearInterval(callTimerInterval);
         });
+
+        room.on(RoomEvent.TrackMuted, (pub, participant) => {
+            if (pub.source === LivekitClient.Track.Source.Microphone) updateMicIcon(participant.identity, true);
+        });
+        room.on(RoomEvent.TrackUnmuted, (pub, participant) => {
+            if (pub.source === LivekitClient.Track.Source.Microphone) updateMicIcon(participant.identity, false);
+        });
+
+        room.on(RoomEvent.DataReceived, (payload) => {
+            let msg;
+            try {
+                msg = JSON.parse(new TextDecoder().decode(payload));
+            } catch (e) {
+                return;
+            }
+            handleDataMessage(msg);
+        });
+    }
+
+    // ==================== SO'Z BERISH / QO'L KO'TARISH ====================
+
+    function sendData(payload) {
+        if (!room) return;
+        const data = new TextEncoder().encode(JSON.stringify(payload));
+        try {
+            room.localParticipant.publishData(data, { reliable: true });
+        } catch (e) { /* eski SDK imzosi */ }
+    }
+
+    function handleDataMessage(msg) {
+        if (msg.type === 'hand') {
+            updateHandBadge(msg.from, !!msg.raised);
+            if (msg.raised) showToast((msg.name || 'Ishtirokchi') + " qo'lini ko'tardi");
+            return;
+        }
+        if (msg.to !== cfg.identity) return;
+
+        if (msg.type === 'grant') {
+            handRaised = false;
+            updateHandBadge(cfg.identity, false);
+            micEnabled = true;
+            room?.localParticipant.setMicrophoneEnabled(true).catch(() => {});
+            updateControlButtonsUI();
+            updateHandButtonUI();
+            showToast("Sizga so'z berildi — mikrofoningiz yoqildi.");
+        } else if (msg.type === 'mute') {
+            micEnabled = false;
+            room?.localParticipant.setMicrophoneEnabled(false).catch(() => {});
+            updateControlButtonsUI();
+            showToast('Moderator mikrofoningizni o\'chirdi.');
+        }
+    }
+
+    $('btn-hand')?.addEventListener('click', () => {
+        handRaised = !handRaised;
+        sendData({ type: 'hand', from: cfg.identity, name: cfg.displayName, raised: handRaised });
+        updateHandBadge(cfg.identity, handRaised);
+        updateHandButtonUI();
+    });
+
+    function updateHandButtonUI() {
+        const btn = $('btn-hand');
+        if (!btn) return;
+        btn.classList.toggle('is-raised', handRaised);
+        btn.innerHTML = `<i class="bi ${handRaised ? 'bi-hand-index-thumb-fill' : 'bi-hand-index-thumb'}"></i>`;
+    }
+
+    function grantFloor(identity, name) {
+        sendData({ type: 'grant', to: identity });
+        updateHandBadge(identity, false);
+        showToast((name || 'Ishtirokchi') + " ga so'z berildi.");
+    }
+
+    function forceMute(identity, name) {
+        sendData({ type: 'mute', to: identity });
+        showToast((name || 'Ishtirokchi') + " ovozi o'chirilmoqda.");
     }
 
     // ==================== CONTROLS ====================
@@ -362,10 +477,44 @@
         const list = $('participants-list');
         list.innerHTML = '';
         tiles.forEach((tile) => {
+            const identity = tile.dataset.identity;
+            const isLocal = tile.dataset.local === '1';
             const name = tile.querySelector('.tile-name')?.textContent || tile.querySelector('.tile-avatar')?.textContent || 'Foydalanuvchi';
+            const muted = isLocal ? !micEnabled : !!remoteMicMuted.get(identity);
+            const raised = !!remoteHandRaised.get(identity);
+
             const row = document.createElement('div');
             row.className = 'participant-row';
-            row.innerHTML = `<span class="dot"></span> ${escapeHtml(name)}`;
+
+            const info = document.createElement('div');
+            info.className = 'p-info';
+            info.innerHTML = `
+                <span class="dot"></span>
+                <i class="bi ${muted ? 'bi-mic-mute-fill' : 'bi-mic-fill'} mic-icon${muted ? ' is-muted' : ''}"></i>
+                ${raised ? '<i class="bi bi-hand-index-thumb-fill hand-icon"></i>' : ''}
+                <span>${escapeHtml(name)}</span>
+            `;
+            row.appendChild(info);
+
+            if (cfg.isModerator && !isLocal) {
+                const actions = document.createElement('div');
+                actions.className = 'p-actions';
+                const btn = document.createElement('button');
+                if (muted) {
+                    btn.className = 'grant';
+                    btn.title = "So'z berish";
+                    btn.innerHTML = '<i class="bi bi-mic-fill"></i>';
+                    btn.addEventListener('click', () => grantFloor(identity, name));
+                } else {
+                    btn.className = 'mute-btn';
+                    btn.title = "Ovozini o'chirish";
+                    btn.innerHTML = '<i class="bi bi-mic-mute-fill"></i>';
+                    btn.addEventListener('click', () => forceMute(identity, name));
+                }
+                actions.appendChild(btn);
+                row.appendChild(actions);
+            }
+
             list.appendChild(row);
         });
     }

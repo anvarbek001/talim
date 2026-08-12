@@ -274,6 +274,25 @@
             color: var(--coral);
         }
 
+        .tile-hand-badge {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: var(--gold);
+            color: var(--navy-deep);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            font-size: .95rem;
+        }
+
+        .tile.hand-raised .tile-hand-badge {
+            display: flex;
+        }
+
         .tile-avatar {
             position: absolute;
             inset: 0;
@@ -324,6 +343,12 @@
         .ctrl-btn.is-recording {
             background: var(--coral);
             border-color: var(--coral);
+        }
+
+        .ctrl-btn.is-raised {
+            background: var(--gold);
+            border-color: var(--gold);
+            color: var(--navy-deep);
         }
 
         .ctrl-btn.leave-btn {
@@ -377,9 +402,23 @@
         .participant-row {
             display: flex;
             align-items: center;
+            justify-content: space-between;
             gap: 10px;
             padding: 8px 0;
             font-size: .85rem;
+        }
+
+        .participant-row .p-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            min-width: 0;
+        }
+
+        .participant-row .p-info span:last-child {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
 
         .participant-row .dot {
@@ -387,6 +426,43 @@
             height: 8px;
             border-radius: 50%;
             background: var(--mint);
+            flex-shrink: 0;
+        }
+
+        .participant-row .mic-icon.is-muted {
+            color: var(--coral);
+        }
+
+        .participant-row .hand-icon {
+            color: var(--gold);
+        }
+
+        .participant-row .p-actions {
+            display: flex;
+            gap: 6px;
+            flex-shrink: 0;
+        }
+
+        .participant-row .p-actions button {
+            width: 28px;
+            height: 28px;
+            border-radius: 8px;
+            border: none;
+            background: var(--line);
+            color: #fff;
+            font-size: .75rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .participant-row .p-actions button.grant {
+            background: var(--mint);
+            color: #08331f;
+        }
+
+        .participant-row .p-actions button.mute-btn {
+            background: var(--coral);
         }
 
         /* ---------- ERROR / TOAST ---------- */
@@ -472,6 +548,10 @@
                     <i class="bi bi-box-arrow-in-right"></i> Darsga qo'shilish
                 </button>
                 <div class="prejoin-sub" id="prejoin-status">Kameraga ruxsat so'ralmoqda...</div>
+                @unless ($isModerator)
+                    <div class="prejoin-sub">Darsga jim (mikrofon o'chiq) holda qo'shilasiz. So'z olish uchun
+                        qo'lingizni ko'taring — domla ruxsat bersa, mikrofoningiz avtomatik yoqiladi.</div>
+                @endunless
             </div>
         </div>
 
@@ -504,6 +584,12 @@
                     <button type="button" class="ctrl-btn" id="btn-share"><i class="bi bi-display"></i></button>
                     <span class="ctrl-label">Ekran</span>
                 </div>
+                @unless ($isModerator)
+                    <div style="position:relative;">
+                        <button type="button" class="ctrl-btn" id="btn-hand"><i class="bi bi-hand-index-thumb"></i></button>
+                        <span class="ctrl-label">Qo'l ko'tarish</span>
+                    </div>
+                @endunless
                 <div style="position:relative;">
                     <button type="button" class="ctrl-btn" id="btn-record"><i class="bi bi-record-circle"></i></button>
                     <span class="ctrl-label">Yozib olish</span>
