@@ -536,7 +536,12 @@
         <div class="toast" id="toast"></div>
     </div>
 
-    <script src="{{ asset('js/live-room-v2.js') }}"></script>
+    {{-- build/ ichida joylashgan — sabab: server (Engintron/nginx) hozircha
+    faqat public/build/ papkasini statik xizmat ko'rsatish uchun tanigan,
+    yangi public/js/ papkasi hali tanilmagan (barcha so'rovlar Laravel
+    routeriga tushib 404 qaytaradi). Uzoq muddatda hosting'dan nginx
+    konfiguratsiyasini yangilashni so'rang. --}}
+    <script src="{{ asset('build/live-room.js') }}"></script>
 </body>
 
 </html>
