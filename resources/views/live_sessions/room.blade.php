@@ -262,8 +262,12 @@
             object-fit: cover;
         }
 
-        .tile.is-local video {
+        .tile.is-local:not(.is-screen) video {
             transform: scaleX(-1);
+        }
+
+        .tile.is-screen video {
+            object-fit: contain;
         }
 
         .tile-label {

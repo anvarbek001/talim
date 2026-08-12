@@ -218,23 +218,26 @@
         videoGrid.style.gridTemplateRows = `repeat(${rows}, 1fr)`;
     }
 
-    function ensureTile(identity, name, isLocal) {
+    function ensureTile(identity, name, isLocal, isScreen) {
         let tile = document.getElementById(tileIdFor(identity));
         if (tile) return tile;
 
         tile = document.createElement('div');
-        tile.className = 'tile' + (isLocal ? ' is-local' : '');
+        tile.className = 'tile' + (isLocal ? ' is-local' : '') + (isScreen ? ' is-screen' : '');
         tile.id = tileIdFor(identity);
         tile.dataset.identity = identity;
         tile.dataset.local = isLocal ? '1' : '0';
-        tile.innerHTML = `
-            <div class="tile-avatar">${(name || '?').substring(0, 1).toUpperCase()}</div>
-            <div class="tile-hand-badge"><i class="bi bi-hand-index-thumb-fill"></i></div>
-            <div class="tile-label">
-                <i class="bi bi-mic-mute-fill mic-status-icon"></i>
-                <span class="tile-name">${escapeHtml(name || 'Foydalanuvchi')}</span>
-            </div>
-        `;
+        tile.dataset.screen = isScreen ? '1' : '0';
+        tile.innerHTML = isScreen
+            ? `<div class="tile-label"><i class="bi bi-display"></i> <span class="tile-name">${escapeHtml(name || 'Ekran')}</span></div>`
+            : `
+                <div class="tile-avatar">${(name || '?').substring(0, 1).toUpperCase()}</div>
+                <div class="tile-hand-badge"><i class="bi bi-hand-index-thumb-fill"></i></div>
+                <div class="tile-label">
+                    <i class="bi bi-mic-mute-fill mic-status-icon"></i>
+                    <span class="tile-name">${escapeHtml(name || 'Foydalanuvchi')}</span>
+                </div>
+            `;
         videoGrid.appendChild(tile);
         updateGridLayout();
         return tile;
@@ -265,9 +268,16 @@
     }
 
     function attachTrack(track, participant) {
-        const identity = participant.identity;
+        const baseIdentity = participant.identity;
         const isLocal = participant.isLocal;
-        const tile = ensureTile(identity, isLocal ? cfg.displayName + ' (Siz)' : participant.name || participant.identity, isLocal);
+        const isScreenShare = track.source === LivekitClient.Track.Source.ScreenShare;
+        const baseName = isLocal ? cfg.displayName : (participant.name || participant.identity);
+
+        // Ekran ulashish — kamera bilan bitta katakni bo'lishmaydi, aks
+        // holda ekran tugagach kamera videosi qaytmay qolib qolardi.
+        const identity = isScreenShare ? baseIdentity + '-screen-share' : baseIdentity;
+        const name = isScreenShare ? baseName + ' — ekran' : (isLocal ? baseName + ' (Siz)' : baseName);
+        const tile = ensureTile(identity, name, isLocal, isScreenShare);
 
         if (track.kind === 'video') {
             const el = track.attach();
@@ -282,7 +292,7 @@
                 const el = track.attach();
                 tile.appendChild(el);
             }
-            updateMicIcon(identity, track.isMuted);
+            if (!isScreenShare) updateMicIcon(baseIdentity, track.isMuted);
         }
 
         updateParticipantsPanel();
@@ -294,6 +304,11 @@
 
     function removeParticipantTile(identity) {
         document.getElementById(tileIdFor(identity))?.remove();
+        removeScreenTile(identity);
+    }
+
+    function removeScreenTile(identity) {
+        document.getElementById(tileIdFor(identity + '-screen-share'))?.remove();
         updateGridLayout();
         updateParticipantsPanel();
     }
@@ -304,12 +319,16 @@
         const RoomEvent = LivekitClient.RoomEvent;
 
         room.on(RoomEvent.TrackSubscribed, (track, publication, participant) => attachTrack(track, participant));
-        room.on(RoomEvent.TrackUnsubscribed, (track) => detachTrack(track));
+        room.on(RoomEvent.TrackUnsubscribed, (track, publication, participant) => {
+            detachTrack(track);
+            if (publication.source === LivekitClient.Track.Source.ScreenShare) removeScreenTile(participant.identity);
+        });
         room.on(RoomEvent.LocalTrackPublished, (publication, participant) => {
             if (publication.track) attachTrack(publication.track, participant);
         });
-        room.on(RoomEvent.LocalTrackUnpublished, (publication) => {
+        room.on(RoomEvent.LocalTrackUnpublished, (publication, participant) => {
             if (publication.track) detachTrack(publication.track);
+            if (publication.source === LivekitClient.Track.Source.ScreenShare) removeScreenTile(participant.identity);
         });
         room.on(RoomEvent.ParticipantConnected, (participant) => {
             ensureTile(participant.identity, participant.name || participant.identity, false);
@@ -485,7 +504,7 @@
     // ==================== PARTICIPANTS PANEL ====================
 
     function updateParticipantsPanel() {
-        const tiles = videoGrid.querySelectorAll('.tile');
+        const tiles = videoGrid.querySelectorAll('.tile:not(.is-screen)');
         $('participants-count').textContent = tiles.length;
         const list = $('participants-list');
         list.innerHTML = '';
