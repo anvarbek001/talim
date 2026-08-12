@@ -226,11 +226,19 @@
             color: #fff;
         }
 
+        .call-body {
+            flex: 1;
+            min-height: 0;
+            display: flex;
+        }
+
         .call-stage {
             flex: 1;
             min-height: 0;
             padding: 16px;
             display: flex;
+            flex-direction: column;
+            gap: 10px;
         }
 
         .video-grid {
@@ -238,11 +246,33 @@
             min-height: 0;
             display: grid;
             gap: 12px;
+            justify-items: center;
+            align-items: center;
             /* Ustun/qator soni JS orqali ishtirokchilar soniga qarab
                qo'yiladi (grid-template-columns/rows) — shu bilan kataklar
                har doim ekranga (kengligi HAM, balandligi HAM) sig'adi,
                kam ishtirokchida katak ekrandan oshib pastdagi
                boshqaruv tugmalarini yashirib qo'ymaydi. */
+        }
+
+        /* Bitta kishi "asosiy ekran" (spotlight) sifatida katta ko'rsatilsa —
+           qolganlar pastda kichik chizmalar (thumbnail) qatorida turadi. */
+        .video-grid.spotlight-mode {
+            display: flex;
+        }
+
+        .stage-thumbs {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            flex-shrink: 0;
+        }
+
+        .stage-thumbs .tile {
+            width: 170px;
+            height: 105px;
+            flex-shrink: 0;
+            aspect-ratio: auto;
         }
 
         .tile {
@@ -251,9 +281,15 @@
             border-radius: 14px;
             overflow: hidden;
             width: 100%;
-            height: 100%;
-            min-height: 0;
+            max-height: 100%;
+            aspect-ratio: 16 / 9;
             border: 1px solid var(--line);
+            cursor: pointer;
+        }
+
+        .video-grid.spotlight-mode .tile.is-main {
+            flex: 1;
+            aspect-ratio: auto;
         }
 
         .tile video {
@@ -321,14 +357,23 @@
 
         .call-controls {
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
-            gap: 10px;
-            padding: 16px;
-            background: var(--panel);
-            border-top: 1px solid var(--line);
-            flex-wrap: wrap;
+            gap: 16px;
+            padding: 18px 12px;
+            width: 88px;
             flex-shrink: 0;
+            background: var(--panel);
+            border-left: 1px solid var(--line);
+            overflow-y: auto;
+        }
+
+        .ctrl-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
         }
 
         .ctrl-btn {
@@ -342,7 +387,6 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            position: relative;
         }
 
         .ctrl-btn:hover {
@@ -367,38 +411,30 @@
 
         .ctrl-btn.leave-btn {
             background: var(--coral);
-            border-radius: 25px;
-            width: auto;
-            padding: 0 22px;
-            font-weight: 700;
-            font-size: .85rem;
-            gap: 8px;
         }
 
         .ctrl-btn.end-btn {
             background: transparent;
             border: 1px solid var(--coral);
             color: var(--coral);
-            border-radius: 25px;
-            width: auto;
-            padding: 0 18px;
+            font-size: .7rem;
             font-weight: 700;
-            font-size: .82rem;
+            text-align: center;
+            line-height: 1.15;
         }
 
         .ctrl-label {
-            position: absolute;
-            bottom: -20px;
             font-size: .62rem;
             color: #9AA1C4;
             white-space: nowrap;
+            text-align: center;
         }
 
         /* ---------- PARTICIPANTS PANEL ---------- */
         .participants-panel {
             position: fixed;
             top: 0;
-            right: 0;
+            right: 88px;
             bottom: 0;
             width: 280px;
             background: var(--panel);
@@ -517,7 +553,20 @@
         }
 
         @media (max-width: 640px) {
+            .call-controls {
+                width: 64px;
+                gap: 10px;
+                padding: 12px 6px;
+            }
+
+            .ctrl-btn {
+                width: 42px;
+                height: 42px;
+                font-size: 1.05rem;
+            }
+
             .participants-panel {
+                right: 0;
                 width: 100%;
             }
 
@@ -583,43 +632,49 @@
                     <a href="{{ route('groups.show', $group) }}" class="call-close"><i class="bi bi-x-lg"></i></a>
                 </div>
             </header>
-            <main class="call-stage">
-                <div class="video-grid" id="video-grid"></div>
-            </main>
-            <footer class="call-controls">
-                <div style="position:relative;">
-                    <button type="button" class="ctrl-btn" id="btn-mic"><i class="bi bi-mic-fill"></i></button>
-                    <span class="ctrl-label">Mikrofon</span>
-                </div>
-                <div style="position:relative;">
-                    <button type="button" class="ctrl-btn" id="btn-cam"><i class="bi bi-camera-video-fill"></i></button>
-                    <span class="ctrl-label">Kamera</span>
-                </div>
-                <div style="position:relative;">
-                    <button type="button" class="ctrl-btn" id="btn-share"><i class="bi bi-display"></i></button>
-                    <span class="ctrl-label">Ekran</span>
-                </div>
-                @unless ($isModerator)
-                    <div style="position:relative;">
-                        <button type="button" class="ctrl-btn" id="btn-hand"><i class="bi bi-hand-index-thumb"></i></button>
-                        <span class="ctrl-label">Qo'l ko'tarish</span>
+            <div class="call-body">
+                <main class="call-stage">
+                    <div class="video-grid" id="video-grid"></div>
+                    <div class="stage-thumbs" id="stage-thumbs" hidden></div>
+                </main>
+                <aside class="call-controls">
+                    <div class="ctrl-item">
+                        <button type="button" class="ctrl-btn" id="btn-mic"><i class="bi bi-mic-fill"></i></button>
+                        <span class="ctrl-label">Mikrofon</span>
                     </div>
-                @endunless
-                <div style="position:relative;">
-                    <button type="button" class="ctrl-btn" id="btn-record"><i class="bi bi-record-circle"></i></button>
-                    <span class="ctrl-label">Yozib olish</span>
-                </div>
-                <div style="position:relative;">
-                    <button type="button" class="ctrl-btn" id="btn-participants"><i class="bi bi-people-fill"></i></button>
-                    <span class="ctrl-label">Ishtirokchilar</span>
-                </div>
-                <button type="button" class="ctrl-btn leave-btn" id="btn-leave">
-                    <i class="bi bi-telephone-x-fill"></i> Chiqish
-                </button>
-                @if ($isModerator)
-                    <button type="button" class="ctrl-btn end-btn" id="btn-end">Darsni yakunlash</button>
-                @endif
-            </footer>
+                    <div class="ctrl-item">
+                        <button type="button" class="ctrl-btn" id="btn-cam"><i class="bi bi-camera-video-fill"></i></button>
+                        <span class="ctrl-label">Kamera</span>
+                    </div>
+                    <div class="ctrl-item">
+                        <button type="button" class="ctrl-btn" id="btn-share"><i class="bi bi-display"></i></button>
+                        <span class="ctrl-label">Ekran</span>
+                    </div>
+                    @unless ($isModerator)
+                        <div class="ctrl-item">
+                            <button type="button" class="ctrl-btn" id="btn-hand"><i class="bi bi-hand-index-thumb"></i></button>
+                            <span class="ctrl-label">Qo'l ko'tarish</span>
+                        </div>
+                    @endunless
+                    <div class="ctrl-item">
+                        <button type="button" class="ctrl-btn" id="btn-record"><i class="bi bi-record-circle"></i></button>
+                        <span class="ctrl-label">Yozib olish</span>
+                    </div>
+                    <div class="ctrl-item">
+                        <button type="button" class="ctrl-btn" id="btn-participants"><i class="bi bi-people-fill"></i></button>
+                        <span class="ctrl-label">Ishtirokchilar</span>
+                    </div>
+                    <div class="ctrl-item">
+                        <button type="button" class="ctrl-btn leave-btn" id="btn-leave"><i class="bi bi-telephone-x-fill"></i></button>
+                        <span class="ctrl-label">Chiqish</span>
+                    </div>
+                    @if ($isModerator)
+                        <div class="ctrl-item">
+                            <button type="button" class="ctrl-btn end-btn" id="btn-end">Yakunlash</button>
+                        </div>
+                    @endif
+                </aside>
+            </div>
 
             <aside class="participants-panel" id="participants-panel" hidden>
                 <h3><i class="bi bi-people-fill"></i> Ishtirokchilar (<span id="participants-count">1</span>)</h3>

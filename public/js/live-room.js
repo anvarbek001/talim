@@ -31,7 +31,12 @@
     const callScreen = $('call-screen');
     const errorScreen = $('error-screen');
     const videoGrid = $('video-grid');
+    const thumbsEl = $('stage-thumbs');
     const toastEl = $('toast');
+
+    // Bosilgan katakning id'si — shu kishi/ekran "asosiy ekran" (spotlight)
+    // sifatida katta ko'rsatiladi, qolganlar pastda kichik qatorda turadi.
+    let pinnedTileId = null;
 
     let room = null;
     let previewStream = null;
@@ -207,15 +212,49 @@
         return 'tile-' + identity.replace(/[^a-zA-Z0-9_-]/g, '');
     }
 
-    // Ustun/qator sonini ishtirokchilar soniga qarab hisoblaydi (yozib
-    // olishdagi canvas joylashuvi bilan bir xil mantiq) — shu bilan
-    // kataklar ekrandan hech qachon oshib ketmaydi.
-    function updateGridLayout() {
-        const n = videoGrid.children.length || 1;
-        const cols = Math.ceil(Math.sqrt(n));
-        const rows = Math.ceil(n / cols);
-        videoGrid.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
-        videoGrid.style.gridTemplateRows = `repeat(${rows}, 1fr)`;
+    // Kataklarni joylashtiradi: agar ekran ulashish ketayotgan bo'lsa yoki
+    // kimdir bosib "asosiy ekran" qilib belgilagan bo'lsa — o'sha katak
+    // katta (spotlight), qolganlari pastda kichik qatorda turadi. Aks holda
+    // hammasi teng o'lchamdagi katakchalar tarzida (ishtirokchilar soniga
+    // qarab avtomatik ustun/qator bilan) ko'rsatiladi.
+    function layoutStage() {
+        const tiles = [...videoGrid.children, ...thumbsEl.children];
+        if (tiles.length === 0) return;
+
+        if (pinnedTileId && !tiles.some((t) => t.id === pinnedTileId)) pinnedTileId = null;
+
+        let mainTile = pinnedTileId ? tiles.find((t) => t.id === pinnedTileId) : null;
+        if (!mainTile) mainTile = tiles.find((t) => t.dataset.screen === '1');
+        if (!mainTile && tiles.length === 1) mainTile = tiles[0];
+
+        if (!mainTile) {
+            videoGrid.classList.remove('spotlight-mode');
+            thumbsEl.hidden = true;
+            thumbsEl.innerHTML = '';
+            tiles.forEach((t) => {
+                t.classList.remove('is-main');
+                videoGrid.appendChild(t);
+            });
+            const n = tiles.length;
+            const cols = Math.ceil(Math.sqrt(n));
+            const rows = Math.ceil(n / cols);
+            videoGrid.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+            videoGrid.style.gridTemplateRows = `repeat(${rows}, 1fr)`;
+            return;
+        }
+
+        videoGrid.classList.add('spotlight-mode');
+        videoGrid.style.gridTemplateColumns = '';
+        videoGrid.style.gridTemplateRows = '';
+        mainTile.classList.add('is-main');
+        videoGrid.appendChild(mainTile);
+        thumbsEl.hidden = tiles.length <= 1;
+        tiles.forEach((t) => {
+            if (t !== mainTile) {
+                t.classList.remove('is-main');
+                thumbsEl.appendChild(t);
+            }
+        });
     }
 
     function ensureTile(identity, name, isLocal, isScreen) {
@@ -238,8 +277,13 @@
                     <span class="tile-name">${escapeHtml(name || 'Foydalanuvchi')}</span>
                 </div>
             `;
+        tile.title = "Asosiy ekran qilib ko'rsatish uchun bosing";
+        tile.addEventListener('click', () => {
+            pinnedTileId = pinnedTileId === tile.id ? null : tile.id;
+            layoutStage();
+        });
         videoGrid.appendChild(tile);
-        updateGridLayout();
+        layoutStage();
         return tile;
     }
 
@@ -309,7 +353,7 @@
 
     function removeScreenTile(identity) {
         document.getElementById(tileIdFor(identity + '-screen-share'))?.remove();
-        updateGridLayout();
+        layoutStage();
         updateParticipantsPanel();
     }
 
@@ -504,7 +548,7 @@
     // ==================== PARTICIPANTS PANEL ====================
 
     function updateParticipantsPanel() {
-        const tiles = videoGrid.querySelectorAll('.tile:not(.is-screen)');
+        const tiles = [...videoGrid.querySelectorAll('.tile:not(.is-screen)'), ...thumbsEl.querySelectorAll('.tile:not(.is-screen)')];
         $('participants-count').textContent = tiles.length;
         const list = $('participants-list');
         list.innerHTML = '';
@@ -595,7 +639,7 @@
 
         function connectAllAudio() {
             // Ekrandagi (masalan boshqa ishtirokchilar) audio/video elementlari orqali.
-            document.querySelectorAll('#video-grid audio, #video-grid video').forEach((el) => {
+            document.querySelectorAll('#video-grid audio, #video-grid video, #stage-thumbs audio, #stage-thumbs video').forEach((el) => {
                 el.srcObject?.getAudioTracks().forEach(connectTrackToMix);
             });
             // O'zining mikrofoni ekranga chiqarilmagan (eho bo'lmasligi uchun),
@@ -614,7 +658,7 @@
 
         function drawFrame() {
             if (!drawing) return;
-            const videos = Array.from(document.querySelectorAll('#video-grid video')).filter((v) => v.readyState >= 2);
+            const videos = Array.from(document.querySelectorAll('#video-grid video, #stage-thumbs video')).filter((v) => v.readyState >= 2);
             ctx.fillStyle = '#0C1024';
             ctx.fillRect(0, 0, RECORD_WIDTH, RECORD_HEIGHT);
 
