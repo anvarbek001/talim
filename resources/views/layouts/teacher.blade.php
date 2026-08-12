@@ -908,6 +908,11 @@
         <a href="{{ route('teacher-students.index') }}" class="nav-link {{ request()->routeIs('teacher-students.*') ? 'active' : '' }}">
             <i class="bi bi-mortarboard"></i> O'quvchilarim
         </a>
+        @if (config('features.live_lessons_enabled'))
+            <a href="{{ route('groups.index') }}" class="nav-link {{ request()->routeIs('groups.*') ? 'active' : '' }}">
+                <i class="bi bi-camera-video-fill"></i> Guruhlar / Jonli darslar
+            </a>
+        @endif
 
         <div class="nav-eyebrow">Hisob</div>
         <a href="{{ route('profile.edit') }}" class="nav-link {{ request()->routeIs('profile.*') ? 'active' : '' }}">
@@ -991,6 +996,11 @@
         <a href="{{ route('teacher-students.index') }}" class="bn-link {{ request()->routeIs('teacher-students.*') ? 'active' : '' }}">
             <i class="bi bi-mortarboard"></i> <span>O'quvchilarim</span>
         </a>
+        @if (config('features.live_lessons_enabled'))
+            <a href="{{ route('groups.index') }}" class="bn-link {{ request()->routeIs('groups.*') ? 'active' : '' }}">
+                <i class="bi bi-camera-video-fill"></i><span>Guruhlar</span>
+            </a>
+        @endif
         {{-- <button type="button" class="bn-link" id="moreBtn"><i
                 class="bi bi-grid-3x3-gap-fill"></i><span>Ko'proq</span></button> --}}
     </nav>

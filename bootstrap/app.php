@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Middleware\EnsureLessonsEnabled;
+use App\Http\Middleware\EnsureLiveLessonsEnabled;
 use App\Http\Middleware\EnsureUserIsAdmin;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -16,6 +17,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'admin' => EnsureUserIsAdmin::class,
             'lessons.enabled' => EnsureLessonsEnabled::class,
+            'live.enabled' => EnsureLiveLessonsEnabled::class,
         ]);
 
         // Click.uz calls these directly (no session/CSRF token of ours).

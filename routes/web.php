@@ -10,14 +10,18 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\BookController;
 use App\Http\Controllers\ClickPaymentController;
 use App\Http\Controllers\DtmTestController;
+use App\Http\Controllers\GroupController;
+use App\Http\Controllers\GroupInviteController;
 use App\Http\Controllers\LanguageExamTestController;
 use App\Http\Controllers\LessonController;
 use App\Http\Controllers\LessonFileController;
+use App\Http\Controllers\LiveSessionController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SectionController;
 use App\Http\Controllers\SertifikatTestController;
 use App\Http\Controllers\StudentBookController;
 use App\Http\Controllers\StudentController;
+use App\Http\Controllers\StudentGroupController;
 use App\Http\Controllers\StudentLessonController;
 use App\Http\Controllers\StudentPaymentController;
 use App\Http\Controllers\StudentPurchaseController;
@@ -206,5 +210,39 @@ Route::controller(TeacherStudentController::class)->group(function () {
     Route::get('/teacher/students/attempts/{attempt}', 'show')->middleware(['auth'])->name('teacher-students.result');
     Route::post('/teacher/students/attempts/{attempt}/answers/{answer}/grade', 'grade')->middleware(['auth'])->name('teacher-students.grade');
 });
+
+// Guruhlar va jonli darslar — feature-flag orqali boshqariladi (config/features.php: live_lessons_enabled).
+Route::middleware(['auth', 'live.enabled'])->group(function () {
+    Route::controller(GroupController::class)->group(function () {
+        Route::get('/groups', 'index')->name('groups.index');
+        Route::get('/groups/create', 'create')->name('groups.create');
+        Route::post('/groups', 'store')->name('groups.store');
+        Route::get('/groups/{group}', 'show')->name('groups.show');
+        Route::post('/groups/{group}/members', 'addMember')->name('groups.members.add');
+        Route::delete('/groups/{group}/members/{member}', 'removeMember')->name('groups.members.remove');
+        Route::delete('/groups/{group}', 'destroy')->name('groups.destroy');
+    });
+
+    Route::get('/student/groups', [StudentGroupController::class, 'index'])->name('student-groups.index');
+
+    Route::controller(LiveSessionController::class)->group(function () {
+        Route::post('/groups/{group}/sessions', 'store')->name('live-sessions.store');
+        Route::post('/live-sessions/{liveSession}/start', 'start')->name('live-sessions.start');
+        Route::post('/live-sessions/{liveSession}/end', 'end')->name('live-sessions.end');
+        Route::post('/live-sessions/{liveSession}/cancel', 'cancel')->name('live-sessions.cancel');
+        Route::get('/live-sessions/{liveSession}/room', 'room')->name('live-sessions.room');
+        Route::post('/live-sessions/{liveSession}/join', 'join')->name('live-sessions.join');
+        Route::post('/live-sessions/{liveSession}/leave', 'leave')->name('live-sessions.leave');
+        Route::get('/live-sessions/{liveSession}/status', 'status')->name('live-sessions.status');
+    });
+});
+
+// Taklif havolasi mehmonlarga ham ko'rinadi (auth ular qo'shilmoqchi bo'lganda so'raladi).
+Route::get('/invites/{code}', [GroupInviteController::class, 'show'])
+    ->middleware('live.enabled')
+    ->name('group-invites.show');
+Route::post('/invites/{code}/accept', [GroupInviteController::class, 'accept'])
+    ->middleware(['live.enabled', 'auth'])
+    ->name('group-invites.accept');
 
 require __DIR__.'/auth.php';

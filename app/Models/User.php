@@ -114,6 +114,24 @@ class User extends Authenticatable implements Purchasable, Subscribable
     }
 
     /**
+     * O'qituvchi sifatida yaratgan guruhlari.
+     */
+    public function groupsAsTeacher(): HasMany
+    {
+        return $this->hasMany(Group::class, 'teacher_id');
+    }
+
+    /**
+     * A'zo bo'lgan (o'quvchi sifatida qo'shilgan) guruhlari.
+     */
+    public function groups(): BelongsToMany
+    {
+        return $this->belongsToMany(Group::class, 'group_members')
+            ->withPivot('joined_at')
+            ->withTimestamps();
+    }
+
+    /**
      * Purchasable::price — reused by IsPurchasable (isFree/isPurchasedBy)
      * and PurchaseService when a student subscribes to this teacher.
      */

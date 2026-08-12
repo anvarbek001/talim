@@ -582,6 +582,11 @@
         <a href="{{ route('student-statistics.index') }}" class="nav-link {{ request()->routeIs('student-statistics.*') ? 'active' : '' }}">
             <i class="bi bi-graph-up"></i> Progressim
         </a>
+        @if (config('features.live_lessons_enabled'))
+            <a href="{{ route('student-groups.index') }}" class="nav-link {{ request()->routeIs(['student-groups.*', 'groups.show']) ? 'active' : '' }}">
+                <i class="bi bi-camera-video-fill"></i> Guruhlarim
+            </a>
+        @endif
 
         <div class="nav-eyebrow">Hisob</div>
         <a href="{{ route('student-payments.index') }}" class="nav-link {{ request()->routeIs('student-payments.*') ? 'active' : '' }}">
@@ -679,6 +684,9 @@
         <a href="{{ route('student-tests.index') }}" class="sheet-link"><i class="bi bi-patch-question"></i> Testlarim</a>
         <a href="{{ route('student-books.index') }}" class="sheet-link"><i class="bi bi-journal-bookmark-fill"></i> Kitoblarim</a>
         <a href="{{ route('student-statistics.index') }}" class="sheet-link"><i class="bi bi-graph-up"></i> Progressim</a>
+        @if (config('features.live_lessons_enabled'))
+            <a href="{{ route('student-groups.index') }}" class="sheet-link"><i class="bi bi-camera-video-fill"></i> Guruhlarim</a>
+        @endif
         <a href="{{ route('student-payments.index') }}" class="sheet-link"><i class="bi bi-wallet2"></i> To'lovlarim</a>
         <a href="{{ route('profile.edit') }}" class="sheet-link"><i class="bi bi-gear"></i> Sozlamalar</a>
         <div class="sheet-divider"></div>
