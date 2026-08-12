@@ -64,7 +64,7 @@ class LiveSessionService
         ]);
 
         // Guruh o'qituvchisi darsni endi boshlagan bo'lsa, avtomatik "live"ga o'tkazamiz.
-        if ($session->status === 'scheduled' && $session->teacher_id === $user->id) {
+        if ($session->status === 'scheduled' && (int) $session->teacher_id === (int) $user->id) {
             $this->start($session);
         }
     }

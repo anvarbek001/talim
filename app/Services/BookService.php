@@ -114,7 +114,7 @@ class BookService
      */
     public function canView(Book $book, User $user): bool
     {
-        return $book->user_id === $user->id
+        return (int) $book->user_id === (int) $user->id
             || $user->hasRole('admin')
             || $this->purchaseServ->hasAccess($user, $book);
     }

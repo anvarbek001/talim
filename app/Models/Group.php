@@ -59,7 +59,10 @@ class Group extends Model
 
     public function isTeacher(User $user): bool
     {
-        return $this->teacher_id === $user->id;
+        // Qat'iy (===) solishtirish ba'zi hosting/PDO sozlamalarida
+        // teacher_id string sifatida qaytganda noto'g'ri false berib,
+        // egasining o'zini guruhidan 403 bilan chetlatib qo'yardi.
+        return (int) $this->teacher_id === (int) $user->id;
     }
 
     public function hasMember(User $user): bool

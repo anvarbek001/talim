@@ -30,7 +30,7 @@ class LessonFileController extends Controller implements HasMiddleware
         $lesson = $lessonFile->lesson()->with('section')->firstOrFail();
         $user = Auth::user();
 
-        $canView = $lesson->user_id === $user->id
+        $canView = (int) $lesson->user_id === (int) $user->id
             || $user->hasRole('admin')
             || $lesson->isFreePreview()
             || $this->purchaseServ->hasAccess($user, $lesson->section);
