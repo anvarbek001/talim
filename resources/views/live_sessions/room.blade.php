@@ -536,7 +536,7 @@
         <div class="toast" id="toast"></div>
     </div>
 
-    <script src="{{ asset('js/live-room.js') }}"></script>
+    <script src="{{ asset('js/live-room-v2.js') }}"></script>
 </body>
 
 </html>
