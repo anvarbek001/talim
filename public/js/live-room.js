@@ -1,11 +1,11 @@
 /**
  * DarsQil — jonli dars xonasi (LiveKit orqali).
  *
- * - Video/audio: LiveKit JS SDK (CDN, global `LivekitClient`), kamera kamida
- *   720p bilan yoqiladi (videoCaptureDefaults).
+ * - Video/audio: LiveKit JS SDK (CDN, global `LivekitClient`), kamera 1080p
+ *   bilan yoqiladi (videoCaptureDefaults).
  * - Yozib olish: butunlay brauzer ichida (canvas + MediaRecorder) —
  *   hech qanday narsa serverga yuborilmaydi, tugagach fayl foydalanuvchining
- *   o'z kompyuteriga avtomatik yuklab olinadi (kamida 1280x720).
+ *   o'z kompyuteriga avtomatik yuklab olinadi (1920x1080).
  */
 (function () {
     'use strict';
@@ -160,7 +160,7 @@
             adaptiveStream: true,
             dynacast: true,
             videoCaptureDefaults: {
-                resolution: LivekitClient.VideoPresets.h720.resolution,
+                resolution: LivekitClient.VideoPresets.h1080.resolution,
             },
         });
 
@@ -207,6 +207,17 @@
         return 'tile-' + identity.replace(/[^a-zA-Z0-9_-]/g, '');
     }
 
+    // Ustun/qator sonini ishtirokchilar soniga qarab hisoblaydi (yozib
+    // olishdagi canvas joylashuvi bilan bir xil mantiq) — shu bilan
+    // kataklar ekrandan hech qachon oshib ketmaydi.
+    function updateGridLayout() {
+        const n = videoGrid.children.length || 1;
+        const cols = Math.ceil(Math.sqrt(n));
+        const rows = Math.ceil(n / cols);
+        videoGrid.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+        videoGrid.style.gridTemplateRows = `repeat(${rows}, 1fr)`;
+    }
+
     function ensureTile(identity, name, isLocal) {
         let tile = document.getElementById(tileIdFor(identity));
         if (tile) return tile;
@@ -225,6 +236,7 @@
             </div>
         `;
         videoGrid.appendChild(tile);
+        updateGridLayout();
         return tile;
     }
 
@@ -282,6 +294,7 @@
 
     function removeParticipantTile(identity) {
         document.getElementById(tileIdFor(identity))?.remove();
+        updateGridLayout();
         updateParticipantsPanel();
     }
 
@@ -540,8 +553,8 @@
             return;
         }
 
-        const RECORD_WIDTH = 1280;
-        const RECORD_HEIGHT = 720;
+        const RECORD_WIDTH = 1920;
+        const RECORD_HEIGHT = 1080;
 
         const canvas = document.createElement('canvas');
         canvas.width = RECORD_WIDTH;
@@ -625,7 +638,7 @@
         try {
             mediaRecorder = new MediaRecorder(combinedStream, {
                 mimeType: mimeType || undefined,
-                videoBitsPerSecond: 3_000_000,
+                videoBitsPerSecond: 6_000_000,
             });
         } catch (e) {
             showToast("Yozib olishni boshlab bo'lmadi.");
@@ -665,7 +678,7 @@
             $('rec-timer').textContent = formatTime(Math.floor((Date.now() - recordStartedAt) / 1000));
         }, 1000);
         updateControlButtonsUI();
-        showToast('Yozib olish boshlandi (720p). Tugagach fayl avtomatik yuklab olinadi.');
+        showToast('Yozib olish boshlandi (1080p). Tugagach fayl avtomatik yuklab olinadi.');
     }
 
     function stopRecordingIfActive() {

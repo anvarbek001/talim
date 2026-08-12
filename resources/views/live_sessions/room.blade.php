@@ -231,10 +231,14 @@
 
         .video-grid {
             flex: 1;
+            min-height: 0;
             display: grid;
             gap: 12px;
-            align-content: center;
-            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            /* Ustun/qator soni JS orqali ishtirokchilar soniga qarab
+               qo'yiladi (grid-template-columns/rows) — shu bilan kataklar
+               har doim ekranga (kengligi HAM, balandligi HAM) sig'adi,
+               kam ishtirokchida katak ekrandan oshib pastdagi
+               boshqaruv tugmalarini yashirib qo'ymaydi. */
         }
 
         .tile {
@@ -242,7 +246,9 @@
             background: #000;
             border-radius: 14px;
             overflow: hidden;
-            aspect-ratio: 16/10;
+            width: 100%;
+            height: 100%;
+            min-height: 0;
             border: 1px solid var(--line);
         }
 
@@ -545,7 +551,8 @@
                 </div>
                 <h2 class="h5 mb-2">{{ $liveSession->title }}</h2>
                 <button type="button" class="btn-gold" id="prejoin-join-btn">
-                    <i class="bi bi-box-arrow-in-right"></i> Darsga qo'shilish
+                    <i class="bi bi-box-arrow-in-right"></i>
+                    {{ $isModerator ? 'Darsni boshlash' : "Darsga qo'shilish" }}
                 </button>
                 <div class="prejoin-sub" id="prejoin-status">Kameraga ruxsat so'ralmoqda...</div>
                 @unless ($isModerator)
