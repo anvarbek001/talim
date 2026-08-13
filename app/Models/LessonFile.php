@@ -36,10 +36,18 @@ class LessonFile extends Model
         return $this->status === 'failed';
     }
 
+    /**
+     * youtube-nocookie.com (maxfiylikni kuchaytirilgan rejimi) + kamroq
+     * YouTube brendlash/tavsiya havolalari — video ID baribir iframe src'da
+     * ko'rinadi (bu ko'rsatishning tabiiy chegarasi), lekin bu havola endi
+     * hech qachon sahifa HTML'ida oldindan tayyor turmaydi — faqat
+     * LessonFileController::embed() orqali, ruxsat tekshirilgach beriladi
+     * (qarang: routes/web.php'dagi lesson-files.embed).
+     */
     public function embedUrl(): ?string
     {
         return $this->youtube_id
-            ? "https://www.youtube.com/embed/{$this->youtube_id}"
+            ? "https://www.youtube-nocookie.com/embed/{$this->youtube_id}?modestbranding=1&rel=0"
             : null;
     }
 }

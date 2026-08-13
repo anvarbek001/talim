@@ -37,6 +37,7 @@ class User extends Authenticatable implements Purchasable, Subscribable
         'password',
         'avatar',
         'subscription_price',
+        'google_id',
     ];
 
     /**

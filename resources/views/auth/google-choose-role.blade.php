@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="robots" content="noindex, follow">
-    <title>Yangi parol — DarsQil</title>
+    <title>Ro'lni tanlang — DarsQil</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link
@@ -79,21 +79,26 @@
             font-size: .78rem;
         }
 
+        .google-account-chip {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: var(--paper);
+            border-radius: 10px;
+            padding: 10px 14px;
+            margin-bottom: 22px;
+            font-size: .88rem;
+        }
+
+        .google-account-chip i {
+            color: var(--gold);
+            font-size: 1.05rem;
+        }
+
         .form-label {
             font-weight: 600;
             font-size: .9rem;
             color: var(--ink);
-        }
-
-        .form-control {
-            border-radius: 9px;
-            border: 1.5px solid #E7E4DA;
-            padding: 10px 14px;
-        }
-
-        .form-control:focus {
-            border-color: var(--gold);
-            box-shadow: 0 0 0 3px rgba(242, 169, 59, .2);
         }
 
         .btn-gold {
@@ -110,6 +115,53 @@
             background: #e0961f;
             color: var(--navy-deep);
         }
+
+        /* ROLE SELECT — segmented control */
+        .role-select {
+            display: flex;
+            gap: 10px;
+        }
+
+        .role-option {
+            flex: 1;
+            position: relative;
+        }
+
+        .role-option input {
+            position: absolute;
+            opacity: 0;
+            inset: 0;
+            cursor: pointer;
+            margin: 0;
+        }
+
+        .role-option label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 14px;
+            border: 1.5px solid #E7E4DA;
+            border-radius: 10px;
+            font-size: .88rem;
+            font-weight: 600;
+            color: var(--muted);
+            cursor: pointer;
+            transition: .15s;
+        }
+
+        .role-option label i {
+            font-size: 1.1rem;
+        }
+
+        .role-option input:checked+label {
+            border-color: var(--gold);
+            background: var(--gold-soft);
+            color: var(--ink);
+        }
+
+        .role-option input:focus-visible+label {
+            box-shadow: 0 0 0 3px rgba(242, 169, 59, .25);
+        }
     </style>
 </head>
 
@@ -123,49 +175,42 @@
         <div class="row justify-content-center">
             <div class="col-lg-5 col-md-7">
                 <div class="auth-card">
-                    <div class="auth-eyebrow mb-2">Yangi parol o'rnating</div>
-                    <h3 class="mb-4">Parolni tiklash</h3>
+                    <div class="auth-eyebrow mb-2">Deyarli tayyor</div>
+                    <h3 class="mb-4">Ro'lingizni tanlang</h3>
 
-                    <form method="POST" action="{{ route('password.store') }}">
+                    <div class="google-account-chip">
+                        <i class="bi bi-google"></i>
+                        <span>{{ session('google_pending.email') }} bilan davom etyapsiz</span>
+                    </div>
+
+                    <form method="POST" action="{{ route('google.complete') }}">
                         @csrf
 
-                        <input type="hidden" name="token" value="{{ $request->route('token') }}">
-
-                        <!-- Email Address -->
-                        <div class="mb-3">
-                            <label for="email" class="form-label">{{ __('Email') }}</label>
-                            <input id="email" type="email" name="email" value="{{ old('email', $request->email) }}"
-                                class="form-control @error('email') is-invalid @enderror" required autofocus
-                                autocomplete="username">
-                            @error('email')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-
-                        <!-- Password -->
-                        <div class="mb-3">
-                            <label for="password" class="form-label">{{ __('Yangi parol') }}</label>
-                            <input id="password" type="password" name="password"
-                                class="form-control @error('password') is-invalid @enderror" required
-                                autocomplete="new-password">
-                            @error('password')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-
-                        <!-- Confirm Password -->
                         <div class="mb-4">
-                            <label for="password_confirmation" class="form-label">{{ __('Yangi parolni tasdiqlang') }}</label>
-                            <input id="password_confirmation" type="password" name="password_confirmation"
-                                class="form-control @error('password_confirmation') is-invalid @enderror" required
-                                autocomplete="new-password">
-                            @error('password_confirmation')
-                                <div class="invalid-feedback">{{ $message }}</div>
+                            <label class="form-label d-block">{{ __("Ro'l") }}</label>
+                            <div class="role-select">
+                                <div class="role-option">
+                                    <input type="radio" id="role_student" name="role" value="student"
+                                        {{ old('role', 'student') == 'student' ? 'checked' : '' }} required>
+                                    <label for="role_student">
+                                        <i class="bi bi-mortarboard"></i> O'quvchiman
+                                    </label>
+                                </div>
+                                <div class="role-option">
+                                    <input type="radio" id="role_teacher" name="role" value="teacher"
+                                        {{ old('role') == 'teacher' ? 'checked' : '' }} required>
+                                    <label for="role_teacher">
+                                        <i class="bi bi-person-workspace"></i> O'qituvchiman
+                                    </label>
+                                </div>
+                            </div>
+                            @error('role')
+                                <div class="text-danger small mt-2">{{ $message }}</div>
                             @enderror
                         </div>
 
                         <button type="submit" class="btn btn-gold">
-                            {{ __('Parolni yangilash') }}
+                            {{ __('Davom etish') }}
                         </button>
                     </form>
                 </div>

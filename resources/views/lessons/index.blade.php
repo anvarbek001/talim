@@ -275,9 +275,18 @@
                             yuklanmaydi, faqat saytga biriktiriladi.
                         </div>
                         <div class="field-hint field-hint-warning">
-                            <i class="bi bi-exclamation-triangle"></i> Videoning YouTube'dagi ko'rinishi <b>Public</b>
-                            yoki <b>Unlisted</b> (havola bilan ko'rish) bo'lishi shart — <b>Private</b> (maxfiy) qilib
-                            qo'yilgan bo'lsa, boshqa foydalanuvchilar saytda uni ko'ra olmaydi.
+                            <i class="bi bi-exclamation-triangle"></i>
+                            <span>
+                                Videoning YouTube'dagi ko'rinishi <b>Public</b> yoki <b>Unlisted</b> (havola bilan
+                                ko'rish) bo'lishi shart — <b>Private</b> (maxfiy) qilib qo'yilgan bo'lsa, boshqa
+                                foydalanuvchilar saytda uni ko'ra olmaydi.
+                                <br>
+                                <strong>Tavsiya:</strong> <b>Unlisted</b>ni tanlang — video YouTube qidiruvida va
+                                kanalingizda chiqmaydi, faqat DarsQil orqali ko'rinadi.
+                                <a href="https://claude.ai/code/artifact/e55c5b5e-8e23-475f-b2f7-a427c7603d8c" target="_blank" rel="noopener">
+                                    Qadamma-qadam yo'riqnomani shu yerdan ko'ring →
+                                </a>
+                            </span>
                         </div>
                     </div>
                 </div>
@@ -828,6 +837,17 @@
         .field-hint-warning i {
             margin-top: 1px;
             flex-shrink: 0;
+        }
+
+        .field-hint-warning a {
+            color: #8A6100;
+            font-weight: 700;
+            text-decoration: underline;
+            white-space: nowrap;
+        }
+
+        .field-hint-warning a:hover {
+            color: #6B4A00;
         }
 
         .btn-icon-remove {

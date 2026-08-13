@@ -4,6 +4,7 @@ use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\ConfirmablePasswordController;
 use App\Http\Controllers\Auth\EmailVerificationNotificationController;
 use App\Http\Controllers\Auth\EmailVerificationPromptController;
+use App\Http\Controllers\Auth\GoogleAuthController;
 use App\Http\Controllers\Auth\NewPasswordController;
 use App\Http\Controllers\Auth\PasswordController;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
@@ -33,6 +34,17 @@ Route::middleware('guest')->group(function () {
 
     Route::post('reset-password', [NewPasswordController::class, 'store'])
         ->name('password.store');
+
+    // "Google orqali kirish" — login.blade.php/register.blade.php'dagi
+    // tugmalar shu redirect()'ga ishora qiladi (qarang: GoogleAuthController).
+    Route::get('auth/google/redirect', [GoogleAuthController::class, 'redirect'])
+        ->name('google.redirect');
+    Route::get('auth/google/callback', [GoogleAuthController::class, 'callback'])
+        ->name('google.callback');
+    Route::get('auth/google/choose-role', [GoogleAuthController::class, 'showChooseRole'])
+        ->name('google.choose-role');
+    Route::post('auth/google/complete', [GoogleAuthController::class, 'completeSignup'])
+        ->name('google.complete');
 });
 
 Route::middleware('auth')->group(function () {

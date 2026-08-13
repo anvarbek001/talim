@@ -80,6 +80,16 @@ Route::get('/lesson-files/{lessonFile}/stream', [LessonFileController::class, 's
     ->middleware('lessons.enabled')
     ->name('lesson-files.stream');
 
+// Video havolasini (thumbnail/embed) sahifa HTML'ida oldindan yozmaslik
+// uchun — JS shu ikkalasidan kerak bo'lganda so'raydi (qarang: LessonFile::embedUrl(),
+// LessonFileController::assertCanView()).
+Route::get('/lesson-files/{lessonFile}/thumbnail', [LessonFileController::class, 'thumbnail'])
+    ->middleware('lessons.enabled')
+    ->name('lesson-files.thumbnail');
+Route::get('/lesson-files/{lessonFile}/embed', [LessonFileController::class, 'embed'])
+    ->middleware('lessons.enabled')
+    ->name('lesson-files.embed');
+
 // Bir martalik YouTube OAuth avtorizatsiyasi — YOUTUBE_REFRESH_TOKEN shu orqali
 // olinadi (qarang: YoutubeUploadService, UploadLessonVideoToYoutube). Faqat
 // admin kira oladi, chunki callback() xom refresh tokenni ekranga chiqaradi.

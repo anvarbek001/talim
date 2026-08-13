@@ -36,6 +36,17 @@ return [
         'refresh_token' => env('YOUTUBE_REFRESH_TOKEN'),
     ],
 
+    // "Google orqali kirish" (Socialite) — youtube kalitidan butunlay
+    // mustaqil, foydalanuvchi login/ro'yxatdan o'tishi uchun. Google Cloud
+    // Console'da OAuth 2.0 Client ID yaratib olinadi (bir xil loyihada
+    // YouTube kaliti bilan bir qatorda bo'lishi ham mumkin, faqat
+    // "Authorized redirect URIs"ga GOOGLE_REDIRECT_URI qo'shilishi kerak).
+    'google' => [
+        'client_id' => env('GOOGLE_CLIENT_ID'),
+        'client_secret' => env('GOOGLE_CLIENT_SECRET'),
+        'redirect' => env('GOOGLE_REDIRECT_URI'),
+    ],
+
     // Click.uz Merchant Shop-API — https://docs.click.uz/en/click-request/
     // Merchant kabinetdan (https://merchant.click.uz) olinadi.
     'click' => [

@@ -80,7 +80,7 @@
                                         <button type="button"
                                             class="lesson-video-item {{ $video->is($primaryVideo) ? 'is-active' : '' }}"
                                             data-video-title="{{ $video->title ?: $lesson->title }}"
-                                            data-video-embed="{{ $video->embedUrl() }}"
+                                            data-video-id="{{ $video->id }}"
                                             data-video-status="{{ $video->status }}">
                                             <i class="bi {{ $video->isPending() ? 'bi-arrow-repeat' : ($video->isFailed() ? 'bi-exclamation-triangle-fill' : 'bi-play-circle-fill') }}"></i>
                                             <span>{{ $video->title ?: $lesson->title }}</span>
@@ -428,6 +428,44 @@
     </style>
 
     <script>
+        // Video havolasi sahifa HTML'ida hech qachon tayyor turmaydi — har
+        // safar (sahifa yuklanganda ham, video almashtirilganda ham) shu
+        // yerdan /lesson-files/{id}/embed'ga so'rov yuboriladi (ruxsat
+        // shu yerda tekshiriladi — qarang: LessonFileController::embed()).
+        const embedUrlTemplate = "{{ route('lesson-files.embed', ['lessonFile' => '__ID__']) }}";
+
+        function renderVideoError(videoBox, message) {
+            videoBox.innerHTML = `<div class="lesson-video-placeholder" style="background:linear-gradient(135deg,var(--coral),#FF9B7B);">
+                <i class="bi bi-exclamation-triangle-fill"></i><span>${message}</span></div>`;
+        }
+
+        async function loadVideo(videoId, videoBox) {
+            if (!videoBox || !videoId) return;
+
+            videoBox.innerHTML = `<div class="lesson-video-placeholder"><i class="bi bi-arrow-repeat"></i></div>`;
+
+            try {
+                const res = await fetch(embedUrlTemplate.replace('__ID__', videoId), {
+                    headers: {
+                        Accept: 'application/json'
+                    }
+                });
+                if (!res.ok) throw new Error();
+                const data = await res.json();
+                videoBox.innerHTML = `<iframe src="${data.embedUrl}" loading="lazy" allowfullscreen
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    referrerpolicy="strict-origin-when-cross-origin"></iframe>`;
+            } catch (e) {
+                renderVideoError(videoBox, "Video yuklab bo'lmadi.");
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('[data-video-loading]').forEach(function(el) {
+                loadVideo(el.dataset.videoId, el.closest('[data-lesson-video]'));
+            });
+        });
+
         // Bir darsda bir nechta video bo'lsa, ro'yxatdagi nomga bosilganda
         // asosiy pleer o'sha videoga almashadi (sahifa qayta yuklanmaydi).
         document.addEventListener('click', function(e) {
@@ -438,13 +476,10 @@
             const videoBox = card?.querySelector('[data-lesson-video]');
             if (!videoBox) return;
 
-            const embedUrl = btn.dataset.videoEmbed;
             const status = btn.dataset.videoStatus;
 
-            if (embedUrl) {
-                videoBox.innerHTML = `<iframe src="${embedUrl}" loading="lazy" allowfullscreen
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    referrerpolicy="strict-origin-when-cross-origin"></iframe>`;
+            if (status === 'ready') {
+                loadVideo(btn.dataset.videoId, videoBox);
             } else if (status === 'pending') {
                 videoBox.innerHTML = `<div class="lesson-video-placeholder">
                     <i class="bi bi-arrow-repeat"></i><span>Video YouTube'ga yuklanmoqda...</span></div>`;

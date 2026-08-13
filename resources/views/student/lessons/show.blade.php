@@ -19,9 +19,11 @@
                 <div class="card fade-up watch-card" style="animation-delay:.04s;">
                     <div class="watch-video" data-lesson-video style="background:linear-gradient(135deg,{{ $accent }},#9C8CFF);">
                         @if ($videoFile && $videoFile->embedUrl())
-                            <iframe src="{{ $videoFile->embedUrl() }}" loading="lazy" allowfullscreen
-                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                referrerpolicy="strict-origin-when-cross-origin"></iframe>
+                            {{-- Havola sahifa manbasida yozilmaydi — JS sahifa yuklangach
+                            /lesson-files/{id}/embed orqali (ruxsat tekshirilgach) so'raydi. --}}
+                            <div class="watch-video-placeholder" data-video-loading data-video-id="{{ $videoFile->id }}">
+                                <i class="bi bi-arrow-repeat"></i>
+                            </div>
                         @elseif ($pendingVideo)
                             <div class="watch-video-placeholder">
                                 <i class="bi bi-arrow-repeat"></i>
@@ -102,7 +104,7 @@
                             @foreach ($videos as $video)
                                 <button type="button"
                                     class="lesson-video-item {{ $video->is($videoFile) ? 'is-active' : '' }}"
-                                    data-video-embed="{{ $video->embedUrl() }}"
+                                    data-video-id="{{ $video->id }}"
                                     data-video-status="{{ $video->status }}">
                                     <i class="bi {{ $video->isPending() ? 'bi-arrow-repeat' : ($video->isFailed() ? 'bi-exclamation-triangle-fill' : 'bi-play-circle-fill') }}"></i>
                                     <span>{{ $video->title ?: $lesson->title }}</span>
@@ -422,6 +424,48 @@
     </style>
 
     <script>
+        // Video havolasi sahifa HTML'ida hech qachon tayyor turmaydi — har
+        // safar (sahifa yuklanganda ham, video almashtirilganda ham) shu
+        // yerdan /lesson-files/{id}/embed'ga so'rov yuboriladi (ruxsat
+        // shu yerda tekshiriladi — qarang: LessonFileController::embed()).
+        const embedUrlTemplate = "{{ route('lesson-files.embed', ['lessonFile' => '__ID__']) }}";
+
+        function renderVideoLoading(videoBox) {
+            videoBox.innerHTML = `<div class="watch-video-placeholder"><i class="bi bi-arrow-repeat"></i></div>`;
+        }
+
+        function renderVideoError(videoBox, message) {
+            videoBox.innerHTML = `<div class="watch-video-placeholder">
+                <i class="bi bi-exclamation-triangle-fill"></i><span>${message}</span></div>`;
+        }
+
+        async function loadVideo(videoId) {
+            const videoBox = document.querySelector('[data-lesson-video]');
+            if (!videoBox || !videoId) return;
+
+            renderVideoLoading(videoBox);
+
+            try {
+                const res = await fetch(embedUrlTemplate.replace('__ID__', videoId), {
+                    headers: {
+                        Accept: 'application/json'
+                    }
+                });
+                if (!res.ok) throw new Error();
+                const data = await res.json();
+                videoBox.innerHTML = `<iframe src="${data.embedUrl}" loading="lazy" allowfullscreen
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    referrerpolicy="strict-origin-when-cross-origin"></iframe>`;
+            } catch (e) {
+                renderVideoError(videoBox, "Video yuklab bo'lmadi. Sahifani yangilab ko'ring.");
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const initial = document.querySelector('[data-video-loading]');
+            if (initial) loadVideo(initial.dataset.videoId);
+        });
+
         // Bitta darsda bir nechta video bo'lsa, ro'yxatdagi videoga bosilganda
         // asosiy pleer o'sha videoga almashadi (sahifa qayta yuklanmaydi).
         document.addEventListener('click', function(e) {
@@ -431,13 +475,10 @@
             const videoBox = document.querySelector('[data-lesson-video]');
             if (!videoBox) return;
 
-            const embedUrl = btn.dataset.videoEmbed;
             const status = btn.dataset.videoStatus;
 
-            if (embedUrl) {
-                videoBox.innerHTML = `<iframe src="${embedUrl}" loading="lazy" allowfullscreen
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    referrerpolicy="strict-origin-when-cross-origin"></iframe>`;
+            if (status === 'ready') {
+                loadVideo(btn.dataset.videoId);
             } else if (status === 'pending') {
                 videoBox.innerHTML = `<div class="watch-video-placeholder">
                     <i class="bi bi-arrow-repeat"></i><span>Video YouTube'ga yuklanmoqda, biroz kuting...</span></div>`;

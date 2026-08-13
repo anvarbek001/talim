@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers\Auth;
 
+use App\Http\Controllers\Auth\Concerns\RedirectsAfterAuthentication;
 use App\Http\Controllers\Controller;
 use App\Models\User;
-use App\Services\GroupService;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -16,6 +16,8 @@ use Illuminate\View\View;
 
 class RegisteredUserController extends Controller
 {
+    use RedirectsAfterAuthentication;
+
     /**
      * Display the registration view.
      */
@@ -48,22 +50,6 @@ class RegisteredUserController extends Controller
         $user->assignRole($request->role);
         Auth::login($user);
 
-        // Guruh taklif havolasi orqali kelgan bo'lsa — ro'yxatdan o'tishi bilanoq
-        // shu guruhga qo'shib, to'g'ridan-to'g'ri guruh sahifasiga yuboramiz.
-        if ($code = $request->session()->pull('pending_group_invite')) {
-            try {
-                $group = app(GroupService::class)->acceptInviteCode($code, $user);
-
-                return redirect()->route('groups.show', $group);
-            } catch (\Throwable) {
-                // Taklif eskirgan/topilmagan bo'lsa — odatdagi yo'nalishga davom etamiz.
-            }
-        }
-
-        if ($user->hasRole('student')) {
-            return redirect(route('student_dashboard', absolute: false));
-        }
-
-        return redirect(route('dashboard', absolute: false));
+        return $this->redirectAfterAuthentication($request, $user);
     }
 }

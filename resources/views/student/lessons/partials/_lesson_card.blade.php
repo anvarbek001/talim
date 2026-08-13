@@ -8,7 +8,7 @@
 <div class="lesson-card fade-up" style="animation-delay:{{ min(($index ?? 0) * 0.05, 0.3) }}s;">
     <a href="{{ route('student-lessons.show', $lesson) }}" class="lesson-video">
         @if ($videoFile)
-            <img src="https://img.youtube.com/vi/{{ $videoFile->youtube_id }}/hqdefault.jpg" alt="{{ $lesson->title }}" loading="lazy">
+            <img src="{{ route('lesson-files.thumbnail', $videoFile) }}" alt="{{ $lesson->title }}" loading="lazy">
             <span class="lesson-play"><i class="bi bi-play-fill"></i></span>
         @elseif ($pendingVideo)
             <div class="lesson-video-placeholder" style="background:linear-gradient(135deg,{{ $accent }},#9C8CFF);">

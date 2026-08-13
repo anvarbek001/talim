@@ -2,9 +2,11 @@
      pleer, shuningdek JS orqali video ro'yxatidan almashtirilganda ham
      shu razmetka qayta yasaladi (resources/views/lessons/mine.blade.php). --}}
 @if ($video && $video->embedUrl())
-    <iframe src="{{ $video->embedUrl() }}" loading="lazy" allowfullscreen
-        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-        referrerpolicy="strict-origin-when-cross-origin"></iframe>
+    {{-- Havola sahifa manbasida yozilmaydi — JS sahifa yuklangach
+    /lesson-files/{id}/embed orqali (ruxsat tekshirilgach) so'raydi. --}}
+    <div class="lesson-video-placeholder" data-video-loading data-video-id="{{ $video->id }}">
+        <i class="bi bi-arrow-repeat"></i>
+    </div>
 @elseif ($video && $video->isPending())
     <div class="lesson-video-placeholder">
         <i class="bi bi-arrow-repeat"></i>

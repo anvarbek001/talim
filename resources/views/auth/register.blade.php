@@ -266,12 +266,31 @@
                             </button>
                         </div>
                     </form>
+
+                    @if (config('services.google.client_id'))
+                        <div class="d-flex align-items-center gap-3 my-4">
+                            <hr class="flex-grow-1" style="border-color:#E7E4DA;">
+                            <span class="text-muted small">yoki</span>
+                            <hr class="flex-grow-1" style="border-color:#E7E4DA;">
+                        </div>
+                        {{-- Tanlangan rol (o'quvchi/o'qituvchi) bosilgan paytda ?role= sifatida qo'shib yuboriladi. --}}
+                        <button type="button" id="googleSignupBtn" class="btn w-100 d-flex align-items-center justify-content-center gap-2"
+                            style="border-radius:9px;border:1.5px solid #E7E4DA;color:var(--ink);font-weight:600;padding:10px 26px;">
+                            <i class="bi bi-google" style="color:var(--gold);"></i> {{ __("Google orqali ro'yxatdan o'tish") }}
+                        </button>
+                    @endif
                 </div>
             </div>
         </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.getElementById('googleSignupBtn')?.addEventListener('click', function () {
+            const role = document.querySelector('input[name="role"]:checked')?.value || 'student';
+            window.location.href = "{{ route('google.redirect') }}?role=" + encodeURIComponent(role);
+        });
+    </script>
 </body>
 
 </html>

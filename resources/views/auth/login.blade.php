@@ -205,6 +205,18 @@
                         </div>
                     </form>
 
+                    @if (config('services.google.client_id'))
+                        <div class="d-flex align-items-center gap-3 my-4">
+                            <hr class="flex-grow-1" style="border-color:#E7E4DA;">
+                            <span class="text-muted small">yoki</span>
+                            <hr class="flex-grow-1" style="border-color:#E7E4DA;">
+                        </div>
+                        <a href="{{ route('google.redirect') }}" class="btn w-100 d-flex align-items-center justify-content-center gap-2"
+                            style="border-radius:9px;border:1.5px solid #E7E4DA;color:var(--ink);font-weight:600;padding:10px 26px;">
+                            <i class="bi bi-google" style="color:var(--gold);"></i> {{ __('Google orqali kirish') }}
+                        </a>
+                    @endif
+
                     @if (Route::has('register'))
                         <hr class="my-4" style="border-color:#E7E4DA;">
                         <p class="text-center text-muted small mb-0">
