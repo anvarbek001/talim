@@ -6,6 +6,7 @@ use App\Contracts\Subscribable;
 use App\Models\Book;
 use App\Models\ClickTransaction;
 use App\Models\DtmTest;
+use App\Models\GroupPlan;
 use App\Models\LanguageExamTest;
 use App\Models\Purchase;
 use App\Models\Section;
@@ -34,6 +35,7 @@ class ClickPaymentService
         'language_exam' => LanguageExamTest::class,
         'book' => Book::class,
         'teacher' => User::class,
+        'group_plan' => GroupPlan::class,
     ];
 
     public const MIN_TOPUP_AMOUNT = 5000;

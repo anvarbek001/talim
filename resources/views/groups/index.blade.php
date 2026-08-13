@@ -7,10 +7,24 @@
             <div>
                 <h1>Guruhlarim</h1>
                 <p class="page-sub">O'quvchilaringizni guruhlarga birlashtiring va jonli video darslar o'tkazing.</p>
+                <p class="plan-slots-info">
+                    @if ($slotLimit > 0)
+                        <i class="bi bi-diagram-3-fill"></i> {{ $slotsUsed }} / {{ $slotLimit }} guruh ishlatilgan
+                    @else
+                        <i class="bi bi-info-circle-fill"></i> Tarif tanlanmagan
+                    @endif
+                    — <a href="{{ route('group-plans.index') }}">tariflarni ko'rish</a>
+                </p>
             </div>
-            <a href="{{ route('groups.create') }}" class="btn-primary mine-add-btn">
-                <i class="bi bi-plus-lg"></i> Yangi guruh
-            </a>
+            @if ($slotsUsed < $slotLimit)
+                <a href="{{ route('groups.create') }}" class="btn-primary mine-add-btn">
+                    <i class="bi bi-plus-lg"></i> Yangi guruh
+                </a>
+            @else
+                <a href="{{ route('group-plans.index') }}" class="btn-upgrade mine-add-btn">
+                    <i class="bi bi-arrow-up-circle-fill"></i> Tarifni oshiring
+                </a>
+            @endif
         </div>
 
         @if (session('success'))
@@ -25,9 +39,15 @@
                 <div class="mine-empty-title">Hali guruh yaratilmagan</div>
                 <div class="mine-empty-sub">Birinchi guruhingizni yarating, o'quvchilarni taklif qiling va jonli
                     darslarni boshlang.</div>
-                <a href="{{ route('groups.create') }}" class="btn-primary">
-                    <i class="bi bi-plus-lg"></i> Guruh yaratish
-                </a>
+                @if ($slotsUsed < $slotLimit)
+                    <a href="{{ route('groups.create') }}" class="btn-primary">
+                        <i class="bi bi-plus-lg"></i> Guruh yaratish
+                    </a>
+                @else
+                    <a href="{{ route('group-plans.index') }}" class="btn-upgrade">
+                        <i class="bi bi-arrow-up-circle-fill"></i> Tarif tanlash
+                    </a>
+                @endif
             </div>
         @else
             <div class="group-grid">
@@ -50,6 +70,33 @@
     </div>
 
     <style>
+        .plan-slots-info {
+            font-size: .82rem;
+            color: var(--muted);
+            margin-top: 4px;
+        }
+
+        .plan-slots-info a {
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .btn-upgrade {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--amber);
+            color: #4A3300;
+            border-radius: 10px;
+            padding: 11px 18px;
+            font-weight: 700;
+            font-size: .88rem;
+        }
+
+        .btn-upgrade:hover {
+            filter: brightness(1.05);
+        }
+
         .group-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));

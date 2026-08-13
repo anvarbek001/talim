@@ -12,6 +12,7 @@ use App\Http\Controllers\ClickPaymentController;
 use App\Http\Controllers\DtmTestController;
 use App\Http\Controllers\GroupController;
 use App\Http\Controllers\GroupInviteController;
+use App\Http\Controllers\GroupPlanController;
 use App\Http\Controllers\LanguageExamTestController;
 use App\Http\Controllers\LessonController;
 use App\Http\Controllers\LessonFileController;
@@ -32,6 +33,7 @@ use App\Http\Controllers\TeacherStudentController;
 use App\Http\Controllers\TopicController;
 use App\Http\Controllers\TopicTestController;
 use App\Http\Controllers\WelcomeController;
+use App\Http\Controllers\YoutubeAuthController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [WelcomeController::class, 'index'])->name('welcome');
@@ -77,6 +79,14 @@ Route::controller(LessonController::class)->middleware('lessons.enabled')->group
 Route::get('/lesson-files/{lessonFile}/stream', [LessonFileController::class, 'stream'])
     ->middleware('lessons.enabled')
     ->name('lesson-files.stream');
+
+// Bir martalik YouTube OAuth avtorizatsiyasi — YOUTUBE_REFRESH_TOKEN shu orqali
+// olinadi (qarang: YoutubeUploadService, UploadLessonVideoToYoutube). Faqat
+// admin kira oladi, chunki callback() xom refresh tokenni ekranga chiqaradi.
+Route::controller(YoutubeAuthController::class)->middleware(['auth', 'admin'])->prefix('youtube')->name('youtube.')->group(function () {
+    Route::get('/authorize', 'redirect')->name('authorize');
+    Route::get('/callback', 'callback')->name('callback');
+});
 
 Route::controller(BookController::class)->group(function () {
     Route::get('/books', 'index')->name('book');
@@ -224,6 +234,8 @@ Route::middleware(['auth', 'live.enabled'])->group(function () {
     });
 
     Route::get('/student/groups', [StudentGroupController::class, 'index'])->name('student-groups.index');
+
+    Route::get('/teacher/group-plans', [GroupPlanController::class, 'index'])->name('group-plans.index');
 
     Route::controller(LiveSessionController::class)->group(function () {
         Route::post('/groups/{group}/sessions', 'store')->name('live-sessions.store');

@@ -132,6 +132,44 @@ class User extends Authenticatable implements Purchasable, Subscribable
     }
 
     /**
+     * O'qituvchining hozir faol guruh tarifi (GroupPlan) — eng oxirgi
+     * muddati o'tmagan xaridi. Yo'q bo'lsa null (guruh yaratish taqiqlanadi).
+     */
+    public function activeGroupPlan(): ?GroupPlan
+    {
+        $purchase = Purchase::where('user_id', $this->id)
+            ->where('purchasable_type', GroupPlan::class)
+            ->latest()
+            ->get()
+            ->first(fn (Purchase $purchase) => $purchase->isActive());
+
+        return $purchase?->purchasable;
+    }
+
+    /**
+     * Joriy tarifga ko'ra necha nechta guruh ochish mumkin (tarif yo'q
+     * bo'lsa 0 — hali birorta ham guruh ochib bo'lmaydi).
+     */
+    public function groupSlotLimit(): int
+    {
+        return $this->activeGroupPlan()?->max_groups ?? 0;
+    }
+
+    /**
+     * Hozir band bo'lgan joylar — o'chirilmagan (hali mavjud) guruhlar
+     * soni. Guruh o'chirilsa, bu son kamayadi va joy o'zi bo'shaydi.
+     */
+    public function groupSlotsUsed(): int
+    {
+        return $this->groupsAsTeacher()->count();
+    }
+
+    public function groupSlotsRemaining(): int
+    {
+        return max(0, $this->groupSlotLimit() - $this->groupSlotsUsed());
+    }
+
+    /**
      * Purchasable::price — reused by IsPurchasable (isFree/isPurchasedBy)
      * and PurchaseService when a student subscribes to this teacher.
      */

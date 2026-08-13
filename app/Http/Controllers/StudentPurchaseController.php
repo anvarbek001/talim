@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Book;
 use App\Models\DtmTest;
+use App\Models\GroupPlan;
 use App\Models\LanguageExamTest;
 use App\Models\Section;
 use App\Models\SertifikatTest;
@@ -23,6 +24,10 @@ class StudentPurchaseController extends Controller implements HasMiddleware
         'book' => Book::class,
         // O'qituvchining o'ziga obuna bo'lish — barcha bo'lim/kitoblarini ochadi.
         'teacher' => User::class,
+        // O'qituvchi uchun guruh (jonli darslar) tarifi — nomiga qaramay
+        // xaridor har qanday rolda bo'lishi mumkin (PurchaseService rolga
+        // bog'liq emas), shuning uchun shu umumiy controller qayta ishlatiladi.
+        'group_plan' => GroupPlan::class,
     ];
 
     public function __construct(protected PurchaseService $purchaseServ) {}

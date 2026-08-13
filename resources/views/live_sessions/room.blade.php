@@ -284,7 +284,6 @@
             max-height: 100%;
             aspect-ratio: 16 / 9;
             border: 1px solid var(--line);
-            cursor: pointer;
         }
 
         .video-grid.spotlight-mode .tile.is-main {
@@ -692,7 +691,10 @@
         <div class="toast" id="toast"></div>
     </div>
 
-    <script src="{{ asset('js/live-room.js') }}"></script>
+    {{-- ?v= — server (Engintron/nginx) statik fayllarni ba'zan eski nusxada
+    keshlab qo'yishi mumkin; fayl o'zgarganda mtime ham o'zgaradi, shu bilan
+    URL ham o'zgarib brauzer/kesh har doim eng oxirgi versiyani oladi. --}}
+    <script src="{{ asset('js/live-room.js') }}?v={{ @filemtime(public_path('js/live-room.js')) }}"></script>
 </body>
 
 </html>

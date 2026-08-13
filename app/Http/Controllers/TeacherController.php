@@ -2,10 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\StudentPaymentService;
+use App\Services\TeacherStatisticsService;
 use Illuminate\Http\Request;
 
 class TeacherController extends Controller
 {
+    public function __construct(protected TeacherStatisticsService $statisticsServ) {}
+
     /**
      * Display a listing of the resource.
      */
@@ -19,7 +23,16 @@ class TeacherController extends Controller
             return redirect()->route('admin.dashboard');
         }
 
-        return view('teacher_dashboard');
+        $teacherId = auth()->id();
+        $lessonsEnabled = config('features.lessons_enabled');
+
+        $stats = $this->statisticsServ->overview($teacherId);
+        $weeklyActivity = $this->statisticsServ->weeklyActivity($teacherId);
+        $recentLessons = $lessonsEnabled ? $this->statisticsServ->recentLessons($teacherId) : collect();
+        $recentPurchases = $this->statisticsServ->recentPurchases($teacherId);
+        $typeLabels = StudentPaymentService::TYPE_LABELS;
+
+        return view('teacher_dashboard', compact('stats', 'weeklyActivity', 'recentLessons', 'recentPurchases', 'typeLabels'));
     }
 
     /**

@@ -1,11 +1,16 @@
 /**
  * DarsQil — jonli dars xonasi (LiveKit orqali).
  *
- * - Video/audio: LiveKit JS SDK (CDN, global `LivekitClient`), kamera 1080p
- *   bilan yoqiladi (videoCaptureDefaults).
- * - Yozib olish: butunlay brauzer ichida (canvas + MediaRecorder) —
- *   hech qanday narsa serverga yuborilmaydi, tugagach fayl foydalanuvchining
- *   o'z kompyuteriga avtomatik yuklab olinadi (1920x1080).
+ * - Video/audio: LiveKit JS SDK (CDN, global `LivekitClient`) — barcha
+ *   ishtirokchilarning kamerasi bir xil yuqori tom (1080p) bilan yoqiladi,
+ *   simulcast yordamida esa har kimning haqiqiy internet tezligiga qarab
+ *   sifat avtomatik pasayadi/ko'tariladi (hech kim sun'iy ravishda pastroq
+ *   sifatga qulflab qo'yilmaydi).
+ * - Yozib olish: butunlay brauzer ichida (canvas + MediaRecorder), faqat
+ *   shu qurilmada — hech qanday narsa serverga yuborilmaydi va boshqa
+ *   ishtirokchilarning internet tezligiga ta'sir qilmaydi, shuning uchun
+ *   1440p (2560x1440) kabi yuqoriroq sifatda yoziladi, tugagach fayl
+ *   foydalanuvchining o'z kompyuteriga avtomatik yuklab olinadi.
  */
 (function () {
     'use strict';
@@ -161,9 +166,20 @@
             return;
         }
 
+        // Hammaga bir xil yuqori tom (1080p) — kimningdir sun'iy ravishda
+        // pastroq sifatga qulflab qo'yilishiga hojat yo'q: simulcast yoqilgan
+        // bo'lsa, LiveKit har bir kamerani bir nechta sifat qatlamida
+        // (past/o'rta/yuqori) bir vaqtda uzatadi va har bir tomoshabinga
+        // o'zining haqiqiy internet tezligiga mos qatlamni avtomatik
+        // tanlaydi — internet tez bo'lsa sifat ham o'zi ko'tarilaveradi,
+        // sekin bo'lsa faqat o'sha kishi uchun pasayadi (boshqalarga
+        // ta'sir qilmaydi).
         room = new LivekitClient.Room({
             adaptiveStream: true,
             dynacast: true,
+            publishDefaults: {
+                simulcast: true,
+            },
             videoCaptureDefaults: {
                 resolution: LivekitClient.VideoPresets.h1080.resolution,
             },
@@ -277,11 +293,18 @@
                     <span class="tile-name">${escapeHtml(name || 'Foydalanuvchi')}</span>
                 </div>
             `;
-        tile.title = "Asosiy ekran qilib ko'rsatish uchun bosing";
-        tile.addEventListener('click', () => {
-            pinnedTileId = pinnedTileId === tile.id ? null : tile.id;
-            layoutStage();
-        });
+        // Faqat domla asosiy ekranni belgilay oladi — va bu tanlov hammaga
+        // (barcha ishtirokchilarga) yuboriladi, shaxsiy/lokal tanlov emas.
+        if (cfg.isModerator) {
+            tile.title = "Hammaga asosiy ekran qilib ko'rsatish uchun bosing";
+            tile.style.cursor = 'pointer';
+            tile.addEventListener('click', () => {
+                const nowPinned = pinnedTileId !== tile.id;
+                pinnedTileId = nowPinned ? tile.id : null;
+                sendData({ type: 'spotlight', identity: nowPinned ? identity : null });
+                layoutStage();
+            });
+        }
         videoGrid.appendChild(tile);
         layoutStage();
         return tile;
@@ -417,6 +440,13 @@
         if (msg.type === 'hand') {
             updateHandBadge(msg.from, !!msg.raised);
             if (msg.raised) showToast((msg.name || 'Ishtirokchi') + " qo'lini ko'tardi");
+            return;
+        }
+        if (msg.type === 'spotlight') {
+            // Domla hammaga bittasini "asosiy ekran" qilib belgiladi (yoki
+            // bekor qildi) — bu tanlov barcha ishtirokchilar uchun majburiy.
+            pinnedTileId = msg.identity ? tileIdFor(msg.identity) : null;
+            layoutStage();
             return;
         }
         if (msg.to !== cfg.identity) return;
@@ -616,8 +646,12 @@
             return;
         }
 
-        const RECORD_WIDTH = 1920;
-        const RECORD_HEIGHT = 1080;
+        // Yozib olish faqat shu qurilmada (odatda domlaniki) ishlaydi va
+        // hech kimning internet tezligiga ta'sir qilmaydi — shuning uchun
+        // kamera olish sifatidan farqli o'laroq buni yuqoriroq qo'yish
+        // xavfsiz (1440p).
+        const RECORD_WIDTH = 2560;
+        const RECORD_HEIGHT = 1440;
 
         const canvas = document.createElement('canvas');
         canvas.width = RECORD_WIDTH;
@@ -701,7 +735,7 @@
         try {
             mediaRecorder = new MediaRecorder(combinedStream, {
                 mimeType: mimeType || undefined,
-                videoBitsPerSecond: 6_000_000,
+                videoBitsPerSecond: 9_000_000,
             });
         } catch (e) {
             showToast("Yozib olishni boshlab bo'lmadi.");
@@ -741,7 +775,7 @@
             $('rec-timer').textContent = formatTime(Math.floor((Date.now() - recordStartedAt) / 1000));
         }, 1000);
         updateControlButtonsUI();
-        showToast('Yozib olish boshlandi (1080p). Tugagach fayl avtomatik yuklab olinadi.');
+        showToast('Yozib olish boshlandi (1440p). Tugagach fayl avtomatik yuklab olinadi.');
     }
 
     function stopRecordingIfActive() {

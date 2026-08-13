@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Services\GroupService;
 use App\Services\LiveSessionService;
 use App\Services\ReferenceDataService;
+use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Support\Facades\Auth;
 
 class GroupController extends Controller
@@ -27,12 +28,16 @@ class GroupController extends Controller
     public function index()
     {
         $groups = $this->groupServ->groupsForTeacher(Auth::id());
+        $slotsUsed = Auth::user()->groupSlotsUsed();
+        $slotLimit = Auth::user()->groupSlotLimit();
 
-        return view('groups.index', compact('groups'));
+        return view('groups.index', compact('groups', 'slotsUsed', 'slotLimit'));
     }
 
     public function create()
     {
+        $this->authorizeSlotAvailable();
+
         $sciences = $this->referenceDataServ->sciences();
 
         return view('groups.create', compact('sciences'));
@@ -40,6 +45,8 @@ class GroupController extends Controller
 
     public function store(GroupRequest $request)
     {
+        $this->authorizeSlotAvailable();
+
         $group = $this->groupServ->createGroup($request->validated(), Auth::id());
 
         return redirect()->route('groups.show', $group)->with('success', "Guruh yaratildi. Endi o'quvchilarni taklif qiling.");
@@ -96,5 +103,25 @@ class GroupController extends Controller
     protected function authorizeAccess(Group $group): void
     {
         abort_unless($group->hasMember(Auth::user()), 403);
+    }
+
+    /**
+     * Guruh yaratishdan oldingi tarif tekshiruvi — joriy tarifda bo'sh joy
+     * qolmagan bo'lsa (yoki tarif umuman tanlanmagan bo'lsa), tarif sahifasiga
+     * yo'naltiradi. Frontendda tugma allaqachon bloklangan bo'ladi — bu
+     * to'g'ridan-to'g'ri URL orqali kirishga qarshi himoya qatlami.
+     */
+    protected function authorizeSlotAvailable(): void
+    {
+        if (Auth::user()->groupSlotsRemaining() > 0) {
+            return;
+        }
+
+        // abort()ga Response berib bo'lmaydi — HttpResponseException shu
+        // response'ni to'g'ridan-to'g'ri qaytarib, controllerni to'xtatadi.
+        throw new HttpResponseException(
+            redirect()->route('group-plans.index')
+                ->with('error', 'Guruh yaratish uchun tarif tanlang yoki mavjud tarifingizni oshiring.')
+        );
     }
 }
