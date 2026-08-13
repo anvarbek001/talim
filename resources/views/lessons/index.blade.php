@@ -237,6 +237,16 @@
                         </button>
                     </div>
 
+                    {{--
+                        VAQTINCHA O'CHIRILGAN — fayl yuklab, YouTube'ga
+                        avtomatik joylash (queue orqali) hozircha ishlatilmaydi,
+                        faqat tayyor YouTube havolasi qabul qilinadi. Qayta
+                        yoqish uchun: shu izohni va pastdagi mos JS blokini
+                        (data-video-source-toggle bilan bog'liq qism) oching,
+                        video-url-panel'ga qo'yilgan "display:none o'rniga
+                        hech narsa" holatini avvalgi (style="display:none;")
+                        holatiga qaytaring.
+
                     <div class="mode-toggle video-source-toggle" data-video-source-toggle>
                         <button type="button" class="mode-btn active" data-source-mode="file">
                             <i class="bi bi-upload"></i> Fayl yuklash
@@ -255,8 +265,9 @@
                         </label>
                         <div class="file-list" data-video-file-list></div>
                     </div>
+                    --}}
 
-                    <div class="field video-url-panel" data-video-url-panel style="display:none;">
+                    <div class="field video-url-panel" data-video-url-panel>
                         <input type="url" name="video_urls[]" class="text-control" data-video-url-input
                             placeholder="https://www.youtube.com/watch?v=...">
                         <div class="field-hint">
@@ -1621,30 +1632,40 @@
                 const urlInput = fragment.querySelector('[data-video-url-input]');
 
                 videoRowsContainer.appendChild(fragment);
-                const dzApi = setupDropzone(dropzone, input, list, false, 'bi-camera-reels');
+
+                // "Fayl yuklash" rejimi (dropzone/toggle) blade'da vaqtincha
+                // izohga olingan — shu elementlar hozircha yo'q, shuning
+                // uchun mavjud bo'lgandagina sozlaymiz (qayta yoqilganda
+                // ushbu tekshiruvlarsiz ham ishlayveradi).
+                let dzApi = null;
+                if (dropzone && input && list) {
+                    dzApi = setupDropzone(dropzone, input, list, false, 'bi-camera-reels');
+                }
 
                 row.querySelector('[data-remove-video-row]').addEventListener('click', () => row.remove());
 
                 // Har bir video qatori "Fayl yuklash" yoki "YouTube havola"
                 // rejimlaridan birida bo'ladi — o'tishda ikkinchi rejimning
                 // qiymati tozalanadi, shu bilan ikkalasi bir vaqtda yuborilmaydi.
-                sourceToggle.addEventListener('click', (e) => {
-                    const btn = e.target.closest('.mode-btn');
-                    if (!btn) return;
-                    const mode = btn.dataset.sourceMode;
+                if (sourceToggle) {
+                    sourceToggle.addEventListener('click', (e) => {
+                        const btn = e.target.closest('.mode-btn');
+                        if (!btn) return;
+                        const mode = btn.dataset.sourceMode;
 
-                    sourceToggle.querySelectorAll('.mode-btn').forEach(b => b.classList.toggle('active', b === btn));
+                        sourceToggle.querySelectorAll('.mode-btn').forEach(b => b.classList.toggle('active', b === btn));
 
-                    if (mode === 'url') {
-                        filePanel.style.display = 'none';
-                        urlPanel.style.display = '';
-                        dzApi.reset();
-                    } else {
-                        filePanel.style.display = '';
-                        urlPanel.style.display = 'none';
-                        urlInput.value = '';
-                    }
-                });
+                        if (mode === 'url') {
+                            filePanel.style.display = 'none';
+                            urlPanel.style.display = '';
+                            dzApi?.reset();
+                        } else {
+                            filePanel.style.display = '';
+                            urlPanel.style.display = 'none';
+                            urlInput.value = '';
+                        }
+                    });
+                }
             }
 
             document.getElementById('addVideoRowBtn').addEventListener('click', addVideoRow);
