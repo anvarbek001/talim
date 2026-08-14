@@ -191,7 +191,9 @@
                         </div>
 
                         <div class="d-flex align-items-center justify-content-between">
-                            @if (Route::has('password.request'))
+                            {{-- Vaqtincha yashirilgan — PasswordResetLinkController::ENABLED bilan
+                            birga qaytariladi (qarang: shu controller'dagi izoh). --}}
+                            @if (false && Route::has('password.request'))
                                 <a class="link-muted" href="{{ route('password.request') }}">
                                     {{ __('Forgot your password?') }}
                                 </a>

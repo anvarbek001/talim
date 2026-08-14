@@ -14,10 +14,22 @@ use Illuminate\View\View;
 class PasswordResetLinkController extends Controller
 {
     /**
+     * VAQTINCHA O'CHIRILGAN — production SMTP (cPanel/Exim) hali "530
+     * Relaying not allowed" xatosini berayapti, sabab hali topilmadi.
+     * Email to'g'ri sozlangach (yoki Resend'ga o'tilgach), shu qatorni
+     * `false`ga qaytaring — boshqa hech narsani o'zgartirish shart emas.
+     */
+    protected const ENABLED = false;
+
+    /**
      * Display the password reset link request view.
      */
-    public function create(): View
+    public function create(): View|RedirectResponse
     {
+        if (! self::ENABLED) {
+            return redirect()->route('login')->with('error', $this->disabledMessage());
+        }
+
         return view('auth.forgot-password');
     }
 
@@ -28,6 +40,10 @@ class PasswordResetLinkController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
+        if (! self::ENABLED) {
+            return redirect()->route('login')->with('error', $this->disabledMessage());
+        }
+
         $request->validate([
             'email' => ['required', 'email'],
         ]);
@@ -62,5 +78,10 @@ class PasswordResetLinkController extends Controller
                     ? back()->with('status', __($status))
                     : back()->withInput($request->only('email'))
                         ->withErrors(['email' => __($status)]);
+    }
+
+    protected function disabledMessage(): string
+    {
+        return "Parolni tiklash funksiyasi hozircha texnik ishlar tufayli mavjud emas. Yordam uchun administrator bilan bog'laning.";
     }
 }
