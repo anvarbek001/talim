@@ -157,7 +157,7 @@
                         </div>
                     @endif
 
-                    <form method="POST" action="{{ route('password.email') }}">
+                    <form method="POST" action="{{ route('password.email') }}" id="forgotPasswordForm">
                         @csrf
 
                         <!-- Email Address -->
@@ -176,7 +176,7 @@
                                 {{ __('Kirish sahifasiga qaytish') }}
                             </a>
 
-                            <button type="submit" class="btn btn-gold">
+                            <button type="submit" class="btn btn-gold" id="forgotPasswordBtn">
                                 {{ __('Havola yuborish') }}
                             </button>
                         </div>
@@ -187,6 +187,13 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Ikki marta bosib yuborilganda ikkita so'rov bir vaqtda ketib,
+        // parolni tiklash tokenida ziddiyat (server xatosi) chiqmasligi uchun.
+        document.getElementById('forgotPasswordForm')?.addEventListener('submit', function () {
+            document.getElementById('forgotPasswordBtn').disabled = true;
+        });
+    </script>
 </body>
 
 </html>
