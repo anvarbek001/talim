@@ -148,12 +148,21 @@ class User extends Authenticatable implements Purchasable, Subscribable
     }
 
     /**
-     * Joriy tarifga ko'ra necha nechta guruh ochish mumkin (tarif yo'q
-     * bo'lsa 0 — hali birorta ham guruh ochib bo'lmaydi).
+     * Tarif sotib olinmagan o'qituvchiga ham beriladigan bepul guruh soni —
+     * shundan ko'p guruh kerak bo'lsa, tarif tanlashga taklif qilinadi.
+     */
+    public const FREE_GROUP_SLOTS = 2;
+
+    /**
+     * Joriy tarifga ko'ra necha nechta guruh ochish mumkin. Tarif sotib
+     * olinmagan bo'lsa ham FREE_GROUP_SLOTS (2 ta) guruh bepul beriladi —
+     * tarif sotib olingach, bepul son o'rniga tarifning o'zi qo'llanadi
+     * (ustma-ust qo'shilmaydi, chunki tariflarning o'zi shuni hisobga olib
+     * belgilangan).
      */
     public function groupSlotLimit(): int
     {
-        return $this->activeGroupPlan()?->max_groups ?? 0;
+        return $this->activeGroupPlan()?->max_groups ?? self::FREE_GROUP_SLOTS;
     }
 
     /**

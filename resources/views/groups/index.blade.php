@@ -8,11 +8,10 @@
                 <h1>Guruhlarim</h1>
                 <p class="page-sub">O'quvchilaringizni guruhlarga birlashtiring va jonli video darslar o'tkazing.</p>
                 <p class="plan-slots-info">
-                    @if ($slotLimit > 0)
-                        <i class="bi bi-diagram-3-fill"></i> {{ $slotsUsed }} / {{ $slotLimit }} guruh ishlatilgan
-                    @else
-                        <i class="bi bi-info-circle-fill"></i> Tarif tanlanmagan
-                    @endif
+                    <i class="bi bi-diagram-3-fill"></i> {{ $slotsUsed }} / {{ $slotLimit }} guruh ishlatilgan
+                    @unless ($hasActivePlan)
+                        <span class="free-tier-badge">bepul</span>
+                    @endunless
                     — <a href="{{ route('group-plans.index') }}">tariflarni ko'rish</a>
                 </p>
             </div>
@@ -79,6 +78,19 @@
         .plan-slots-info a {
             color: var(--primary);
             font-weight: 600;
+        }
+
+        .free-tier-badge {
+            display: inline-block;
+            background: var(--mint-soft);
+            color: var(--mint);
+            font-size: .68rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .03em;
+            padding: 2px 8px;
+            border-radius: 20px;
+            margin-left: 4px;
         }
 
         .btn-upgrade {

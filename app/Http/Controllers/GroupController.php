@@ -30,8 +30,9 @@ class GroupController extends Controller
         $groups = $this->groupServ->groupsForTeacher(Auth::id());
         $slotsUsed = Auth::user()->groupSlotsUsed();
         $slotLimit = Auth::user()->groupSlotLimit();
+        $hasActivePlan = Auth::user()->activeGroupPlan() !== null;
 
-        return view('groups.index', compact('groups', 'slotsUsed', 'slotLimit'));
+        return view('groups.index', compact('groups', 'slotsUsed', 'slotLimit', 'hasActivePlan'));
     }
 
     public function create()

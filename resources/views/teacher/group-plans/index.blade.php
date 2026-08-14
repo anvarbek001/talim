@@ -29,6 +29,13 @@
                 Joriy tarifingiz: <strong>{{ $activePlan->name }}</strong> —
                 {{ $slotsUsed }} / {{ $activePlan->max_groups }} guruh ishlatilgan.
             </div>
+        @else
+            <div class="plan-status fade-up">
+                <i class="bi bi-gift-fill"></i>
+                Hozircha <strong>bepul tarifdasiz</strong> — {{ $slotsUsed }} /
+                {{ \App\Models\User::FREE_GROUP_SLOTS }} guruh ishlatilgan. Ko'proq guruh kerak bo'lsa,
+                pastdagi tariflardan birini tanlang.
+            </div>
         @endif
 
         <div class="plan-grid">
