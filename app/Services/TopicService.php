@@ -42,6 +42,10 @@ class TopicService
             throw new Exception('Mavzu topilmadi', 404);
         }
 
+        if ($topic->user_id !== Auth::id() && ! Auth::user()->hasRole('admin')) {
+            throw new Exception('Bu mavzu ustida amaliyot bajara olmaysiz', 403);
+        }
+
         return $this->topicRepo->update($topic, [
             'science_id' => $data['science_id'],
             'grade_id' => $data['grade_id'],

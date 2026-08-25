@@ -42,7 +42,7 @@
                 </div>
                 <div class="field" id="pricePanel" style="display:none;">
                     <label class="field-label">Narx (so'm) — 1 oylik</label>
-                    <input type="number" name="price" id="price_input" class="text-control" min="1"
+                    <input type="number" name="price" id="price_input" class="text-control" min="0"
                         value="{{ old('price', 0) }}">
                     @error('price')
                         <div class="field-error">{{ $message }}</div>

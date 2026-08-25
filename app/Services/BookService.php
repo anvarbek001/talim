@@ -35,13 +35,38 @@ class BookService
     /**
      * @param  array<string, mixed>  $data
      */
-    public function updateBook(Book $book, array $data): Book
+    public function updateBook(Book $book, array $data, ?array $uploadedFiles = null, array $deleteFileIds = []): Book
     {
-        return $this->bookRepo->update($book, [
-            'title' => $data['title'],
-            'description' => $data['description'] ?? null,
-            'price' => $data['price'] ?? 0,
-        ]);
+        return DB::transaction(function () use ($book, $data, $uploadedFiles, $deleteFileIds) {
+            $updated = $this->bookRepo->update($book, [
+                'title' => $data['title'],
+                'description' => $data['description'] ?? null,
+                'price' => $data['price'] ?? 0,
+            ]);
+
+            // Delete selected existing files
+            if (! empty($deleteFileIds)) {
+                $filesToDelete = $book->files()->whereIn('id', $deleteFileIds)->get();
+                foreach ($filesToDelete as $f) {
+                    Storage::disk('local')->delete(ltrim($f->file_path, '/'));
+                    $f->delete();
+                }
+            }
+
+            // Add newly uploaded files, if any
+            if (! empty($uploadedFiles)) {
+                foreach ($uploadedFiles as $file) {
+                    if (! $file) continue;
+                    $path = $file->store("books/{$book->id}", 'local');
+                    $book->files()->create([
+                        'file_path' => $path,
+                        'original_name' => $file->getClientOriginalName(),
+                    ]);
+                }
+            }
+
+            return $updated;
+        });
     }
 
     public function deleteBook(Book $book): bool
@@ -108,12 +133,21 @@ class BookService
             ]);
     }
 
+    public function find(int $id): ?Book
+    {
+        return $this->bookRepo->find($id);
+    }
+
     /**
      * Whether $user may open the book's PDFs: either they own it, or they
      * have purchase access to it (or it's free).
      */
-    public function canView(Book $book, User $user): bool
+    public function canView(Book $book, ?User $user): bool
     {
+        if (! $user) {
+            return false;
+        }
+
         return (int) $book->user_id === (int) $user->id
             || $user->hasRole('admin')
             || $this->purchaseServ->hasAccess($user, $book);

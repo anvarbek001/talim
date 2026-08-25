@@ -15,20 +15,18 @@
         </div>
 
         @foreach ($book->files as $file)
-            <div class="pdf-wrap fade-up">
+            <div class="pdf-wrap fade-up" oncontextmenu="return false;">
                 <div class="pdf-wrap-head">
                     <i class="bi bi-file-earmark-pdf"></i> {{ $file->original_name }}
+                    <div style="float:right">
+                        <button class="btn-ghost" onclick="openFullScreen(this)">To'liq ekran</button>
+                    </div>
                 </div>
-                {{--
-                    "#toolbar=0&navpanes=0" hides Chromium's native PDF-viewer
-                    toolbar (including its download button). This is a
-                    Chromium-only convention — Firefox's built-in pdf.js
-                    viewer.html does not honor it and will still show its own
-                    toolbar with a download icon. It's a deterrent, not a
-                    cross-browser guarantee that the file can't be saved.
-                --}}
-                <iframe src="{{ route('books.stream', [$book, $file]) }}#toolbar=0&navpanes=0" class="pdf-frame"
-                    title="{{ $file->original_name }}"></iframe>
+                {{-- Hide toolbar where possible; client-side deterrent only. --}}
+                <div class="pdf-frame-container">
+                    <iframe src="{{ route('books.stream', [$book, $file]) }}#toolbar=0&navpanes=0" class="pdf-frame"
+                        title="{{ $file->original_name }}" sandbox="allow-same-origin allow-scripts"></iframe>
+                </div>
             </div>
         @endforeach
     </div>
@@ -95,10 +93,36 @@
             display: block;
         }
 
+        /* Students prefer full-screen reading — make the iframe fill viewport
+           when requested via the Fullscreen API. */
+        .pdf-frame.fullscreen {
+            height: 100vh;
+        }
+
         @media (max-width:767px) {
             .pdf-frame {
                 height: 65vh;
             }
         }
     </style>
+    <script>
+        function openFullScreen(btn) {
+            const container = btn.closest('.pdf-wrap').querySelector('.pdf-frame-container');
+            const iframe = container.querySelector('.pdf-frame');
+            // try Fullscreen API on container
+            if (container.requestFullscreen) {
+                container.requestFullscreen();
+            } else if (container.webkitRequestFullscreen) {
+                container.webkitRequestFullscreen();
+            }
+            iframe.classList.add('fullscreen');
+        }
+
+        // Prevent right-click on the page as a deterrent (not foolproof).
+        document.addEventListener('contextmenu', function (e) {
+            if (e.target.closest('.pdf-wrap')) {
+                e.preventDefault();
+            }
+        });
+    </script>
 @endsection

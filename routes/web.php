@@ -102,6 +102,9 @@ Route::controller(BookController::class)->group(function () {
     Route::get('/books', 'index')->name('book');
     Route::post('/books', 'store')->name('books.store');
     Route::get('/my-books', 'myBooks')->name('books.mine');
+    Route::get('/books/{book}/edit', 'edit')->name('books.edit');
+    Route::put('/books/{book}', 'update')->name('books.update');
+    Route::delete('/books/{book}', 'destroy')->name('books.destroy');
     Route::get('/books/{book}/view', 'view')->name('books.view');
     Route::get('/books/{book}/files/{bookFile}/stream', 'stream')->name('books.stream');
 });

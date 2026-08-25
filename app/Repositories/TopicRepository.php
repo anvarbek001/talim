@@ -17,7 +17,14 @@ class TopicRepository implements TopicRepositoryInterface
     #[Override]
     public function all(): Collection
     {
-        return $this->model->with(['user', 'science', 'grade', 'section'])->get();
+        $query = $this->model->with(['user', 'science', 'grade', 'section']);
+
+        $user = Auth::user();
+        if ($user && $user->hasRole('admin')) {
+            return $query->get();
+        }
+
+        return $query->where('user_id', Auth::id())->get();
     }
 
     #[Override]
@@ -29,7 +36,7 @@ class TopicRepository implements TopicRepositoryInterface
     #[Override]
     public function find(int $id)
     {
-        return $this->model->where(['user_id' => Auth::id(), 'id' => $id])->first();
+        return $this->model->with(['user', 'science', 'grade', 'section'])->find($id);
     }
 
     #[Override]

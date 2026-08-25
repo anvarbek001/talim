@@ -92,7 +92,7 @@
                         </div>
                         <div class="field" id="sectionPricePanel" style="display:none;">
                             <label class="field-label">Narx (so'm) — 1 oylik</label>
-                            <input type="number" name="price" id="section_price" class="text-control" min="1"
+                            <input type="number" name="price" id="section_price" class="text-control" min="0"
                                 value="{{ old('price', 0) }}">
                             @error('price')
                                 <div class="field-error">{{ $message }}</div>
@@ -493,7 +493,7 @@
                         </div>
                         <div class="field" id="editSectionPricePanel">
                             <label class="field-label">Narx (so'm) — 1 oylik</label>
-                            <input type="number" name="price" id="edit_section_price" class="text-control" min="1">
+                            <input type="number" name="price" id="edit_section_price" class="text-control" min="0">
                             <div class="field-hint">Narx 1 oy uchun amal qiladi.</div>
                         </div>
                     </div>

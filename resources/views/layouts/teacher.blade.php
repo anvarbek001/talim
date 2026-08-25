@@ -897,6 +897,9 @@
                 <i class="bi bi-cloud-upload"></i> Dars joylash
             </a>
         @endif
+        <a href="{{ route('book') }}" class="nav-link {{ request()->routeIs('book') ? 'active' : '' }}">
+            <i class="bi bi-cloud-upload"></i> Yangi kitob joylash
+        </a>
         <a href="{{ route('tests.index') }}" class="nav-link {{ request()->routeIs('tests.index') ? 'active' : '' }}">
             <i class="bi bi-patch-question"></i> Testlarim
         </a>

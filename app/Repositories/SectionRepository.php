@@ -6,6 +6,7 @@ use App\Models\Section;
 use App\Repositories\Contracts\SectionRepositoryInterface;
 use Illuminate\Database\Eloquent\Collection;
 use Override;
+use Illuminate\Support\Facades\Auth;
 
 class SectionRepository implements SectionRepositoryInterface
 {
@@ -16,7 +17,14 @@ class SectionRepository implements SectionRepositoryInterface
     #[Override]
     public function all(): Collection
     {
-        return $this->model->with(['user', 'science', 'grade'])->get();
+        $query = $this->model->with(['user', 'science', 'grade']);
+
+        $user = Auth::user();
+        if ($user && $user->hasRole('admin')) {
+            return $query->get();
+        }
+
+        return $query->where('user_id', Auth::id())->get();
     }
 
     #[Override]

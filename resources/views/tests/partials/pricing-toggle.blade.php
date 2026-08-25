@@ -10,6 +10,6 @@
 </div>
 <div class="field" data-pricing-panel="{{ $prefix }}">
     <label class="field-label">Narx (so'm)</label>
-    <input type="number" name="price" id="{{ $prefix }}_price" class="text-control" min="1"
+    <input type="number" name="price" id="{{ $prefix }}_price" class="text-control" min="0"
         value="{{ $price > 0 ? $price : '' }}">
 </div>

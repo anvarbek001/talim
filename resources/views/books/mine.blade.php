@@ -74,6 +74,18 @@
                             <a href="{{ route('books.view', $book) }}" class="btn-ghost book-view-btn">
                                 <i class="bi bi-eye"></i> Ko'rish
                             </a>
+                            @if ($book->user_id === auth()->id() || auth()->user()->hasRole('admin'))
+                                <a href="{{ route('books.edit', $book) }}" class="btn-ghost book-edit-btn">
+                                    <i class="bi bi-pencil"></i> Tahrirlash
+                                </a>
+                                <form action="{{ route('books.destroy', $book) }}" method="POST" style="display:inline">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn-ghost book-delete-btn" onclick="return confirm('Kitobni o\'chirmoqchimisiz?')">
+                                        <i class="bi bi-trash"></i> O'chirish
+                                    </button>
+                                </form>
+                            @endif
                         </div>
                     </div>
                 @endforeach

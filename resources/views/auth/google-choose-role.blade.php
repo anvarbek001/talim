@@ -191,14 +191,14 @@
                             <div class="role-select">
                                 <div class="role-option">
                                     <input type="radio" id="role_student" name="role" value="student"
-                                        {{ old('role', 'student') == 'student' ? 'checked' : '' }} required>
+                                        {{ (old('role') === 'student' || session('google_signup_role') === 'student') ? 'checked' : '' }} required>
                                     <label for="role_student">
                                         <i class="bi bi-mortarboard"></i> O'quvchiman
                                     </label>
                                 </div>
                                 <div class="role-option">
                                     <input type="radio" id="role_teacher" name="role" value="teacher"
-                                        {{ old('role') == 'teacher' ? 'checked' : '' }} required>
+                                        {{ (old('role') === 'teacher' || session('google_signup_role') === 'teacher') ? 'checked' : '' }} required>
                                     <label for="role_teacher">
                                         <i class="bi bi-person-workspace"></i> O'qituvchiman
                                     </label>

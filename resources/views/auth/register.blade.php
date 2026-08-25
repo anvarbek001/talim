@@ -205,7 +205,7 @@
                             <div class="role-select">
                                 <div class="role-option">
                                     <input type="radio" id="role_student" name="role" value="student"
-                                        {{ old('role', 'student') == 'student' ? 'checked' : '' }} required>
+                                        {{ old('role') == 'student' ? 'checked' : '' }} required>
                                     <label for="role_student">
                                         <i class="bi bi-mortarboard"></i> O'quvchiman
                                     </label>
@@ -287,8 +287,14 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         document.getElementById('googleSignupBtn')?.addEventListener('click', function () {
-            const role = document.querySelector('input[name="role"]:checked')?.value || 'student';
-            window.location.href = "{{ route('google.redirect') }}?role=" + encodeURIComponent(role);
+            const selected = document.querySelector('input[name="role"]:checked');
+            if (selected) {
+                window.location.href = "{{ route('google.redirect') }}?role=" + encodeURIComponent(selected.value);
+            } else {
+                // No role selected — let the OAuth flow continue without role so
+                // user will be prompted to choose role on callback.
+                window.location.href = "{{ route('google.redirect') }}";
+            }
         });
     </script>
 </body>

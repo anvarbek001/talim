@@ -66,21 +66,8 @@ class StudentTestController extends Controller implements HasMiddleware
             $testable = $this->studentTestServ->resolveTestable($type, $id);
             $purchasable = $testable instanceof TopicTest ? $testable->section : $testable;
 
-            if (! $this->purchaseServ->hasAccess(Auth::user(), $purchasable)) {
-                $contentLabels = ['topic' => 'Mavzu testi', 'dtm' => 'DTM testi', 'sertifikat' => 'Sertifikat testi', 'language_exam' => 'Til imtihoni'];
-
-                return view('student.partials.locked', [
-                    'purchasable' => $purchasable,
-                    'type' => $testable instanceof TopicTest ? 'section' : $type,
-                    'id' => $purchasable->id,
-                    'itemTitle' => $testable instanceof TopicTest ? $testable->title : null,
-                    'contentLabel' => $contentLabels[$type] ?? 'Test',
-                    'lockDesc' => $testable instanceof TopicTest
-                        ? "Bu testni topshirish uchun ushbu bo'limni sotib olish kerak."
-                        : 'Bu testni topshirish uchun sotib olish kerak.',
-                    'backUrl' => route('student-tests.index'),
-                ]);
-            }
+            // NOTE: purchase-based locking removed — allow any authenticated
+            // user to start tests regardless of role or purchase status.
 
             $attempt = $this->studentTestServ->startAttempt($type, $testable, Auth::id());
         } catch (Exception $e) {
