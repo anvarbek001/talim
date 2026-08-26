@@ -140,11 +140,107 @@ class BookController extends Controller implements HasMiddleware
             }
         }
 
-        return response()->file($path, [
-            'Content-Type' => 'application/pdf',
-            'Content-Disposition' => 'inline; filename="'.addslashes($bookFile->original_name).'"',
-            'Cache-Control' => 'private, no-store, max-age=0',
-            'X-Content-Type-Options' => 'nosniff',
-        ]);
+        // Owners and admins may still get the raw PDF inline for editing purposes.
+        if (Auth::check() && ((int) Auth::id() === (int) $book->user_id || Auth::user()->hasRole('admin'))) {
+            return response()->file($path, [
+                'Content-Type' => 'application/pdf',
+                'Content-Disposition' => 'inline; filename="'.addslashes($bookFile->original_name).'"',
+                'Cache-Control' => 'private, no-store, max-age=0',
+                'X-Content-Type-Options' => 'nosniff',
+            ]);
+        }
+
+        // For normal users, return a secure image-based viewer (no raw PDF bytes).
+        return view('books.pdf_viewer', compact('book', 'bookFile'));
+    }
+
+    /**
+     * Return the rendered JPEG for a single PDF page.
+     */
+    public function page(Book $book, BookFile $bookFile, int $page)
+    {
+        abort_unless($bookFile->book_id === $book->id, 404);
+        abort_unless($this->bookServ->canView($book, Auth::user()), 403);
+
+        $disk = Storage::disk('local');
+        $filePath = ltrim($bookFile->file_path, '/');
+
+        if ($disk->exists($filePath)) {
+            $path = $disk->path($filePath);
+        } else {
+            $candidate = storage_path('app/'.$filePath);
+            if (is_file($candidate)) {
+                $path = $candidate;
+            } else {
+                abort(404);
+            }
+        }
+
+        if (! class_exists(\Imagick::class)) {
+            abort(501, 'Imagick not available on server');
+        }
+
+        try {
+            $im = new \Imagick();
+            // set a reasonable resolution for readable images
+            $im->setResolution(150, 150);
+            // zero-indexed page selection
+            $idx = max(0, $page - 1);
+            $im->readImage($path."[{$idx}]");
+            $im->setImageFormat('jpeg');
+            $im->setImageCompressionQuality(80);
+            $blob = $im->getImageBlob();
+            $im->clear();
+            $im->destroy();
+
+            return response($blob, 200, [
+                'Content-Type' => 'image/jpeg',
+                'Cache-Control' => 'private, no-store, max-age=0, must-revalidate',
+                'X-Content-Type-Options' => 'nosniff',
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('PDF page render failed: '.$e->getMessage(), ['file' => $filePath, 'page' => $page]);
+            abort(404);
+        }
+    }
+
+    /**
+     * Return page count for the PDF.
+     */
+    public function pages(Book $book, BookFile $bookFile)
+    {
+        abort_unless($bookFile->book_id === $book->id, 404);
+        abort_unless($this->bookServ->canView($book, Auth::user()), 403);
+
+        $disk = Storage::disk('local');
+        $filePath = ltrim($bookFile->file_path, '/');
+
+        if ($disk->exists($filePath)) {
+            $path = $disk->path($filePath);
+        } else {
+            $candidate = storage_path('app/'.$filePath);
+            if (is_file($candidate)) {
+                $path = $candidate;
+            } else {
+                abort(404);
+            }
+        }
+
+        if (! class_exists(\Imagick::class)) {
+            abort(501, 'Imagick not available on server');
+        }
+
+        try {
+            $im = new \Imagick();
+            $im->pingImage($path);
+            $count = $im->getNumberImages();
+            $im->clear();
+            $im->destroy();
+
+            return response()->json(['pages' => $count]);
+        } catch (\Exception $e) {
+            \Log::error('PDF ping failed: '.$e->getMessage(), ['file' => $filePath]);
+            abort(404);
+        }
     }
 }

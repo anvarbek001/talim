@@ -83,10 +83,10 @@
                             <div class="watch-files">
                                 <div class="watch-files-title">Qo'shimcha materiallar</div>
                                 @foreach ($bookFiles as $file)
-                                    <a href="{{ route('lesson-files.stream', $file) }}" target="_blank" class="lesson-file-chip">
-                                        <i class="bi bi-file-earmark-pdf"></i>
-                                        <span>{{ basename($file->lesson_file) }}</span>
-                                    </a>
+                                        <a href="#" data-stream-url="{{ route('lesson-files.stream', $file) }}" class="lesson-file-chip js-open-file">
+                                            <i class="bi bi-file-earmark-pdf"></i>
+                                            <span>{{ basename($file->lesson_file) }}</span>
+                                        </a>
                                 @endforeach
                             </div>
                         @endif
@@ -422,6 +422,49 @@
             color: var(--primary);
         }
     </style>
+    <!-- In-site viewer modal for lesson attachments -->
+    <div id="file-viewer-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:1200;align-items:center;justify-content:center;">
+        <div style="width:90%;height:90%;background:var(--card);border-radius:12px;overflow:hidden;position:relative;">
+            <button id="file-viewer-close" style="position:absolute;right:12px;top:12px;z-index:5;">Yopish ✕</button>
+            <iframe id="file-viewer-iframe" src="" style="width:100%;height:100%;border:0;" sandbox="allow-same-origin allow-scripts"></iframe>
+        </div>
+    </div>
+
+    <script>
+        document.querySelectorAll('.js-open-file').forEach(function (el) {
+            el.addEventListener('click', function (e) {
+                e.preventDefault();
+                const url = el.getAttribute('data-stream-url') + '#toolbar=0&navpanes=0';
+                const modal = document.getElementById('file-viewer-modal');
+                const iframe = document.getElementById('file-viewer-iframe');
+                iframe.src = url;
+                modal.style.display = 'flex';
+            });
+        });
+
+        document.getElementById('file-viewer-close').addEventListener('click', function () {
+            const modal = document.getElementById('file-viewer-modal');
+            const iframe = document.getElementById('file-viewer-iframe');
+            iframe.src = '';
+            modal.style.display = 'none';
+        });
+
+        // Prevent common save/print shortcuts while modal is open
+        window.addEventListener('keydown', function (e) {
+            const modal = document.getElementById('file-viewer-modal');
+            if (modal.style.display === 'flex') {
+                if ((e.ctrlKey || e.metaKey) && ['s', 'p'].includes(e.key.toLowerCase())) {
+                    e.preventDefault();
+                    return false;
+                }
+            }
+        }, { passive: false });
+
+        // Disable right-click inside modal for students
+        document.getElementById('file-viewer-modal').addEventListener('contextmenu', function (e) {
+            e.preventDefault();
+        });
+    </script>
 
     <script>
         // Video havolasi sahifa HTML'ida hech qachon tayyor turmaydi — har

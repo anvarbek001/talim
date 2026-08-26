@@ -12,6 +12,17 @@
             @if ($book->description)
                 <p class="book-view-desc">{{ $book->description }}</p>
             @endif
+
+            @if(auth()->check() && auth()->id() === $book->user_id)
+                <div style="margin-top:8px;display:flex;gap:8px;">
+                    <a href="{{ route('books.edit', $book) }}" class="btn-ghost">Tahrirlash</a>
+                    <form action="{{ route('books.destroy', $book) }}" method="POST" onsubmit="return confirm('Kitobni o\'chirmoqchimisiz?');">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="btn-danger">O'chirish</button>
+                    </form>
+                </div>
+            @endif
         </div>
 
         @foreach ($book->files as $file)
@@ -118,9 +129,24 @@
             iframe.classList.add('fullscreen');
         }
 
-        // Prevent right-click on the page as a deterrent (not foolproof).
+        // Block common save/print shortcuts and context menu as a deterrent
+        const isOwner = {{ auth()->check() && auth()->id() === $book->user_id ? 'true' : 'false' }};
+
+        window.addEventListener('keydown', function (e) {
+            // Ctrl/Cmd+S, Ctrl/Cmd+P, Ctrl+Shift+S
+            if ((e.ctrlKey || e.metaKey) && ['s', 'p'].includes(e.key.toLowerCase())) {
+                e.preventDefault();
+                return false;
+            }
+            if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 's') {
+                e.preventDefault();
+                return false;
+            }
+        }, { passive: false });
+
         document.addEventListener('contextmenu', function (e) {
-            if (e.target.closest('.pdf-wrap')) {
+            // allow right-click for the owner/teacher to keep editing capabilities
+            if (! isOwner && e.target.closest('.pdf-wrap')) {
                 e.preventDefault();
             }
         });

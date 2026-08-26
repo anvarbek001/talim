@@ -107,6 +107,8 @@ Route::controller(BookController::class)->group(function () {
     Route::delete('/books/{book}', 'destroy')->name('books.destroy');
     Route::get('/books/{book}/view', 'view')->name('books.view');
     Route::get('/books/{book}/files/{bookFile}/stream', 'stream')->name('books.stream');
+    Route::get('/books/{book}/files/{bookFile}/page/{page}', 'page')->whereNumber('page')->name('books.page');
+    Route::get('/books/{book}/files/{bookFile}/pages', 'pages')->name('books.pages');
 });
 
 Route::controller(SectionController::class)->group(function () {
