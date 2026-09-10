@@ -56,7 +56,9 @@ class BookService
             // Add newly uploaded files, if any
             if (! empty($uploadedFiles)) {
                 foreach ($uploadedFiles as $file) {
-                    if (! $file) continue;
+                    if (! $file) {
+                        continue;
+                    }
                     $path = $file->store("books/{$book->id}", 'local');
                     $book->files()->create([
                         'file_path' => $path,
@@ -133,6 +135,16 @@ class BookService
             ]);
     }
 
+    public function assertOwnerOrAdmin(Book $book, ?User $user = null): void
+    {
+        $user ??= auth()->user();
+
+        abort_unless(
+            $user && ((int) $book->user_id === (int) $user->id || $user->hasRole('admin')),
+            403,
+        );
+    }
+
     public function find(int $id): ?Book
     {
         return $this->bookRepo->find($id);
@@ -140,7 +152,8 @@ class BookService
 
     /**
      * Whether $user may open the book's PDFs: either they own it, or they
-     * have purchase access to it (or it's free).
+     * have purchase access to it (or it's free), or they are an authenticated
+     * teacher/admin browsing the catalog workspace.
      */
     public function canView(Book $book, ?User $user): bool
     {
@@ -148,8 +161,14 @@ class BookService
             return false;
         }
 
-        return (int) $book->user_id === (int) $user->id
-            || $user->hasRole('admin')
-            || $this->purchaseServ->hasAccess($user, $book);
+        if ((int) $book->user_id === (int) $user->id) {
+            return true;
+        }
+
+        if ($user->hasRole('teacher') || $user->hasRole('admin')) {
+            return true;
+        }
+
+        return $this->purchaseServ->hasAccess($user, $book);
     }
 }

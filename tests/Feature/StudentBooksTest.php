@@ -4,6 +4,7 @@ use App\Models\Book;
 use App\Models\Purchase;
 use App\Models\User;
 use App\Services\PurchaseService;
+use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Support\Facades\Storage;
 
 function makeBook(User $teacher, int $price = 0): Book
@@ -125,6 +126,49 @@ test('purchasing the same book twice does not create a duplicate purchase', func
     expect(Purchase::where('user_id', $student->id)->where('purchasable_id', $book->id)->where('purchasable_type', Book::class)->count())->toBe(1);
 });
 
+test('a teacher should stay in the teacher workspace when viewing a book they can access', function () {
+    $this->seed(RolePermissionSeeder::class);
+
+    $owner = User::factory()->create();
+    $owner->assignRole('teacher');
+
+    $viewer = User::factory()->create();
+    $viewer->assignRole('teacher');
+
+    $book = makeBook($owner, 0);
+
+    $response = $this->actingAs($viewer)->get(route('books.view', $book));
+    dump(substr($response->getContent(), 0, 5000));
+
+    $response->assertOk();
+    $response->assertSee('O&#039;qituvchi kabineti — DarsQil');
+    $response->assertDontSee('O&#039;quvchi kabineti — DarsQil');
+});
+
+test('a teacher can edit their own uploaded book', function () {
+    $teacher = User::factory()->create();
+    $book = makeBook($teacher, 10000);
+
+    $editResponse = $this->actingAs($teacher)->get(route('books.edit', $book));
+    $editResponse->assertOk();
+    $editResponse->assertSee('Kitobni tahrirlash');
+
+    $updateResponse = $this->actingAs($teacher)->put(route('books.update', $book), [
+        'title' => 'Yangilangan kitob nomi',
+        'description' => 'Yangilangan tavsif',
+        'price' => 15000,
+    ]);
+
+    $updateResponse->assertRedirect(route('books.mine'));
+    $this->assertDatabaseHas('books', [
+        'id' => $book->id,
+        'user_id' => $teacher->id,
+        'title' => 'Yangilangan kitob nomi',
+        'description' => 'Yangilangan tavsif',
+        'price' => 15000,
+    ]);
+});
+
 test('a student without enough balance cannot purchase a book', function () {
     $teacher = User::factory()->create();
     $student = User::factory()->create();
@@ -137,7 +181,7 @@ test('a student without enough balance cannot purchase a book', function () {
 });
 
 test('the catalog hides the buy buttons for a book covered by an active teacher subscription', function () {
-    $this->seed(\Database\Seeders\RolePermissionSeeder::class);
+    $this->seed(RolePermissionSeeder::class);
     $teacher = User::factory()->create(['subscription_price' => 20000]);
     $teacher->assignRole('teacher');
     $student = User::factory()->create();

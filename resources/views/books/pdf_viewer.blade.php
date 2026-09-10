@@ -1,8 +1,13 @@
-@extends('layouts.student')
+@php
+    $viewer = auth()->user();
+    $isTeacherReader = $viewer && ($viewer->hasRole('teacher') || $viewer->hasRole('admin'));
+@endphp
+
+@extends($isTeacherReader ? 'layouts.teacher' : 'layouts.student')
 
 @section('content')
     <div class="page">
-        <a href="{{ $book->user_id === auth()->id() ? route('books.mine') : route('student-books.index') }}" class="back-link fade-up">
+        <a href="{{ $isTeacherReader ? route('books.mine') : route('student-books.index') }}" class="back-link fade-up">
             <i class="bi bi-arrow-left"></i> Orqaga
         </a>
 

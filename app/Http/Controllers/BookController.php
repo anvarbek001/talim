@@ -49,14 +49,14 @@ class BookController extends Controller implements HasMiddleware
 
     public function edit(Book $book)
     {
-        abort_unless((int) $book->user_id === (int) Auth::id() || Auth::user()->hasRole('admin'), 403);
+        $this->bookServ->assertOwnerOrAdmin($book);
 
         return view('books.edit', compact('book'));
     }
 
     public function update(Request $request, Book $book)
     {
-        abort_unless((int) $book->user_id === (int) Auth::id() || Auth::user()->hasRole('admin'), 403);
+        $this->bookServ->assertOwnerOrAdmin($book);
 
         $data = $request->validate([
             'title' => ['required', 'string', 'min:3', 'max:255'],
@@ -77,7 +77,7 @@ class BookController extends Controller implements HasMiddleware
 
     public function destroy(Book $book)
     {
-        abort_unless((int) $book->user_id === (int) Auth::id() || Auth::user()->hasRole('admin'), 403);
+        $this->bookServ->assertOwnerOrAdmin($book);
 
         $this->bookServ->deleteBook($book);
 
@@ -127,11 +127,9 @@ class BookController extends Controller implements HasMiddleware
         $disk = Storage::disk('local');
         $filePath = ltrim($bookFile->file_path, '/');
 
-        // Preferred: disk path
         if ($disk->exists($filePath)) {
             $path = $disk->path($filePath);
         } else {
-            // Fallback to storage_path('app/...') in case of different path formats
             $candidate = storage_path('app/'.$filePath);
             if (is_file($candidate)) {
                 $path = $candidate;
@@ -140,18 +138,12 @@ class BookController extends Controller implements HasMiddleware
             }
         }
 
-        // Owners and admins may still get the raw PDF inline for editing purposes.
-        if (Auth::check() && ((int) Auth::id() === (int) $book->user_id || Auth::user()->hasRole('admin'))) {
-            return response()->file($path, [
-                'Content-Type' => 'application/pdf',
-                'Content-Disposition' => 'inline; filename="'.addslashes($bookFile->original_name).'"',
-                'Cache-Control' => 'private, no-store, max-age=0',
-                'X-Content-Type-Options' => 'nosniff',
-            ]);
-        }
-
-        // For normal users, return a secure image-based viewer (no raw PDF bytes).
-        return view('books.pdf_viewer', compact('book', 'bookFile'));
+        return response()->file($path, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'inline; filename="'.addslashes($bookFile->original_name).'"',
+            'Cache-Control' => 'private, no-store, max-age=0',
+            'X-Content-Type-Options' => 'nosniff',
+        ]);
     }
 
     /**
@@ -181,7 +173,7 @@ class BookController extends Controller implements HasMiddleware
         }
 
         try {
-            $im = new \Imagick();
+            $im = new \Imagick;
             // set a reasonable resolution for readable images
             $im->setResolution(150, 150);
             // zero-indexed page selection
@@ -231,7 +223,7 @@ class BookController extends Controller implements HasMiddleware
         }
 
         try {
-            $im = new \Imagick();
+            $im = new \Imagick;
             $im->pingImage($path);
             $count = $im->getNumberImages();
             $im->clear();
