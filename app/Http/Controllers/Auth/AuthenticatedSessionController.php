@@ -22,6 +22,11 @@ class AuthenticatedSessionController extends Controller
         return view('auth.login');
     }
 
+    public function createUniversity(): View
+    {
+        return view('auth.loginUniversity');
+    }
+
     /**
      * Handle an incoming authentication request.
      */
@@ -30,6 +35,12 @@ class AuthenticatedSessionController extends Controller
         $request->authenticate();
 
         $request->session()->regenerate();
+
+        $user = $request->user();
+
+        if ($user->university_id) {
+            return redirect()->route('universities.index');
+        }
 
         return $this->redirectAfterAuthentication($request, $request->user());
     }

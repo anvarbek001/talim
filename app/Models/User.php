@@ -38,6 +38,8 @@ class User extends Authenticatable implements Purchasable, Subscribable
         'avatar',
         'subscription_price',
         'google_id',
+        'university_id',
+        'current_device_token',
     ];
 
     /**
@@ -142,7 +144,7 @@ class User extends Authenticatable implements Purchasable, Subscribable
             ->where('purchasable_type', GroupPlan::class)
             ->latest()
             ->get()
-            ->first(fn (Purchase $purchase) => $purchase->isActive());
+            ->first(fn(Purchase $purchase) => $purchase->isActive());
 
         return $purchase?->purchasable;
     }
@@ -185,7 +187,7 @@ class User extends Authenticatable implements Purchasable, Subscribable
      */
     protected function price(): Attribute
     {
-        return Attribute::make(get: fn () => (int) $this->subscription_price);
+        return Attribute::make(get: fn() => (int) $this->subscription_price);
     }
 
     /**
@@ -195,20 +197,35 @@ class User extends Authenticatable implements Purchasable, Subscribable
      */
     protected function title(): Attribute
     {
-        return Attribute::make(get: fn () => $this->name);
+        return Attribute::make(get: fn() => $this->name);
     }
 
     public function avatarUrl(): ?string
     {
-        return $this->avatar ? asset('storage/'.$this->avatar) : null;
+        return $this->avatar ? asset('storage/' . $this->avatar) : null;
     }
 
     public function initials(): string
     {
         return Str::of($this->name)
             ->explode(' ')
-            ->map(fn ($part) => mb_substr($part, 0, 1))
+            ->map(fn($part) => mb_substr($part, 0, 1))
             ->take(2)
             ->implode('');
+    }
+
+    public function university()
+    {
+        return $this->belongsTo(University::class);
+    }
+
+    public function guruhs()
+    {
+        return $this->hasMany(Guruh::class);
+    }
+
+    public function students()
+    {
+        return $this->hasMany(Student::class);
     }
 }

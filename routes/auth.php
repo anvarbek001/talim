@@ -10,16 +10,25 @@ use App\Http\Controllers\Auth\PasswordController;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Auth\VerifyEmailController;
+use App\Http\Controllers\UniversityController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('guest')->group(function () {
     Route::get('register', [RegisteredUserController::class, 'create'])
         ->name('register');
 
+    Route::get('register/university', [RegisteredUserController::class, 'registerUniversity'])
+        ->name('register.university');
+
     Route::post('register', [RegisteredUserController::class, 'store']);
+
+    Route::post('registerUniversity', [RegisteredUserController::class, 'storeUniversity'])->name('registerUniversity');
 
     Route::get('login', [AuthenticatedSessionController::class, 'create'])
         ->name('login');
+
+    Route::get('loginUniversity', [AuthenticatedSessionController::class, 'createUniversity'])
+        ->name('loginUniversity');
 
     Route::post('login', [AuthenticatedSessionController::class, 'store']);
 

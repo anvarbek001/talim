@@ -13,6 +13,7 @@ use App\Http\Controllers\DtmTestController;
 use App\Http\Controllers\GroupController;
 use App\Http\Controllers\GroupInviteController;
 use App\Http\Controllers\GroupPlanController;
+use App\Http\Controllers\GuruhController;
 use App\Http\Controllers\LanguageExamTestController;
 use App\Http\Controllers\LessonController;
 use App\Http\Controllers\LessonFileController;
@@ -32,6 +33,8 @@ use App\Http\Controllers\TeacherController;
 use App\Http\Controllers\TeacherStudentController;
 use App\Http\Controllers\TopicController;
 use App\Http\Controllers\TopicTestController;
+use App\Http\Controllers\UniversityController;
+use App\Http\Controllers\UniversityStydentsController;
 use App\Http\Controllers\WelcomeController;
 use App\Http\Controllers\YoutubeAuthController;
 use Illuminate\Support\Facades\Route;
@@ -98,169 +101,194 @@ Route::controller(YoutubeAuthController::class)->middleware(['auth', 'admin'])->
     Route::get('/callback', 'callback')->name('callback');
 });
 
-Route::controller(BookController::class)->group(function () {
-    Route::get('/books', 'index')->name('book');
-    Route::post('/books', 'store')->name('books.store');
-    Route::get('/my-books', 'myBooks')->name('books.mine');
-    Route::get('/books/{book}/edit', 'edit')->name('books.edit');
-    Route::put('/books/{book}', 'update')->name('books.update');
-    Route::delete('/books/{book}', 'destroy')->name('books.destroy');
-    Route::get('/books/{book}/view', 'view')->name('books.view');
-    Route::get('/books/{book}/files/{bookFile}/stream', 'stream')->name('books.stream');
-    Route::get('/books/{book}/files/{bookFile}/page/{page}', 'page')->whereNumber('page')->name('books.page');
-    Route::get('/books/{book}/files/{bookFile}/pages', 'pages')->name('books.pages');
-});
+Route::middleware(['auth'])->group(function () {
 
-Route::controller(SectionController::class)->group(function () {
-    Route::post('/section', 'store')->name('sections.store');
-    Route::post('/section/find', 'find')->name('section.find');
-    Route::put('/section/{section}', 'update')->name('sections.update');
-});
 
-Route::controller(TopicController::class)->group(function () {
-    Route::put('/topic/update/{id}', 'update')->name('topic.update');
-    Route::delete('/topic/delete/{topic}', 'delete')->name('topic.delete');
-});
 
-Route::controller(TopicTestController::class)->group(function () {
-    Route::get('/tests', 'index')->name('tests.index');
-    Route::get('/tests/questions-template', 'questionsTemplate')->name('tests.questions-template');
-    Route::get('/tests/questions-template-word', 'questionsTemplateWord')->name('tests.questions-template-word');
-    Route::post('/tests/topic', 'store')->name('topic-tests.store');
-    Route::put('/tests/topic/{topicTest}', 'update')->name('topic-tests.update');
-    Route::delete('/tests/topic/{topicTest}', 'destroy')->name('topic-tests.destroy');
-});
-
-Route::controller(DtmTestController::class)->group(function () {
-    Route::post('/tests/dtm', 'store')->name('dtm-tests.store');
-    Route::put('/tests/dtm/{dtmTest}', 'update')->name('dtm-tests.update');
-    Route::delete('/tests/dtm/{dtmTest}', 'destroy')->name('dtm-tests.destroy');
-});
-
-Route::controller(SertifikatTestController::class)->group(function () {
-    Route::post('/tests/sertifikat', 'store')->name('sertifikat-tests.store');
-    Route::put('/tests/sertifikat/{sertifikatTest}', 'update')->name('sertifikat-tests.update');
-    Route::delete('/tests/sertifikat/{sertifikatTest}', 'destroy')->name('sertifikat-tests.destroy');
-});
-
-Route::controller(LanguageExamTestController::class)->group(function () {
-    Route::post('/tests/language-exam', 'store')->name('language-exam-tests.store');
-    Route::put('/tests/language-exam/{languageExamTest}', 'update')->name('language-exam-tests.update');
-    Route::delete('/tests/language-exam/{languageExamTest}', 'destroy')->name('language-exam-tests.destroy');
-});
-
-Route::controller(StudentTestController::class)->group(function () {
-    Route::get('/student/tests', 'index')->name('student-tests.index');
-    Route::post('/student/tests/{type}/{id}', 'start')->name('student-tests.start');
-    Route::get('/student/tests/attempts/{attempt}', 'show')->name('student-tests.show');
-    Route::post('/student/tests/attempts/{attempt}/submit', 'submit')->name('student-tests.submit');
-    Route::get('/student/tests/attempts/{attempt}/result', 'result')->name('student-tests.result');
-});
-
-// Video darslar — feature-flag orqali boshqariladi (config/features.php: lessons_enabled).
-Route::controller(StudentLessonController::class)->middleware('lessons.enabled')->group(function () {
-    Route::get('/student/lessons', 'index')->name('student-lessons.index');
-    Route::get('/student/lessons/science/{science}', 'teachers')->name('student-lessons.teachers');
-    Route::get('/student/lessons/science/{science}/teacher/{teacher}', 'byTeacher')->name('student-lessons.by-teacher');
-    Route::get('/student/lessons/watch/{lesson}', 'show')->name('student-lessons.show');
-    Route::post('/student/lessons/watch/{lesson}/save', 'toggleSave')->name('student-lessons.save');
-});
-
-Route::controller(StudentBookController::class)->group(function () {
-    Route::get('/student/books', 'index')->name('student-books.index');
-});
-
-Route::controller(StudentStatisticsController::class)->group(function () {
-    Route::get('/student/statistics', 'index')->name('student-statistics.index');
-});
-
-Route::controller(StudentPaymentController::class)->middleware('auth')->group(function () {
-    Route::get('/student/payments', 'index')->name('student-payments.index');
-});
-
-Route::controller(ClickPaymentController::class)->prefix('payments/click')->name('click.')->group(function () {
-    Route::post('/prepare', 'prepare')->name('prepare');
-    Route::post('/complete', 'complete')->name('complete');
-    Route::post('/pay/{type}/{id}', 'pay')->name('pay');
-    Route::post('/topup', 'topUp')->name('topup');
-});
-
-Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(function () {
-    Route::get('/', [AdminController::class, 'index'])->name('dashboard');
-
-    Route::controller(AdminUserController::class)->prefix('users')->name('users.')->group(function () {
-        Route::get('/', 'index')->name('index');
-        Route::post('/', 'store')->name('store');
-        Route::put('/{user}', 'update')->name('update');
-        Route::delete('/{user}', 'destroy')->name('destroy');
+    Route::controller(BookController::class)->group(function () {
+        Route::get('/books', 'index')->name('book');
+        Route::post('/books', 'store')->name('books.store');
+        Route::get('/my-books', 'myBooks')->name('books.mine');
+        Route::get('/books/{book}/edit', 'edit')->name('books.edit');
+        Route::put('/books/{book}', 'update')->name('books.update');
+        Route::delete('/books/{book}', 'destroy')->name('books.destroy');
+        Route::get('/books/{book}/view', 'view')->name('books.view');
+        Route::get('/books/{book}/files/{bookFile}/stream', 'stream')->name('books.stream');
+        Route::get('/books/{book}/files/{bookFile}/page/{page}', 'page')->whereNumber('page')->name('books.page');
+        Route::get('/books/{book}/files/{bookFile}/pages', 'pages')->name('books.pages');
     });
 
-    Route::controller(AdminBookController::class)->prefix('books')->name('books.')->group(function () {
-        Route::get('/', 'index')->name('index');
-        Route::put('/{book}', 'update')->name('update');
-        Route::delete('/{book}', 'destroy')->name('destroy');
+    Route::controller(SectionController::class)->group(function () {
+        Route::post('/section', 'store')->name('sections.store');
+        Route::post('/section/find', 'find')->name('section.find');
+        Route::put('/section/{section}', 'update')->name('sections.update');
+    });
+
+    Route::controller(TopicController::class)->group(function () {
+        Route::put('/topic/update/{id}', 'update')->name('topic.update');
+        Route::delete('/topic/delete/{topic}', 'delete')->name('topic.delete');
+    });
+
+    Route::controller(TopicTestController::class)->group(function () {
+        Route::get('/tests', 'index')->name('tests.index');
+        Route::get('/tests/questions-template', 'questionsTemplate')->name('tests.questions-template');
+        Route::get('/tests/questions-template-word', 'questionsTemplateWord')->name('tests.questions-template-word');
+        Route::post('/tests/topic', 'store')->name('topic-tests.store');
+        Route::put('/tests/topic/{topicTest}', 'update')->name('topic-tests.update');
+        Route::delete('/tests/topic/{topicTest}', 'destroy')->name('topic-tests.destroy');
+    });
+
+    Route::controller(DtmTestController::class)->group(function () {
+        Route::post('/tests/dtm', 'store')->name('dtm-tests.store');
+        Route::put('/tests/dtm/{dtmTest}', 'update')->name('dtm-tests.update');
+        Route::delete('/tests/dtm/{dtmTest}', 'destroy')->name('dtm-tests.destroy');
+    });
+
+    Route::controller(SertifikatTestController::class)->group(function () {
+        Route::post('/tests/sertifikat', 'store')->name('sertifikat-tests.store');
+        Route::put('/tests/sertifikat/{sertifikatTest}', 'update')->name('sertifikat-tests.update');
+        Route::delete('/tests/sertifikat/{sertifikatTest}', 'destroy')->name('sertifikat-tests.destroy');
+    });
+
+    Route::controller(LanguageExamTestController::class)->group(function () {
+        Route::post('/tests/language-exam', 'store')->name('language-exam-tests.store');
+        Route::put('/tests/language-exam/{languageExamTest}', 'update')->name('language-exam-tests.update');
+        Route::delete('/tests/language-exam/{languageExamTest}', 'destroy')->name('language-exam-tests.destroy');
+    });
+
+    Route::controller(StudentTestController::class)->group(function () {
+        Route::get('/student/tests', 'index')->name('student-tests.index');
+        Route::post('/student/tests/{type}/{id}', 'start')->name('student-tests.start');
+        Route::get('/student/tests/attempts/{attempt}', 'show')->name('student-tests.show');
+        Route::post('/student/tests/attempts/{attempt}/submit', 'submit')->name('student-tests.submit');
+        Route::get('/student/tests/attempts/{attempt}/result', 'result')->name('student-tests.result');
     });
 
     // Video darslar — feature-flag orqali boshqariladi (config/features.php: lessons_enabled).
-    Route::controller(AdminLessonController::class)->middleware('lessons.enabled')->prefix('lessons')->name('lessons.')->group(function () {
-        Route::get('/', 'index')->name('index');
-        Route::put('/{lesson}', 'update')->name('update');
-        Route::delete('/{lesson}', 'destroy')->name('destroy');
+    Route::controller(StudentLessonController::class)->middleware('lessons.enabled')->group(function () {
+        Route::get('/student/lessons', 'index')->name('student-lessons.index');
+        Route::get('/student/lessons/science/{science}', 'teachers')->name('student-lessons.teachers');
+        Route::get('/student/lessons/science/{science}/teacher/{teacher}', 'byTeacher')->name('student-lessons.by-teacher');
+        Route::get('/student/lessons/watch/{lesson}', 'show')->name('student-lessons.show');
+        Route::post('/student/lessons/watch/{lesson}/save', 'toggleSave')->name('student-lessons.save');
     });
 
-    Route::controller(AdminTestController::class)->prefix('tests')->name('tests.')->group(function () {
-        Route::get('/', 'index')->name('index');
-        Route::delete('/topic/{topicTest}', 'destroyTopic')->name('topic.destroy');
-        Route::delete('/dtm/{dtmTest}', 'destroyDtm')->name('dtm.destroy');
-        Route::delete('/sertifikat/{sertifikatTest}', 'destroySertifikat')->name('sertifikat.destroy');
-        Route::delete('/language-exam/{languageExamTest}', 'destroyLanguageExam')->name('language-exam.destroy');
+    Route::controller(StudentBookController::class)->group(function () {
+        Route::get('/student/books', 'index')->name('student-books.index');
     });
 
-    Route::controller(AdminPurchaseController::class)->prefix('purchases')->name('purchases.')->group(function () {
-        Route::get('/', 'index')->name('index');
-        Route::delete('/{purchase}', 'destroy')->name('destroy');
+    Route::controller(StudentStatisticsController::class)->group(function () {
+        Route::get('/student/statistics', 'index')->name('student-statistics.index');
     });
 
-    Route::controller(AdminTransactionController::class)->prefix('transactions')->name('transactions.')->group(function () {
-        Route::get('/', 'index')->name('index');
-    });
-});
-
-Route::controller(StudentPurchaseController::class)->middleware('auth')->group(function () {
-    Route::post('/student/purchases/{type}/{id}', 'store')->name('student-purchases.store');
-});
-
-Route::controller(TeacherStudentController::class)->group(function () {
-    Route::get('/teacher/students', 'index')->middleware(['auth'])->name('teacher-students.index');
-    Route::get('/teacher/students/attempts/{attempt}', 'show')->middleware(['auth'])->name('teacher-students.result');
-    Route::post('/teacher/students/attempts/{attempt}/answers/{answer}/grade', 'grade')->middleware(['auth'])->name('teacher-students.grade');
-});
-
-// Guruhlar va jonli darslar — feature-flag orqali boshqariladi (config/features.php: live_lessons_enabled).
-Route::middleware(['auth', 'live.enabled'])->group(function () {
-    Route::controller(GroupController::class)->group(function () {
-        Route::get('/groups', 'index')->name('groups.index');
-        Route::get('/groups/create', 'create')->name('groups.create');
-        Route::post('/groups', 'store')->name('groups.store');
-        Route::get('/groups/{group}', 'show')->name('groups.show');
-        Route::post('/groups/{group}/members', 'addMember')->name('groups.members.add');
-        Route::delete('/groups/{group}/members/{member}', 'removeMember')->name('groups.members.remove');
-        Route::delete('/groups/{group}', 'destroy')->name('groups.destroy');
+    Route::controller(StudentPaymentController::class)->middleware('auth')->group(function () {
+        Route::get('/student/payments', 'index')->name('student-payments.index');
     });
 
-    Route::get('/student/groups', [StudentGroupController::class, 'index'])->name('student-groups.index');
+    Route::controller(ClickPaymentController::class)->prefix('payments/click')->name('click.')->group(function () {
+        Route::post('/prepare', 'prepare')->name('prepare');
+        Route::post('/complete', 'complete')->name('complete');
+        Route::post('/pay/{type}/{id}', 'pay')->name('pay');
+        Route::post('/topup', 'topUp')->name('topup');
+    });
 
-    Route::get('/teacher/group-plans', [GroupPlanController::class, 'index'])->name('group-plans.index');
+    Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(function () {
+        Route::get('/', [AdminController::class, 'index'])->name('dashboard');
 
-    Route::controller(LiveSessionController::class)->group(function () {
-        Route::post('/groups/{group}/sessions', 'store')->name('live-sessions.store');
-        Route::post('/live-sessions/{liveSession}/start', 'start')->name('live-sessions.start');
-        Route::post('/live-sessions/{liveSession}/end', 'end')->name('live-sessions.end');
-        Route::post('/live-sessions/{liveSession}/cancel', 'cancel')->name('live-sessions.cancel');
-        Route::get('/live-sessions/{liveSession}/room', 'room')->name('live-sessions.room');
-        Route::post('/live-sessions/{liveSession}/join', 'join')->name('live-sessions.join');
-        Route::post('/live-sessions/{liveSession}/leave', 'leave')->name('live-sessions.leave');
-        Route::get('/live-sessions/{liveSession}/status', 'status')->name('live-sessions.status');
+        Route::controller(AdminUserController::class)->prefix('users')->name('users.')->group(function () {
+            Route::get('/', 'index')->name('index');
+            Route::post('/', 'store')->name('store');
+            Route::put('/{user}', 'update')->name('update');
+            Route::delete('/{user}', 'destroy')->name('destroy');
+        });
+
+        Route::controller(AdminBookController::class)->prefix('books')->name('books.')->group(function () {
+            Route::get('/', 'index')->name('index');
+            Route::put('/{book}', 'update')->name('update');
+            Route::delete('/{book}', 'destroy')->name('destroy');
+        });
+
+        // Video darslar — feature-flag orqali boshqariladi (config/features.php: lessons_enabled).
+        Route::controller(AdminLessonController::class)->middleware('lessons.enabled')->prefix('lessons')->name('lessons.')->group(function () {
+            Route::get('/', 'index')->name('index');
+            Route::put('/{lesson}', 'update')->name('update');
+            Route::delete('/{lesson}', 'destroy')->name('destroy');
+        });
+
+        Route::controller(AdminTestController::class)->prefix('tests')->name('tests.')->group(function () {
+            Route::get('/', 'index')->name('index');
+            Route::delete('/topic/{topicTest}', 'destroyTopic')->name('topic.destroy');
+            Route::delete('/dtm/{dtmTest}', 'destroyDtm')->name('dtm.destroy');
+            Route::delete('/sertifikat/{sertifikatTest}', 'destroySertifikat')->name('sertifikat.destroy');
+            Route::delete('/language-exam/{languageExamTest}', 'destroyLanguageExam')->name('language-exam.destroy');
+        });
+
+        Route::controller(AdminPurchaseController::class)->prefix('purchases')->name('purchases.')->group(function () {
+            Route::get('/', 'index')->name('index');
+            Route::delete('/{purchase}', 'destroy')->name('destroy');
+        });
+
+        Route::controller(AdminTransactionController::class)->prefix('transactions')->name('transactions.')->group(function () {
+            Route::get('/', 'index')->name('index');
+        });
+    });
+
+    Route::controller(StudentPurchaseController::class)->middleware('auth')->group(function () {
+        Route::post('/student/purchases/{type}/{id}', 'store')->name('student-purchases.store');
+    });
+
+    Route::controller(TeacherStudentController::class)->group(function () {
+        Route::get('/teacher/students', 'index')->middleware(['auth'])->name('teacher-students.index');
+        Route::get('/teacher/students/attempts/{attempt}', 'show')->middleware(['auth'])->name('teacher-students.result');
+        Route::post('/teacher/students/attempts/{attempt}/answers/{answer}/grade', 'grade')->middleware(['auth'])->name('teacher-students.grade');
+    });
+
+    // Guruhlar va jonli darslar — feature-flag orqali boshqariladi (config/features.php: live_lessons_enabled).
+    Route::middleware(['auth', 'live.enabled'])->group(function () {
+        Route::controller(GroupController::class)->group(function () {
+            Route::get('/groups', 'index')->name('groups.index');
+            Route::get('/groups/create', 'create')->name('groups.create');
+            Route::post('/groups', 'store')->name('groups.store');
+            Route::get('/groups/{group}', 'show')->name('groups.show');
+            Route::post('/groups/{group}/members', 'addMember')->name('groups.members.add');
+            Route::delete('/groups/{group}/members/{member}', 'removeMember')->name('groups.members.remove');
+            Route::delete('/groups/{group}', 'destroy')->name('groups.destroy');
+        });
+
+        Route::get('/student/groups', [StudentGroupController::class, 'index'])->name('student-groups.index');
+
+        Route::get('/teacher/group-plans', [GroupPlanController::class, 'index'])->name('group-plans.index');
+
+        Route::controller(LiveSessionController::class)->group(function () {
+            Route::post('/groups/{group}/sessions', 'store')->name('live-sessions.store');
+            Route::post('/live-sessions/{liveSession}/start', 'start')->name('live-sessions.start');
+            Route::post('/live-sessions/{liveSession}/end', 'end')->name('live-sessions.end');
+            Route::post('/live-sessions/{liveSession}/cancel', 'cancel')->name('live-sessions.cancel');
+            Route::get('/live-sessions/{liveSession}/room', 'room')->name('live-sessions.room');
+            Route::post('/live-sessions/{liveSession}/join', 'join')->name('live-sessions.join');
+            Route::post('/live-sessions/{liveSession}/leave', 'leave')->name('live-sessions.leave');
+            Route::get('/live-sessions/{liveSession}/status', 'status')->name('live-sessions.status');
+        });
+    });
+
+    Route::controller(UniversityController::class)->group(function () {
+        Route::get('/universities', 'index')->name('universities.index');
+    });
+
+    Route::controller(GuruhController::class)->group(function () {
+        Route::get('/guruhs', 'index')->name('guruhs.index');
+        Route::get('/guruhs/{id}/showStudents', 'showStudents')->name('guruhs.showStudents');
+        Route::get('/guruhs/{id}/edit', 'edit')->name('guruhs.edit');
+        Route::post('/guruhs/store', 'store')->name('guruhs.store');
+        Route::put('/guruhs/{guruh}', 'update')->name('guruhs.update');
+        Route::post('/guruhs/{id}/students/import', 'importStudents')->name('students.import');
+        Route::delete('/guruhs/{id}/destroy', 'destroy')->name('guruhs.destroy');
+        Route::delete('/students/{student}/destroy', 'studentsDestroy')->name('students.destroy');
+    });
+
+    Route::controller(UniversityStydentsController::class)->group(function () {
+        Route::post('/students/{id}/store', 'store')->name('students.store');
+        Route::put('/students/update/{id}', 'update')->name('students.update');
     });
 });
 
@@ -272,4 +300,6 @@ Route::post('/invites/{code}/accept', [GroupInviteController::class, 'accept'])
     ->middleware(['live.enabled', 'auth'])
     ->name('group-invites.accept');
 
-require __DIR__.'/auth.php';
+
+
+require __DIR__ . '/auth.php';

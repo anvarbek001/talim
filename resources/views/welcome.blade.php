@@ -7,10 +7,14 @@
 
     @php
         $seoTitle = "DarsQil — Video darslar orqali onlayn ta'lim platformasi | Matematika, Fizika, DTM tayyorgarlik";
-        $seoDescription = "DarsQil'da tajribali o'qituvchilardan video darslarni tomosha qiling: matematika, "
-            ."fizika, dasturlash va boshqa fanlar. Obuna orqali onlayn ta'lim oling, DTM va sertifikat "
-            ."testlariga tayyorgarlik ko'ring. " . number_format($overview['lessons_count'], 0, '.', ' ')
-            ." ta video dars, " . number_format($overview['teachers_count'], 0, '.', ' ') ." ta o'qituvchi.";
+        $seoDescription =
+            "DarsQil'da tajribali o'qituvchilardan video darslarni tomosha qiling: matematika, " .
+            "fizika, dasturlash va boshqa fanlar. Obuna orqali onlayn ta'lim oling, DTM va sertifikat " .
+            "testlariga tayyorgarlik ko'ring. " .
+            number_format($overview['lessons_count'], 0, '.', ' ') .
+            ' ta video dars, ' .
+            number_format($overview['teachers_count'], 0, '.', ' ') .
+            " ta o'qituvchi.";
         $seoUrl = rtrim(config('seo.url'), '/') . '/';
     @endphp
     @include('partials.seo-meta')
@@ -400,6 +404,7 @@
                 <div class="d-flex gap-2 mt-3 mt-lg-0">
                     <a href="{{ route('login') }}" class="btn btn-outline-navy px-4">Kirish</a>
                     <a href="{{ route('register') }}" class="btn btn-gold px-4">Ro'yxatdan o'tish</a>
+                    <a href="{{ route('register.university') }}" class="btn btn-outline-navy px-4">OTM uchun</a>
                 </div>
             </div>
         </div>
@@ -421,11 +426,13 @@
                     <div class="d-flex gap-4 mt-4 flex-wrap">
                         <div class="d-flex align-items-center gap-2">
                             <i class="bi bi-camera-reels text-warning fs-5"></i>
-                            <span class="small">{{ number_format($overview['lessons_count'], 0, '.', ' ') }} video dars</span>
+                            <span class="small">{{ number_format($overview['lessons_count'], 0, '.', ' ') }} video
+                                dars</span>
                         </div>
                         <div class="d-flex align-items-center gap-2">
                             <i class="bi bi-people text-warning fs-5"></i>
-                            <span class="small">{{ number_format($overview['teachers_count'], 0, '.', ' ') }} o'qituvchi</span>
+                            <span class="small">{{ number_format($overview['teachers_count'], 0, '.', ' ') }}
+                                o'qituvchi</span>
                         </div>
                     </div>
                 </div>
@@ -518,7 +525,8 @@
             <div class="row g-3 g-md-4">
                 @forelse ($sciences as $science)
                     <div class="col-6 col-md-4 col-lg-2">
-                        <a href="{{ route('register') }}" class="subject-pill d-block text-decoration-none text-reset">
+                        <a href="{{ route('register') }}"
+                            class="subject-pill d-block text-decoration-none text-reset">
                             <div class="icon" style="background:{{ $science->color }};color:#fff;">
                                 <i class="bi {{ $science->icon }}"></i>
                             </div>
