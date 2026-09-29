@@ -9,7 +9,9 @@ use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\BookController;
 use App\Http\Controllers\ClickPaymentController;
+use App\Http\Controllers\DarsController;
 use App\Http\Controllers\DtmTestController;
+use App\Http\Controllers\FanController;
 use App\Http\Controllers\GroupController;
 use App\Http\Controllers\GroupInviteController;
 use App\Http\Controllers\GroupPlanController;
@@ -289,6 +291,17 @@ Route::middleware(['auth'])->group(function () {
     Route::controller(UniversityStydentsController::class)->group(function () {
         Route::post('/students/{id}/store', 'store')->name('students.store');
         Route::put('/students/update/{id}', 'update')->name('students.update');
+    });
+
+    Route::controller(DarsController::class)->group(function () {
+        Route::get('/darses', 'index')->name('darses.index');
+    });
+
+    Route::controller(FanController::class)->group(function () {
+        Route::post('/fans', 'store')->name('fans.store');
+        Route::put('/fans/update/{id}', 'update')->name('fans.update');
+        Route::delete('/fans/destroy/{id}', 'destroy')->name('fans.destroy');
+        Route::get('/fans/{fan}',  'show')->name('fans.show');
     });
 });
 

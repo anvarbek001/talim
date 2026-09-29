@@ -228,4 +228,19 @@ class User extends Authenticatable implements Purchasable, Subscribable
     {
         return $this->hasMany(Student::class);
     }
+
+    public function fans()
+    {
+        return $this->hasMany(Fan::class);
+    }
+
+    public function darses()
+    {
+        return $this->hasMany(Dars::class);
+    }
+
+    public function bahos()
+    {
+        return $this->hasMany(Baho::class);
+    }
 }

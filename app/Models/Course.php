@@ -19,4 +19,14 @@ class Course extends Model
     {
         return $this->hasMany(Student::class);
     }
+
+    public function darses()
+    {
+        return $this->hasMany(Dars::class);
+    }
+
+    public function bahos()
+    {
+        return $this->hasMany(Baho::class);
+    }
 }
