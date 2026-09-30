@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Imports\StudentsImport;
+use App\Models\Baho;
 use App\Models\Course;
 use App\Models\Guruh;
 use App\Models\Student;
@@ -103,7 +104,31 @@ class GuruhController extends Controller
 
         $students = Student::where(['user_id' => Auth::id(), 'course_id' => $guruh->course_id, 'guruh_id' => $guruh->id])->with(['course', 'guruh'])->orderBy('id', 'DESC')->paginate(20);
 
-        return view('universities.guruhs.showStudents', compact('guruh', 'students'));
+        $gradeData = Baho::with(['fan:id,title', 'dars:id,title,created_at'])
+            ->whereIn('student_id', $students->pluck('id'))
+            ->whereNotNull('baho')
+            ->get()
+            ->groupBy('student_id')
+            ->map(function ($rows) {
+                return [
+                    'avg'   => round($rows->avg('baho'), 1),
+                    'count' => $rows->count(),
+                    'fans'  => $rows->groupBy('fan_id')->map(function ($items) {
+                        return [
+                            'fan'    => $items->first()->fan->title ?? '—',
+                            'avg'    => round($items->avg('baho'), 1),
+                            'count'  => $items->count(),
+                            'grades' => $items->sortBy('dars_id')->map(fn($b) => [
+                                'dars' => $b->dars->title ?? '—',
+                                'baho' => $b->baho,
+                                'date' => optional($b->dars?->created_at)->format('d.m.Y'),
+                            ])->values(),
+                        ];
+                    })->values(),
+                ];
+            });
+
+        return view('universities.guruhs.showStudents', compact('guruh', 'students', 'gradeData'));
     }
 
     public function importStudents(Request $request, $guruhId)

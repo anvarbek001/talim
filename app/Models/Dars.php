@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 
 class Dars extends Model
@@ -38,5 +39,17 @@ class Dars extends Model
     public function bahos()
     {
         return $this->hasMany(Baho::class);
+    }
+
+    // app/Models/Dars.php
+    public function gradingDeadline(): Carbon
+    {
+        // yaratilgan kunning oxiri = ertasi kuni 00:00
+        return $this->created_at->copy()->addDay()->startOfDay();
+    }
+
+    public function isGradable(): bool
+    {
+        return now()->lt($this->gradingDeadline());
     }
 }

@@ -275,6 +275,7 @@ Route::middleware(['auth'])->group(function () {
 
     Route::controller(UniversityController::class)->group(function () {
         Route::get('/universities', 'index')->name('universities.index');
+        Route::get('/university', 'show')->name('university.show');
     });
 
     Route::controller(GuruhController::class)->group(function () {
@@ -302,6 +303,9 @@ Route::middleware(['auth'])->group(function () {
         Route::put('/fans/update/{id}', 'update')->name('fans.update');
         Route::delete('/fans/destroy/{id}', 'destroy')->name('fans.destroy');
         Route::get('/fans/{fan}',  'show')->name('fans.show');
+        Route::post('/fans/{fan}/darslar', 'darsQoshish')->name('fans.darslar.store');
+        Route::delete('/darslar/{dars}', 'darsOchirish')->name('darslar.destroy');
+        Route::post('/fans/{fan}/bahos', 'bahoSaqlash')->name('fans.bahos.store');
     });
 });
 

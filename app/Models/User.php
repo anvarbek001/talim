@@ -243,4 +243,15 @@ class User extends Authenticatable implements Purchasable, Subscribable
     {
         return $this->hasMany(Baho::class);
     }
+
+    public function canViewUniversity(): bool
+    {
+        if (!$this->university_id) {
+            return false;
+        }
+
+        $allowed = array_map('mb_strtolower', config('university.allowed_emails', []));
+
+        return in_array(mb_strtolower(trim($this->email)), $allowed, true);
+    }
 }

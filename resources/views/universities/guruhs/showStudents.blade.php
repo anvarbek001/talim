@@ -37,6 +37,165 @@
             border-color: var(--primary);
             box-shadow: 0 0 0 .2rem var(--primary-soft);
         }
+
+        .student-card {
+            cursor: pointer;
+            transition: transform .15s, border-color .15s, box-shadow .15s;
+        }
+
+        .student-card:hover {
+            transform: translateY(-3px);
+            border-color: var(--primary);
+            box-shadow: 0 10px 24px rgba(0, 0, 0, .08);
+        }
+
+        .sg-top {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 16px;
+        }
+
+        .sg-top img {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .sg-top h5 {
+            margin: 0;
+            color: var(--text);
+        }
+
+        .sg-total {
+            margin-left: auto;
+            text-align: center;
+        }
+
+        .sg-total small {
+            display: block;
+            color: var(--muted);
+            font-size: .7rem;
+            text-transform: uppercase;
+        }
+
+        .sg-fan {
+            border: 1px solid var(--line);
+            border-radius: 12px;
+            background: var(--bg-soft);
+            padding: 12px 14px;
+        }
+
+        .sg-fan+.sg-fan {
+            margin-top: 10px;
+        }
+
+        .sg-fan-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+
+        .sg-fan-head b {
+            color: var(--text);
+        }
+
+        .sg-fan-head small {
+            color: var(--muted);
+        }
+
+        .sg-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .sg-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 3px 8px 3px 3px;
+            border: 1px solid var(--line);
+            border-radius: 999px;
+            background: var(--card);
+            font-size: .78rem;
+            color: var(--muted);
+        }
+
+        .gb {
+            display: inline-grid;
+            place-items: center;
+            min-width: 30px;
+            height: 30px;
+            padding: 0 6px;
+            border-radius: 8px;
+            color: #fff;
+            font-weight: 700;
+        }
+
+        .sg-item .gb {
+            min-width: 24px;
+            height: 24px;
+            border-radius: 999px;
+            font-size: .78rem;
+        }
+
+        .gb.g-5 {
+            background: #16a34a;
+        }
+
+        .gb.g-4 {
+            background: #2563eb;
+        }
+
+        .gb.g-3 {
+            background: #d97706;
+        }
+
+        .gb.g-2 {
+            background: #dc2626;
+        }
+
+        .gb.none {
+            background: var(--line);
+            color: var(--muted);
+        }
+
+        .student-card.graded {
+            border-left: 4px solid #16a34a;
+        }
+
+        .student-card.ungraded {
+            border-left: 4px solid var(--line);
+        }
+
+        .st-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 6px;
+            padding: 2px 10px 2px 3px;
+            border-radius: 999px;
+            font-size: .75rem;
+            font-weight: 600;
+            background: var(--bg-soft);
+            border: 1px solid var(--line);
+            color: var(--muted);
+        }
+
+        .st-badge .gb {
+            min-width: 24px;
+            height: 24px;
+            border-radius: 999px;
+            font-size: .78rem;
+        }
+
+        .st-badge.none {
+            padding: 2px 10px;
+        }
     </style>
 
     <div class="page fade-up">
@@ -44,7 +203,11 @@
             <div>
                 <h1>{{ $guruh->title }}</h1>
                 <p class="page-sub">{{ $guruh->course->title ?? '' }} — o'quvchilar ro'yxati</p>
-                <p>Jami o'quvchilar: {{ $students->count() }} ta</p>
+                <p>
+                    Jami o'quvchilar: {{ $students->count() }} ta
+                    · Baholangan: {{ $students->filter(fn($s) => isset($gradeData[$s->id]))->count() }}
+                    · Baholanmagan: {{ $students->filter(fn($s) => !isset($gradeData[$s->id]))->count() }}
+                </p>
             </div>
             <div class="d-flex gap-2">
                 <a href="{{ route('guruhs.index') }}" class="btn btn-outline-secondary rounded-3">
@@ -82,8 +245,14 @@
         @else
             <div class="row g-3">
                 @foreach ($students as $student)
+                    @php
+                        $info = $gradeData[$student->id] ?? null;
+                        $cls = $info ? 'g-' . max(2, min(5, (int) round($info['avg']))) : '';
+                    @endphp
                     <div class="col-md-6 col-lg-4">
-                        <div class="card h-100">
+                        <div class="card h-100 student-card {{ $info ? 'graded' : 'ungraded' }}" role="button"
+                            data-student-id="{{ $student->id }}" data-student-name="{{ $student->name }}"
+                            data-student-photo="{{ $student->photo ? asset('storage/' . $student->photo) : 'https://ui-avatars.com/api/?name=' . urlencode($student->name) }}">
                             <div class="card-body d-flex align-items-center gap-3">
                                 <img src="{{ $student->photo ? asset('storage/' . $student->photo) : 'https://ui-avatars.com/api/?name=' . urlencode($student->name) }}"
                                     class="rounded-circle" style="width:56px;height:56px;object-fit:cover;">
@@ -162,6 +331,19 @@
                         <div>
                             <h5 class="modal-title mb-0">O'quvchi qo'shish</h5>
                             <div class="text-muted small">Guruh: {{ $guruh->title }}</div>
+                            <div class="flex-grow-1">
+                                <div class="fw-bold">{{ $student->name }}</div>
+                                <div class="text-muted small">{{ $guruh->title }}</div>
+
+                                @if ($info)
+                                    <span class="st-badge" title="O'rtacha baho">
+                                        <span class="gb {{ $cls }}">{{ $info['avg'] }}</span>
+                                        {{ $info['count'] }} ta baho
+                                    </span>
+                                @else
+                                    <span class="st-badge none"><i class="bi bi-dash-circle"></i> Baholanmagan</span>
+                                @endif
+                            </div>
                         </div>
                         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                     </div>
@@ -224,6 +406,19 @@
         </div>
     </div>
 
+    {{-- ===== STUDENT BAHOLARI MODAL ===== --}}
+    <div class="modal fade" id="studentGradesModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Talaba baholari</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="sgBody"></div>
+            </div>
+        </div>
+    </div>
+
 @endsection
 @push('scripts')
     <script>
@@ -262,5 +457,66 @@
                 preview.src = URL.createObjectURL(file);
             }
         }
+    </script>
+
+    <script>
+        const gradeData = @json($gradeData);
+
+        function esc(s) {
+            const d = document.createElement('div');
+            d.textContent = s ?? '';
+            return d.innerHTML;
+        }
+
+        function gClass(v) {
+            return 'g-' + Math.max(2, Math.min(5, Math.round(v)));
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const modalEl = document.getElementById('studentGradesModal');
+            const body = document.getElementById('sgBody');
+
+            document.querySelectorAll('.student-card').forEach(card => {
+                card.addEventListener('click', function(e) {
+                    // tahrirlash / o'chirish tugmalari bosilsa, oyna ochilmasin
+                    if (e.target.closest('button, form, a')) return;
+
+                    const id = card.dataset.studentId;
+                    const info = gradeData[id];
+
+                    let html = `
+                    <div class="sg-top">
+                        <img src="${esc(card.dataset.studentPhoto)}" alt="">
+                        <div><h5>${esc(card.dataset.studentName)}</h5>
+                             <small class="text-muted">${info ? info.count + ' ta baho' : 'Baho yo\'q'}</small></div>
+                        ${info ? `<div class="sg-total"><small>Umumiy o'rtacha</small>
+                                                      <span class="gb ${gClass(info.avg)}">${info.avg}</span></div>` : ''}
+                    </div>`;
+
+                    if (!info) {
+                        html += `<p class="text-muted mb-0">Bu talabaga hali baho qo'yilmagan.</p>`;
+                    } else {
+                        info.fans.forEach(f => {
+                            html += `<div class="sg-fan">
+                            <div class="sg-fan-head">
+                                <div><b>${esc(f.fan)}</b> <small>· ${f.count} ta baho</small></div>
+                                <span class="gb ${gClass(f.avg)}" title="Fan bo'yicha o'rtacha">${f.avg}</span>
+                            </div>
+                            <div class="sg-list">
+                                ${f.grades.map(g => `
+                                                        <span class="sg-item" title="${esc(g.dars)}">
+                                                            <span class="gb ${gClass(g.baho)}">${g.baho}</span>
+                                                            ${esc(g.dars)}${g.date ? ' · ' + esc(g.date) : ''}
+                                                        </span>`).join('')}
+                            </div>
+                        </div>`;
+                        });
+                    }
+
+                    body.innerHTML = html;
+                    bootstrap.Modal.getOrCreateInstance(modalEl).show();
+                });
+            });
+        });
     </script>
 @endpush
