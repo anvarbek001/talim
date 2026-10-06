@@ -7,8 +7,7 @@
 
 @section('content')
     <div class="page">
-        <a href="{{ $isTeacherReader ? route('books.mine') : route('student-books.index') }}"
-            class="back-link fade-up">
+        <a href="{{ $isTeacherReader ? route('books.mine') : route('student-books.index') }}" class="back-link fade-up">
             <i class="bi bi-arrow-left"></i> Orqaga
         </a>
 
@@ -18,10 +17,11 @@
                 <p class="book-view-desc">{{ $book->description }}</p>
             @endif
 
-            @if(auth()->check() && auth()->id() === $book->user_id)
+            @if (auth()->check() && auth()->id() === $book->user_id)
                 <div style="margin-top:8px;display:flex;gap:8px;">
                     <a href="{{ route('books.edit', $book) }}" class="btn-ghost">Tahrirlash</a>
-                    <form action="{{ route('books.destroy', $book) }}" method="POST" onsubmit="return confirm('Kitobni o\'chirmoqchimisiz?');">
+                    <form action="{{ route('books.destroy', $book) }}" method="POST"
+                        onsubmit="return confirm('Kitobni o\'chirmoqchimisiz?');">
                         @csrf
                         @method('DELETE')
                         <button type="submit" class="btn-danger">O'chirish</button>
@@ -31,17 +31,15 @@
         </div>
 
         @foreach ($book->files as $file)
-            <div class="pdf-wrap fade-up" oncontextmenu="return false;">
+            <div class="pdf-wrap fade-up protected">
                 <div class="pdf-wrap-head">
                     <i class="bi bi-file-earmark-pdf"></i> {{ $file->original_name }}
-                    <div style="float:right">
-                        <button class="btn-ghost" onclick="openFullScreen(this)">To'liq ekran</button>
+                    <div style="margin-left:auto">
+                        <button type="button" class="btn-ghost" onclick="openFullScreen(this)">To'liq ekran</button>
                     </div>
                 </div>
-                {{-- Hide toolbar where possible; client-side deterrent only. --}}
-                <div class="pdf-frame-container">
-                    <iframe src="{{ route('books.stream', [$book, $file]) }}#toolbar=0&navpanes=0" class="pdf-frame"
-                        title="{{ $file->original_name }}" sandbox="allow-same-origin allow-scripts"></iframe>
+                <div class="pdf-frame-container" data-src="{{ route('books.stream', [$book, $file]) }}">
+                    <div class="pdf-loading">Yuklanmoqda...</div>
                 </div>
             </div>
         @endforeach
@@ -102,58 +100,120 @@
             color: var(--coral);
         }
 
-        .pdf-frame {
-            width: 100%;
-            height: 80vh;
-            border: 0;
-            display: block;
+        .pdf-frame-container {
+            max-height: 80vh;
+            overflow-y: auto;
+            background: #ececec;
+            padding: 12px;
         }
 
-        /* Students prefer full-screen reading — make the iframe fill viewport
-           when requested via the Fullscreen API. */
-        .pdf-frame.fullscreen {
+        .pdf-frame-container:fullscreen {
+            max-height: 100vh;
             height: 100vh;
         }
 
+        .pdf-frame-container canvas {
+            display: block;
+            margin: 0 auto 12px;
+            max-width: 100%;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, .2);
+        }
+
+        .pdf-loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .protected,
+        .protected * {
+            -webkit-user-select: none;
+            user-select: none;
+            -webkit-touch-callout: none;
+        }
+
+        .protected canvas {
+            pointer-events: none;
+        }
+
         @media (max-width:767px) {
-            .pdf-frame {
-                height: 65vh;
+            .pdf-frame-container {
+                max-height: 65vh;
+            }
+        }
+
+        @media print {
+            body * {
+                display: none !important;
             }
         }
     </style>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <script>
-        function openFullScreen(btn) {
-            const container = btn.closest('.pdf-wrap').querySelector('.pdf-frame-container');
-            const iframe = container.querySelector('.pdf-frame');
-            // try Fullscreen API on container
-            if (container.requestFullscreen) {
-                container.requestFullscreen();
-            } else if (container.webkitRequestFullscreen) {
-                container.webkitRequestFullscreen();
+        pdfjsLib.GlobalWorkerOptions.workerSrc =
+            'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+        async function renderPdf(box) {
+            try {
+                const pdf = await pdfjsLib.getDocument({
+                    url: box.dataset.src,
+                    withCredentials: true
+                }).promise;
+
+                box.innerHTML = '';
+                const width = Math.min(box.clientWidth - 24, 1000);
+                const ratio = window.devicePixelRatio || 1;
+
+                for (let i = 1; i <= pdf.numPages; i++) {
+                    const page = await pdf.getPage(i);
+                    const base = page.getViewport({
+                        scale: 1
+                    });
+                    const scale = width / base.width;
+                    const viewport = page.getViewport({
+                        scale: scale * ratio
+                    });
+
+                    const canvas = document.createElement('canvas');
+                    canvas.width = viewport.width;
+                    canvas.height = viewport.height;
+                    canvas.style.width = (viewport.width / ratio) + 'px';
+                    box.appendChild(canvas);
+
+                    await page.render({
+                        canvasContext: canvas.getContext('2d'),
+                        viewport
+                    }).promise;
+                }
+            } catch (e) {
+                console.error(e);
+                box.innerHTML = '<div class="pdf-loading">Kitobni yuklab bo\'lmadi.</div>';
             }
-            iframe.classList.add('fullscreen');
         }
 
-        // Block common save/print shortcuts and context menu as a deterrent
-        const isOwner = {{ auth()->check() && auth()->id() === $book->user_id ? 'true' : 'false' }};
+        document.querySelectorAll('.pdf-frame-container').forEach(renderPdf);
 
-        window.addEventListener('keydown', function (e) {
-            // Ctrl/Cmd+S, Ctrl/Cmd+P, Ctrl+Shift+S
-            if ((e.ctrlKey || e.metaKey) && ['s', 'p'].includes(e.key.toLowerCase())) {
-                e.preventDefault();
-                return false;
-            }
-            if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 's') {
-                e.preventDefault();
-                return false;
-            }
-        }, { passive: false });
+        function openFullScreen(btn) {
+            const c = btn.closest('.pdf-wrap').querySelector('.pdf-frame-container');
+            (c.requestFullscreen || c.webkitRequestFullscreen).call(c);
+        }
 
-        document.addEventListener('contextmenu', function (e) {
-            // allow right-click for the owner/teacher to keep editing capabilities
-            if (! isOwner && e.target.closest('.pdf-wrap')) {
-                e.preventDefault();
-            }
+        // O'ng tugma kitob ustida hamma uchun o'chirilgan
+        document.addEventListener('contextmenu', e => {
+            if (e.target.closest('.protected')) e.preventDefault();
         });
+
+        // Saqlash, chop etish, manbani ko'rish, nusxalash
+        window.addEventListener('keydown', e => {
+            const k = e.key.toLowerCase();
+            if ((e.ctrlKey || e.metaKey) && ['s', 'p', 'u', 'c'].includes(k)) {
+                e.preventDefault();
+            }
+        }, {
+            passive: false
+        });
+
+        document.addEventListener('dragstart', e => e.preventDefault());
     </script>
 @endsection

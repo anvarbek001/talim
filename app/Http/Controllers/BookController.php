@@ -32,9 +32,9 @@ class BookController extends Controller implements HasMiddleware
 
             return redirect()->route('books.mine')->with('success', 'Kitob muvaffaqiyatli joylandi');
         } catch (\Throwable $e) {
-            \Log::error('Book upload failed: '.$e->getMessage(), ['exception' => $e]);
+            \Log::error('Book upload failed: ' . $e->getMessage(), ['exception' => $e]);
 
-            return redirect()->back()->withInput()->with('error', 'Kitob yuklashda xatolik yuz berdi: '.$e->getMessage());
+            return redirect()->back()->withInput()->with('error', 'Kitob yuklashda xatolik yuz berdi: ' . $e->getMessage());
         }
     }
 
@@ -130,7 +130,7 @@ class BookController extends Controller implements HasMiddleware
         if ($disk->exists($filePath)) {
             $path = $disk->path($filePath);
         } else {
-            $candidate = storage_path('app/'.$filePath);
+            $candidate = storage_path('app/' . $filePath);
             if (is_file($candidate)) {
                 $path = $candidate;
             } else {
@@ -140,7 +140,7 @@ class BookController extends Controller implements HasMiddleware
 
         return response()->file($path, [
             'Content-Type' => 'application/pdf',
-            'Content-Disposition' => 'inline; filename="'.addslashes($bookFile->original_name).'"',
+            'Content-Disposition' => 'inline; filename="' . addslashes($bookFile->original_name) . '"',
             'Cache-Control' => 'private, no-store, max-age=0',
             'X-Content-Type-Options' => 'nosniff',
         ]);
@@ -160,7 +160,7 @@ class BookController extends Controller implements HasMiddleware
         if ($disk->exists($filePath)) {
             $path = $disk->path($filePath);
         } else {
-            $candidate = storage_path('app/'.$filePath);
+            $candidate = storage_path('app/' . $filePath);
             if (is_file($candidate)) {
                 $path = $candidate;
             } else {
@@ -178,7 +178,7 @@ class BookController extends Controller implements HasMiddleware
             $im->setResolution(150, 150);
             // zero-indexed page selection
             $idx = max(0, $page - 1);
-            $im->readImage($path."[{$idx}]");
+            $im->readImage($path . "[{$idx}]");
             $im->setImageFormat('jpeg');
             $im->setImageCompressionQuality(80);
             $blob = $im->getImageBlob();
@@ -191,7 +191,7 @@ class BookController extends Controller implements HasMiddleware
                 'X-Content-Type-Options' => 'nosniff',
             ]);
         } catch (\Exception $e) {
-            \Log::error('PDF page render failed: '.$e->getMessage(), ['file' => $filePath, 'page' => $page]);
+            \Log::error('PDF page render failed: ' . $e->getMessage(), ['file' => $filePath, 'page' => $page]);
             abort(404);
         }
     }
@@ -210,7 +210,7 @@ class BookController extends Controller implements HasMiddleware
         if ($disk->exists($filePath)) {
             $path = $disk->path($filePath);
         } else {
-            $candidate = storage_path('app/'.$filePath);
+            $candidate = storage_path('app/' . $filePath);
             if (is_file($candidate)) {
                 $path = $candidate;
             } else {
@@ -231,7 +231,7 @@ class BookController extends Controller implements HasMiddleware
 
             return response()->json(['pages' => $count]);
         } catch (\Exception $e) {
-            \Log::error('PDF ping failed: '.$e->getMessage(), ['file' => $filePath]);
+            \Log::error('PDF ping failed: ' . $e->getMessage(), ['file' => $filePath]);
             abort(404);
         }
     }

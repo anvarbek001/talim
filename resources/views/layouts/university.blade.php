@@ -646,29 +646,33 @@
             </div>
 
             <div class="nav-eyebrow">Boshqaruv</div>
-            <a href="{{ route('university.show') }}"
-                class="nav-link {{ request()->routeIs('university.show') ? 'active' : '' }}">
-                <i class="bi bi-bank2"></i>
-                Universitetim
-            </a>
+            @if (auth()->user()->canViewUniversity())
+                <a href="{{ route('university.show') }}"
+                    class="nav-link {{ request()->routeIs('university.show') ? 'active' : '' }}">
+                    <i class="bi bi-bank2"></i>
+                    Universitetim
+                </a>
+            @endif
 
             <a href="{{ route('universities.index') }}"
                 class="nav-link {{ request()->routeIs('universities.index') ? 'active' : '' }}"><i
                     class="bi bi-bar-chart-line"></i>
                 Statistika</a>
-            <a href="{{ route('guruhs.index') }}"
-                class="nav-link {{ request()->routeIs('guruhs.index') ? 'active' : '' }}">
-                <i class="bi bi-people"></i> Guruhlarim
-            </a>
+            @if (!auth()->user()->canViewUniversity())
+                <a href="{{ route('guruhs.index') }}"
+                    class="nav-link {{ request()->routeIs('guruhs.index') ? 'active' : '' }}">
+                    <i class="bi bi-people"></i> Guruhlarim
+                </a>
 
-            <a href="{{ route('darses.index') }}"
-                class="nav-link {{ request()->routeIs('darses.index') ? 'active' : '' }}">
-                <i class="bi bi-journal-bookmark"></i> Darslarim
-            </a>
+                <a href="{{ route('darses.index') }}"
+                    class="nav-link {{ request()->routeIs('darses.index') ? 'active' : '' }}">
+                    <i class="bi bi-journal-bookmark"></i> Darslarim
+                </a>
 
-            {{-- <a href="#" class="nav-link">
+                {{-- <a href="#" class="nav-link">
                 <i class="bi bi-book"></i> Qo'llanmalar
             </a> --}}
+            @endif
 
             <div class="sidebar-foot">
                 <div class="mini-avatar">{{ mb_strtoupper(mb_substr(auth()->user()->name ?? '', 0, 2)) }}</div>
