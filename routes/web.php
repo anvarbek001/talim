@@ -187,13 +187,6 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/student/payments', 'index')->name('student-payments.index');
     });
 
-    Route::controller(ClickPaymentController::class)->prefix('payments/click')->name('click.')->group(function () {
-        Route::post('/prepare', 'prepare')->name('prepare');
-        Route::post('/complete', 'complete')->name('complete');
-        Route::post('/pay/{type}/{id}', 'pay')->name('pay');
-        Route::post('/topup', 'topUp')->name('topup');
-    });
-
     Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(function () {
         Route::get('/', [AdminController::class, 'index'])->name('dashboard');
 
@@ -317,6 +310,11 @@ Route::post('/invites/{code}/accept', [GroupInviteController::class, 'accept'])
     ->middleware(['live.enabled', 'auth'])
     ->name('group-invites.accept');
 
-
+Route::controller(ClickPaymentController::class)->prefix('payments/click')->name('click.')->group(function () {
+    Route::post('/prepare', 'prepare')->name('prepare');
+    Route::post('/complete', 'complete')->name('complete');
+    Route::post('/pay/{type}/{id}', 'pay')->name('pay');
+    Route::post('/topup', 'topUp')->name('topup');
+});
 
 require __DIR__ . '/auth.php';
