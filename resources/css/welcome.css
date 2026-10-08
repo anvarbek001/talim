@@ -1,0 +1,336 @@
+:root {
+    --navy: #141b33;
+    --navy-deep: #0c1024;
+    --indigo: #2f3b73;
+    --gold: #f2a93b;
+    --gold-soft: #fcebc7;
+    --teal: #1f8a70;
+    --paper: #f7f6f2;
+    --ink: #1b1b18;
+    --muted: #6b7280;
+}
+
+body {
+    font-family: "Inter", sans-serif;
+    color: var(--ink);
+    background: var(--paper);
+}
+
+h1,
+h2,
+h3,
+.display-font {
+    font-family: "Sora", sans-serif;
+}
+
+.navbar {
+    background: var(--paper);
+    border-bottom: 1px solid #e7e4da;
+}
+
+.navbar-brand {
+    font-family: "Sora", sans-serif;
+    font-weight: 800;
+    font-size: 1.4rem;
+    color: var(--navy) !important;
+}
+
+.navbar-brand span {
+    color: var(--gold);
+}
+
+.btn-outline-navy {
+    border: 1.5px solid var(--navy);
+    color: var(--navy);
+    font-weight: 600;
+    border-radius: 8px;
+}
+
+.btn-outline-navy:hover {
+    background: var(--navy);
+    color: #fff;
+}
+
+.btn-gold {
+    background: var(--gold);
+    color: var(--navy-deep);
+    font-weight: 700;
+    border-radius: 8px;
+    border: none;
+}
+
+.btn-gold:hover {
+    background: #e0961f;
+    color: var(--navy-deep);
+}
+
+/* HERO */
+.hero {
+    background: radial-gradient(
+        1200px 500px at 80% -10%,
+        #1c2550 0%,
+        var(--navy) 55%,
+        var(--navy-deep) 100%
+    );
+    color: #fff;
+    padding: 90px 0 110px;
+    position: relative;
+    overflow: hidden;
+}
+
+.hero:before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image: radial-gradient(
+        circle,
+        rgba(242, 169, 59, 0.1) 1.5px,
+        transparent 1.5px
+    );
+    background-size: 26px 26px;
+    opacity: 0.5;
+}
+
+.hero .eyebrow {
+    color: var(--gold);
+    letter-spacing: 0.08em;
+    font-weight: 600;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+}
+
+.hero h1 {
+    font-weight: 800;
+    font-size: 2.9rem;
+    line-height: 1.15;
+}
+
+.hero p.lead {
+    color: #c7cbe0;
+    font-size: 1.1rem;
+}
+
+/* Video mock card — signature element */
+.lesson-card {
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 30px 60px -20px rgba(0, 0, 0, 0.45);
+    overflow: hidden;
+    transform: rotate(-1.2deg);
+}
+
+.lesson-thumb {
+    background: linear-gradient(135deg, #233065 0%, #2f3b73 45%, #46579c 100%);
+    height: 190px;
+    position: relative;
+}
+
+.lesson-thumb .grid-lines {
+    position: absolute;
+    inset: 0;
+    background-image:
+        linear-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.08) 1px, transparent 1px);
+    background-size: 24px 24px;
+}
+
+.play-btn {
+    width: 56px;
+    height: 56px;
+    background: var(--gold);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--navy-deep);
+    font-size: 1.4rem;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+}
+
+.lesson-progress {
+    height: 4px;
+    background: #e7e4da;
+}
+
+.lesson-progress-fill {
+    height: 100%;
+    width: 62%;
+    background: var(--gold);
+}
+
+.badge-live {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    background: var(--teal);
+    color: #fff;
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 3px 9px;
+    border-radius: 20px;
+}
+
+.badge-duration {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    background: rgba(12, 16, 36, 0.75);
+    color: #fff;
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 6px;
+}
+
+/* Stats strip */
+.stats-strip {
+    background: var(--navy-deep);
+    color: #fff;
+    padding: 24px 0;
+}
+
+.stats-strip .num {
+    font-family: "Sora", sans-serif;
+    font-weight: 800;
+    font-size: 1.6rem;
+    color: var(--gold);
+}
+
+.stats-strip .lbl {
+    font-size: 0.85rem;
+    color: #aeb3c9;
+}
+
+/* Section headings */
+.section-eyebrow {
+    color: var(--teal);
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+}
+
+section {
+    padding: 80px 0;
+}
+
+/* Steps */
+.step-card {
+    background: #fff;
+    border: 1px solid #e7e4da;
+    border-radius: 14px;
+    padding: 32px 26px;
+    height: 100%;
+}
+
+.step-num {
+    font-family: "Sora", sans-serif;
+    font-weight: 800;
+    font-size: 2.2rem;
+    color: var(--gold-soft);
+    -webkit-text-stroke: 1.5px var(--navy);
+    line-height: 1;
+}
+
+/* Subjects */
+.subject-pill {
+    background: #fff;
+    border: 1px solid #e7e4da;
+    border-radius: 12px;
+    padding: 20px;
+    text-align: center;
+    transition: 0.2s;
+    height: 100%;
+}
+
+.subject-pill:hover {
+    border-color: var(--gold);
+    transform: translateY(-3px);
+}
+
+.subject-pill .icon {
+    width: 46px;
+    height: 46px;
+    background: var(--navy);
+    color: var(--gold);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 12px;
+    font-size: 1.3rem;
+}
+
+/* Teacher cards */
+.teacher-card {
+    background: #fff;
+    border-radius: 14px;
+    border: 1px solid #e7e4da;
+    overflow: hidden;
+}
+
+.teacher-avatar {
+    height: 140px;
+    background: linear-gradient(135deg, var(--indigo), var(--navy));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 2.2rem;
+    font-weight: 800;
+    font-family: "Sora", sans-serif;
+}
+
+/* Testimonials */
+.testimonial-card {
+    background: #fff;
+    border-radius: 14px;
+    padding: 28px;
+    border: 1px solid #e7e4da;
+    height: 100%;
+}
+
+.avatar-circle {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: var(--gold-soft);
+    color: var(--navy);
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Final CTA */
+.final-cta {
+    background: var(--navy);
+    color: #fff;
+    border-radius: 20px;
+    padding: 56px 40px;
+}
+
+footer {
+    background: var(--navy-deep);
+    color: #aeb3c9;
+    padding: 50px 0 20px;
+    font-size: 0.9rem;
+}
+
+footer a {
+    color: #d8dae8;
+    text-decoration: none;
+}
+
+footer a:hover {
+    color: var(--gold);
+}
+
+footer h6 {
+    color: #fff;
+    font-family: "Sora", sans-serif;
+}
