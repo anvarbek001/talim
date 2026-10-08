@@ -142,7 +142,7 @@
 
         <div class="container position-relative py-5">
             <div class="text-center mb-4">
-                <a href="{{ url('/') }}" class="brand-link">Dars<span>lik</span></a>
+                <a href="{{ url('/') }}" class="brand-link">Dars<span>Qil</span></a>
             </div>
 
             <div class="row justify-content-center">
