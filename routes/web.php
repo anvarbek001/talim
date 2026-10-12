@@ -7,6 +7,8 @@ use App\Http\Controllers\Admin\TestController as AdminTestController;
 use App\Http\Controllers\Admin\TransactionController as AdminTransactionController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\AnagrammaController;
+use App\Http\Controllers\AnagrammaPlayController;
 use App\Http\Controllers\BookController;
 use App\Http\Controllers\ClickPaymentController;
 use App\Http\Controllers\DarsController;
@@ -16,6 +18,7 @@ use App\Http\Controllers\GroupController;
 use App\Http\Controllers\GroupInviteController;
 use App\Http\Controllers\GroupPlanController;
 use App\Http\Controllers\GuruhController;
+use App\Http\Controllers\InterestingLessonController;
 use App\Http\Controllers\LanguageExamTestController;
 use App\Http\Controllers\LessonController;
 use App\Http\Controllers\LessonFileController;
@@ -291,6 +294,18 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/darses', 'index')->name('darses.index');
     });
 
+    Route::controller(InterestingLessonController::class)->group(function () {
+        Route::get('/interesting', 'index')->name('interesting.index');
+    });
+
+    Route::controller(AnagrammaController::class)->group(function () {
+        Route::get('/anagramma/index', 'index')->name('anagramma.index');
+        Route::post('/anagramma/store', 'store')->name('anagramma.store');
+        Route::put('/anagramma/{anagramma}', 'update')->name('anagramma.update');
+        Route::delete('/anagramma/{anagramma}', 'destroy')->name('anagramma.destroy');
+        Route::post('/anagramma-token', 'regenerate')->name('anagramma.regenerate');
+    });
+
     Route::controller(FanController::class)->group(function () {
         Route::post('/fans', 'store')->name('fans.store');
         Route::put('/fans/update/{id}', 'update')->name('fans.update');
@@ -316,5 +331,10 @@ Route::controller(ClickPaymentController::class)->prefix('payments/click')->name
     Route::post('/pay/{type}/{id}', 'pay')->name('pay');
     Route::post('/topup', 'topUp')->name('topup');
 });
+
+Route::get('/play/anagramma/{token}', [AnagrammaPlayController::class, 'show'])->name('anagramma.play');
+Route::post('/play/anagramma/{token}/result', [AnagrammaPlayController::class, 'finish'])
+    ->middleware('throttle:30,1')
+    ->name('anagramma.finish');
 
 require __DIR__ . '/auth.php';

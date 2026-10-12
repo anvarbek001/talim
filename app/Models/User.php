@@ -255,4 +255,9 @@ class User extends Authenticatable implements Purchasable, Subscribable
 
         return in_array(mb_strtolower(trim($this->email)), $allowed, true);
     }
+
+    public function anagrammas()
+    {
+        return $this->hasMany(Anagramma::class);
+    }
 }

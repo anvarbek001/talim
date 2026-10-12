@@ -669,6 +669,11 @@
                     <i class="bi bi-journal-bookmark"></i> Darslarim
                 </a>
 
+                <a href="{{ route('interesting.index') }}"
+                    class="nav-link {{ request()->routeIs('interesting.index') ? 'active' : '' }}">
+                    <i class="bi bi-book-half"></i> Qiziqarli dars
+                </a>
+
                 {{-- <a href="#" class="nav-link">
                 <i class="bi bi-book"></i> Qo'llanmalar
             </a> --}}
