@@ -210,6 +210,78 @@
         .game-card.soon .game-foot {
             color: var(--muted);
         }
+
+        /* Ha / Yo'q kartasi */
+        .game-cover.yn {
+            background: linear-gradient(135deg, #12B886, #0CA678 45%, #FF6B6B 55%, #F03E3E);
+            gap: 14px;
+        }
+
+        .yn-badge {
+            position: relative;
+            z-index: 1;
+            width: 62px;
+            height: 62px;
+            border-radius: 18px;
+            background: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            box-shadow: 0 10px 22px -8px rgba(0, 0, 0, .35);
+            transition: transform .3s ease;
+        }
+
+        .yn-badge.yes {
+            color: var(--mint);
+            transform: rotate(-9deg) translateY(4px);
+        }
+
+        .yn-badge.no {
+            color: var(--coral);
+            transform: rotate(9deg) translateY(-4px);
+        }
+
+        .yn-vs {
+            position: relative;
+            z-index: 2;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, .25);
+            backdrop-filter: blur(6px);
+            color: #fff;
+            font-family: 'Sora', sans-serif;
+            font-weight: 800;
+            font-size: .95rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        a.game-card:hover .yn-badge.yes {
+            transform: rotate(0) translateY(-4px) scale(1.06);
+        }
+
+        a.game-card:hover .yn-badge.no {
+            transform: rotate(0) translateY(-4px) scale(1.06);
+        }
+
+        .game-card.yn-card:hover {
+            border-color: var(--mint);
+        }
+
+        .game-card.yn-card .game-foot {
+            color: var(--mint);
+        }
+
+        .game-card.yn-card .game-foot .arrow {
+            background: var(--mint-soft);
+        }
+
+        a.game-card.yn-card:hover .arrow {
+            background: var(--mint);
+        }
     </style>
 
     <div class="page fade-up">
@@ -242,6 +314,24 @@
                         <span class="meta-chip"><i class="bi bi-person"></i> Yakka</span>
                         <span class="meta-chip mint"><i class="bi bi-lightning-charge-fill"></i> Oson</span>
                     </div> --}}
+                    <div class="game-foot">
+                        <span>Boshlash</span>
+                        <span class="arrow"><i class="bi bi-arrow-right"></i></span>
+                    </div>
+                </div>
+            </a>
+
+            {{-- 2. Ha/Yo'q --}}
+            <a href="{{ route('yesno.index') }}" class="game-card yn-card">
+                <div class="game-cover yn">
+                    <span class="game-tag">Ha/Yo'q o'yini</span>
+                    <div class="yn-badge yes"><i class="bi bi-check-lg"></i></div>
+                    <div class="yn-vs">?</div>
+                    <div class="yn-badge no"><i class="bi bi-x-lg"></i></div>
+                </div>
+                <div class="game-body">
+                    <h3 class="game-title">Ha/Yo'q</h3>
+                    <p class="game-desc">Berilgan tasdiqlarni o'qing va ular to'g'ri yoki noto'g'riligini tez aniqlang.</p>
                     <div class="game-foot">
                         <span>Boshlash</span>
                         <span class="arrow"><i class="bi bi-arrow-right"></i></span>

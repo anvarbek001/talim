@@ -41,6 +41,8 @@ use App\Http\Controllers\TopicTestController;
 use App\Http\Controllers\UniversityController;
 use App\Http\Controllers\UniversityStydentsController;
 use App\Http\Controllers\WelcomeController;
+use App\Http\Controllers\YesNoController;
+use App\Http\Controllers\YesNoPlayController;
 use App\Http\Controllers\YoutubeAuthController;
 use Illuminate\Support\Facades\Route;
 
@@ -306,6 +308,14 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/anagramma-token', 'regenerate')->name('anagramma.regenerate');
     });
 
+    Route::controller(YesNoController::class)->group(function () {
+        Route::get('/yesno/index', 'index')->name('yesno.index');
+        Route::post('/yesno', 'store')->name('yesno.store');
+        Route::put('/yesno/{question}', 'update')->name('yesno.update');
+        Route::delete('/yesno/{question}', 'destroy')->name('yesno.destroy');
+        Route::post('/yesno-token', 'regenerate')->name('yesno.regenerate');
+    });
+
     Route::controller(FanController::class)->group(function () {
         Route::post('/fans', 'store')->name('fans.store');
         Route::put('/fans/update/{id}', 'update')->name('fans.update');
@@ -336,5 +346,14 @@ Route::get('/play/anagramma/{token}', [AnagrammaPlayController::class, 'show'])-
 Route::post('/play/anagramma/{token}/result', [AnagrammaPlayController::class, 'finish'])
     ->middleware('throttle:30,1')
     ->name('anagramma.finish');
+
+
+Route::get('/play/yesno/{token}', [YesNoPlayController::class, 'show'])->name('yesno.play');
+Route::post('/play/yesno/{token}/start', [YesNoPlayController::class, 'start'])
+    ->middleware('throttle:20,1')->name('yesno.start');
+Route::post('/play/yesno/{token}/answer', [YesNoPlayController::class, 'answer'])
+    ->middleware('throttle:120,1')->name('yesno.answer');
+Route::post('/play/yesno/{token}/next', [YesNoPlayController::class, 'next'])
+    ->middleware('throttle:120,1')->name('yesno.next');
 
 require __DIR__ . '/auth.php';
