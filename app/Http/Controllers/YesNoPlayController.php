@@ -9,8 +9,8 @@ use Illuminate\Http\Request;
 
 class YesNoPlayController extends Controller
 {
-    private const ROUNDS = 10;  // maksimal savollar soni
-    private const TIME   = 15;  // har savolga soniya
+    private const ROUNDS = 30;  // maksimal savollar soni
+    private const TIME   = 30;  // har savolga soniya
     private const GRACE  = 4;   // tarmoq kechikishi uchun zaxira
 
     private function teacher(string $token): User

@@ -20,13 +20,13 @@ class AnagrammaController extends Controller
 
         $anagrams = Anagramma::where('user_id', $user->id)
             ->latest()
-            ->paginate(10, ['*'], 'words_page')
+            ->paginate(20, ['*'], 'words_page')
             ->withQueryString();
 
         $results = AnagrammaResult::where('user_id', $user->id)
             ->orderByDesc('score')
             ->latest()
-            ->paginate(10, ['*'], 'results_page')
+            ->paginate(20, ['*'], 'results_page')
             ->withQueryString();
 
         $playUrl = route('anagramma.play', $user->anagramma_token);

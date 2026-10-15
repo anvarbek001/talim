@@ -20,13 +20,13 @@ class YesNoController extends Controller
 
         $questions = YesNoQuestion::where('user_id', $user->id)
             ->latest()
-            ->paginate(10, ['*'], 'questions_page')
+            ->paginate(20, ['*'], 'questions_page')
             ->withQueryString();
 
         $results = YesNoResult::where('user_id', $user->id)
             ->orderByDesc('score')
             ->latest()
-            ->paginate(10, ['*'], 'results_page')
+            ->paginate(20, ['*'], 'results_page')
             ->withQueryString();
 
         $playUrl = route('yesno.play', $user->yesno_token);
