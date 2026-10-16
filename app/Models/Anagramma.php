@@ -8,7 +8,7 @@ class Anagramma extends Model
 {
     protected $table = 'anagrammas';
 
-    protected $fillable = ['user_id', 'word', 'hint'];
+    protected $fillable = ['user_id', 'group_id', 'word', 'hint'];
 
     public function user()
     {

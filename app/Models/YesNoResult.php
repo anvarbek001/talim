@@ -8,5 +8,5 @@ class YesNoResult extends Model
 {
     protected $table = 'yesno_results';
 
-    protected $fillable = ['user_id', 'player_name', 'score', 'correct', 'total'];
+    protected $fillable = ['user_id', 'group_id', 'player_name', 'score', 'correct', 'total'];
 }

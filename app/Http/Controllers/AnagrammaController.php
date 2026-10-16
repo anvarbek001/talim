@@ -7,43 +7,75 @@ use App\Models\AnagrammaResult;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
+use App\Models\AnagrammaGroup;
 
 class AnagrammaController extends Controller
 {
-    public function index()
+    private function ownGroup(AnagrammaGroup $group): AnagrammaGroup
     {
-        $user = Auth::user();
-
-        if (!$user->anagramma_token) {
-            $user->forceFill(['anagramma_token' => Str::random(32)])->save();
-        }
-
-        $anagrams = Anagramma::where('user_id', $user->id)
-            ->latest()
-            ->paginate(20, ['*'], 'words_page')
-            ->withQueryString();
-
-        $results = AnagrammaResult::where('user_id', $user->id)
-            ->orderByDesc('score')
-            ->latest()
-            ->paginate(20, ['*'], 'results_page')
-            ->withQueryString();
-
-        $playUrl = route('anagramma.play', $user->anagramma_token);
-
-        return view('universities.interesting.anagramma', compact('anagrams', 'results', 'playUrl'));
+        abort_unless($group->user_id === Auth::id(), 403);
+        return $group;
     }
 
-    public function regenerate()
+    // Guruhlar ro'yxati
+    public function index()
     {
-        auth()->user()->forceFill(['anagramma_token' => Str::random(32)])->save();
+        $groups = AnagrammaGroup::where('user_id', Auth::id())
+            ->withCount(['anagrams', 'results'])
+            ->latest()->get();
 
+        return view('universities.interesting.anagramma-groups', compact('groups'));
+    }
+
+    public function storeGroup(Request $request)
+    {
+        $data = $request->validate(['name' => ['required', 'string', 'max:100']]);
+
+        $group = AnagrammaGroup::create([
+            'user_id' => Auth::id(),
+            'name'    => $data['name'],
+            'token'   => Str::random(32),
+        ]);
+
+        return redirect()->route('anagramma.show', $group)->with('success', 'Guruh yaratildi.');
+    }
+
+    public function destroyGroup(AnagrammaGroup $group)
+    {
+        $this->ownGroup($group)->delete();
+        return redirect()->route('anagramma.index')->with('success', "Guruh o'chirildi.");
+    }
+
+    // Bitta guruh sahifasi (sizning hozirgi index() ingiz)
+    public function show(AnagrammaGroup $group)
+    {
+        $this->ownGroup($group);
+
+        $anagrams = $group->anagrams()->latest()
+            ->paginate(20, ['*'], 'words_page')->withQueryString();
+
+        $results = $group->results()->orderByDesc('score')->latest()
+            ->paginate(20, ['*'], 'results_page')->withQueryString();
+
+        $playUrl = route('anagramma.play', $group->token);
+
+        return view(
+            'universities.interesting.anagramma',
+            compact('group', 'anagrams', 'results', 'playUrl')
+        );
+    }
+
+    public function regenerate(AnagrammaGroup $group)
+    {
+        $this->ownGroup($group)->update(['token' => Str::random(32)]);
         return back()->with('success', "Yangi havola yaratildi. Eski QR kod endi ishlamaydi.");
     }
 
-    public function store(Request $request)
+    public function store(Request $request, AnagrammaGroup $group)
     {
-        Anagramma::create($this->validated($request) + ['user_id' => Auth::id()]);
+        $this->ownGroup($group);
+
+        $group->anagrams()->create($this->validated($request) + ['user_id' => Auth::id()]);
 
         return back()->with('success', "So'z qo'shildi.");
     }
@@ -51,9 +83,7 @@ class AnagrammaController extends Controller
     public function update(Request $request, Anagramma $anagramma)
     {
         abort_unless($anagramma->user_id === Auth::id(), 403);
-
         $anagramma->update($this->validated($request));
-
         return back()->with('success', "So'z yangilandi.");
     }
 

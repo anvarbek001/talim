@@ -348,10 +348,16 @@
             <i class="bi bi-arrow-left"></i> Barcha o'yinlar
         </a>
 
+        <a href="{{ route('anagramma.index') }}" class="back-link">
+            <i class="bi bi-arrow-left"></i> Barcha guruhlar
+        </a>
+
         <div class="page-head">
             <div>
                 <div class="greet-eyebrow">So'z o'yini</div>
-                <h1>Anagramma</h1>
+                <h1>
+                    <h1>{{ $group->name }}</h1>
+                </h1>
                 <p class="page-sub">O'yin uchun so'z va maslahatlarni shu yerda qo'shing. Talabalar shu so'zlar bilan
                     o'ynaydi.</p>
             </div>
@@ -382,7 +388,7 @@
                             olish</button>
                         <a href="{{ $playUrl }}" target="_blank" class="btn-ghost"><i
                                 class="bi bi-box-arrow-up-right"></i> Ochish</a>
-                        <form action="{{ route('anagramma.regenerate') }}" method="POST"
+                        <form action="{{ route('anagramma.regenerate', $group) }}" method="POST"
                             onsubmit="return confirm('Eski QR kod ishlamay qoladi. Davom etasizmi?')">
                             @csrf
                             <button type="submit" class="btn-ghost"><i class="bi bi-arrow-repeat"></i> Yangilash</button>
@@ -403,7 +409,7 @@
                     </div>
                 </div>
 
-                <form action="{{ route('anagramma.store') }}" method="POST" autocomplete="off">
+                <form action="{{ route('anagramma.store', $group) }}" method="POST" autocomplete="off">
                     @csrf
                     <div class="field">
                         <label for="word">So'z</label>

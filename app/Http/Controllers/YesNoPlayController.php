@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Models\YesNoGroup;
 use App\Models\YesNoQuestion;
 use App\Models\YesNoResult;
 use Illuminate\Http\Request;
@@ -12,6 +13,11 @@ class YesNoPlayController extends Controller
     private const ROUNDS = 30;  // maksimal savollar soni
     private const TIME   = 30;  // har savolga soniya
     private const GRACE  = 4;   // tarmoq kechikishi uchun zaxira
+
+    private function group(string $token): YesNoGroup
+    {
+        return YesNoGroup::with('user.university')->where('token', $token)->firstOrFail();
+    }
 
     private function teacher(string $token): User
     {
@@ -36,25 +42,26 @@ class YesNoPlayController extends Controller
 
     public function show(string $token)
     {
-        $teacher = $this->teacher($token);
+        $group = $this->group($token);
 
         return view('universities.interesting.yesno.play', [
             'token'   => $token,
-            'teacher' => $teacher,
-            'count'   => YesNoQuestion::where('user_id', $teacher->id)->count(),
+            'group'   => $group,
+            'teacher' => $group->user,
+            'count'   => $group->questions()->count(),
             'time'    => self::TIME,
         ]);
     }
 
     public function start(Request $request, string $token)
     {
-        $teacher = $this->teacher($token);
+        $group = $this->group($token);
 
         $data = $request->validate([
             'player_name' => ['required', 'string', 'min:2', 'max:60'],
         ]);
 
-        $ids = YesNoQuestion::where('user_id', $teacher->id)
+        $ids = $group->questions()
             ->inRandomOrder()
             ->limit(self::ROUNDS)
             ->pluck('id')
@@ -85,7 +92,7 @@ class YesNoPlayController extends Controller
 
     public function answer(Request $request, string $token)
     {
-        $teacher = $this->teacher($token);
+        $group = $this->group($token);
         $key     = $this->key($token);
         $state   = session($key);
 
@@ -95,7 +102,7 @@ class YesNoPlayController extends Controller
 
         $request->validate(['answer' => ['nullable', 'boolean']]);
 
-        $q = YesNoQuestion::where('user_id', $teacher->id)->find($state['ids'][$state['i']]);
+        $q = $group->questions()->find($state['ids'][$state['i']]);
 
         if (!$q) {
             return response()->json(['message' => "Savol topilmadi. Qaytadan boshlang."], 409);
@@ -132,7 +139,8 @@ class YesNoPlayController extends Controller
 
         if ($finished) {
             YesNoResult::create([
-                'user_id'     => $teacher->id,
+                'user_id'     => $group->user_id,
+                'group_id'    => $group->id,
                 'player_name' => $state['name'],
                 'score'       => $state['score'],
                 'correct'     => $state['correct'],
@@ -153,7 +161,7 @@ class YesNoPlayController extends Controller
 
     public function next(string $token)
     {
-        $this->teacher($token);
+        $this->group($token);
         $key   = $this->key($token);
         $state = session($key);
 

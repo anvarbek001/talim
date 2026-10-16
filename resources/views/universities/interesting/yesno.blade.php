@@ -382,10 +382,14 @@
             <i class="bi bi-arrow-left"></i> Barcha o'yinlar
         </a>
 
+        <a href="{{ route('yesno.index') }}" class="back-link">
+            <i class="bi bi-arrow-left"></i> Barcha guruhlar
+        </a>
+
         <div class="page-head">
             <div>
                 <div class="greet-eyebrow">Ha/Yo'q o'yini</div>
-                <h1>Ha / Yo'q</h1>
+                <h1>{{ $group->name }}</h1>
                 <p class="page-sub">Tasdiqlarni yozing va to'g'ri javobni belgilang. Talabalar ularning to'g'ri yoki
                     noto'g'riligini aniqlaydi.</p>
             </div>
@@ -416,7 +420,7 @@
                             olish</button>
                         <a href="{{ $playUrl }}" target="_blank" class="btn-ghost"><i
                                 class="bi bi-box-arrow-up-right"></i> Ochish</a>
-                        <form action="{{ route('yesno.regenerate') }}" method="POST"
+                        <form action="{{ route('yesno.regenerate', $group) }}" method="POST"
                             onsubmit="return confirm('Eski QR kod ishlamay qoladi. Davom etasizmi?')">
                             @csrf
                             <button type="submit" class="btn-ghost"><i class="bi bi-arrow-repeat"></i> Yangilash</button>
@@ -437,7 +441,7 @@
                     </div>
                 </div>
 
-                <form action="{{ route('yesno.store') }}" method="POST" autocomplete="off">
+                <form action="{{ route('yesno.store', $group) }}" method="POST" autocomplete="off">
                     @csrf
                     <div class="field">
                         <label for="statement">Tasdiq</label>

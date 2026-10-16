@@ -301,19 +301,37 @@ Route::middleware(['auth'])->group(function () {
     });
 
     Route::controller(AnagrammaController::class)->group(function () {
+
+        // Guruhlar
         Route::get('/anagramma/index', 'index')->name('anagramma.index');
-        Route::post('/anagramma/store', 'store')->name('anagramma.store');
+        Route::post('/anagramma/groups', 'storeGroup')->name('anagramma.groups.store');
+        Route::delete('/anagramma/groups/{group}', 'destroyGroup')->name('anagramma.groups.destroy');
+
+        // Bitta guruh sahifasi
+        Route::get('/anagramma/groups/{group}', 'show')->name('anagramma.show');
+        Route::post('/anagramma/groups/{group}/token', 'regenerate')->name('anagramma.regenerate');
+
+        // So'zlar
+        Route::post('/anagramma/groups/{group}/store', 'store')->name('anagramma.store');
         Route::put('/anagramma/{anagramma}', 'update')->name('anagramma.update');
         Route::delete('/anagramma/{anagramma}', 'destroy')->name('anagramma.destroy');
-        Route::post('/anagramma-token', 'regenerate')->name('anagramma.regenerate');
     });
 
     Route::controller(YesNoController::class)->group(function () {
+
+        // Guruhlar
         Route::get('/yesno/index', 'index')->name('yesno.index');
-        Route::post('/yesno', 'store')->name('yesno.store');
+        Route::post('/yesno/groups', 'storeGroup')->name('yesno.groups.store');
+        Route::delete('/yesno/groups/{group}', 'destroyGroup')->name('yesno.groups.destroy');
+
+        // Bitta guruh sahifasi
+        Route::get('/yesno/groups/{group}', 'show')->name('yesno.show');
+        Route::post('/yesno/groups/{group}/token', 'regenerate')->name('yesno.regenerate');
+
+        // Savollar
+        Route::post('/yesno/groups/{group}/store', 'store')->name('yesno.store');
         Route::put('/yesno/{question}', 'update')->name('yesno.update');
         Route::delete('/yesno/{question}', 'destroy')->name('yesno.destroy');
-        Route::post('/yesno-token', 'regenerate')->name('yesno.regenerate');
     });
 
     Route::controller(FanController::class)->group(function () {
