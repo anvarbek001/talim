@@ -6,5 +6,12 @@ use Illuminate\Database\Eloquent\Model;
 
 class AnagrammaResult extends Model
 {
-    protected $fillable = ['user_id', 'group_id', 'player_name', 'score', 'correct', 'total'];
+    protected $fillable = ['user_id', 'group_id', 'player_name', 'score', 'correct', 'total', 'wrong_answers'];
+
+    protected function casts(): array
+    {
+        return [
+            'wrong_answers' => 'array',
+        ];
+    }
 }
