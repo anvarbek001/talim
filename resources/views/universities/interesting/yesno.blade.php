@@ -466,7 +466,7 @@
                         <div class="help">Talaba javob bergandan keyin ko'rinadi.</div>
                     </div>
 
-                    <button type="submit" class="btn-main block"><i class="bi bi-plus-lg"></i> Qo'shish</button>
+                    <button type="submit" class="block btn-main"><i class="bi bi-plus-lg"></i> Qo'shish</button>
                 </form>
             </div>
 
@@ -568,18 +568,69 @@
                                 <th>Ism</th>
                                 <th>Ball</th>
                                 <th>To'g'ri javob</th>
+                                <th>Xatolar</th>
                                 <th>Sana</th>
                             </tr>
                         </thead>
                         <tbody>
                             @foreach ($results as $i => $r)
+                                @php $wrong = $r->wrong_answers ?? []; @endphp
                                 <tr>
                                     <td class="cell-muted">{{ $results->firstItem() + $i }}</td>
                                     <td class="cell-strong">{{ $r->player_name }}</td>
                                     <td><span class="badge-role">{{ $r->score }}</span></td>
                                     <td>{{ $r->correct }} / {{ $r->total }}</td>
+                                    <td>
+                                        @if (count($wrong))
+                                            <button type="button" class="act-btn"
+                                                style="width:auto; padding:0 10px; gap:5px;" data-bs-toggle="collapse"
+                                                data-bs-target="#wrong-{{ $r->id }}">
+                                                <i class="bi bi-x-circle"></i> {{ count($wrong) }}
+                                            </button>
+                                        @else
+                                            <span class="cell-muted">—</span>
+                                        @endif
+                                    </td>
                                     <td class="cell-muted">{{ $r->created_at->format('d.m.Y H:i') }}</td>
                                 </tr>
+
+                                @if (count($wrong))
+                                    <tr>
+                                        <td colspan="6" style="padding:0; border:0;">
+                                            <div class="collapse" id="wrong-{{ $r->id }}">
+                                                <div
+                                                    style="padding:12px 16px; background:var(--bg-soft); border-radius:12px; margin:6px 0 10px;">
+                                                    <table class="data-table" style="margin:0;">
+                                                        <thead>
+                                                            <tr>
+                                                                <th>Tasdiq</th>
+                                                                <th>Tanlagani</th>
+                                                                <th>To'g'ri javob</th>
+                                                                <th>Holat</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            @foreach ($wrong as $w)
+                                                                <tr>
+                                                                    <td class="statement-cell">{{ $w['statement'] }}</td>
+                                                                    <td style="color:var(--coral); font-weight:700;">
+                                                                        {{ $w['answer'] === null ? '—' : ($w['answer'] ? 'Ha' : "Yo'q") }}
+                                                                    </td>
+                                                                    <td style="color:var(--mint); font-weight:700;">
+                                                                        {{ $w['correct'] ? 'Ha' : "Yo'q" }}
+                                                                    </td>
+                                                                    <td class="cell-muted">
+                                                                        {{ $w['type'] === 'timeout' ? 'Vaqt tugadi' : "Noto'g'ri" }}
+                                                                    </td>
+                                                                </tr>
+                                                            @endforeach
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                @endif
                             @endforeach
                         </tbody>
                     </table>

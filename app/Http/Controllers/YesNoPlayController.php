@@ -78,6 +78,7 @@ class YesNoPlayController extends Controller
             'score'     => 0,
             'correct'   => 0,
             'streak'    => 0,
+            'wrong'     => [],
             'served_at' => microtime(true),
             'awaiting'  => true,
         ];
@@ -123,6 +124,12 @@ class YesNoPlayController extends Controller
             $state['score'] += $gained;
         } else {
             $state['streak'] = 0;
+
+            $state['wrong'][] = [
+                'id'     => $q->id,
+                'answer' => $given === null ? null : (bool) $given,
+                'type'   => ($given === null || !$inTime) ? 'timeout' : 'wrong',
+            ];
         }
 
         $finished = $state['i'] + 1 >= count($state['ids']);
@@ -138,13 +145,36 @@ class YesNoPlayController extends Controller
         ];
 
         if ($finished) {
+            $wrong = $state['wrong'] ?? [];
+
+            // Tasdiq matnini hozirgi holatida saqlab qo'yamiz (keyin tahrirlansa ham o'zgarmasligi uchun)
+            $texts = $group->questions()
+                ->whereIn('id', array_column($wrong, 'id'))
+                ->get()
+                ->keyBy('id');
+
+            $snapshot = [];
+            foreach ($wrong as $w) {
+                $row = $texts[$w['id']] ?? null;
+                if (!$row) {
+                    continue; // o'yin paytida o'chirilgan savol
+                }
+                $snapshot[] = [
+                    'statement' => $row->statement,
+                    'correct'   => (bool) $row->answer,
+                    'answer'    => $w['answer'],
+                    'type'      => $w['type'],
+                ];
+            }
+
             YesNoResult::create([
-                'user_id'     => $group->user_id,
-                'group_id'    => $group->id,
-                'player_name' => $state['name'],
-                'score'       => $state['score'],
-                'correct'     => $state['correct'],
-                'total'       => count($state['ids']),
+                'user_id'       => $group->user_id,
+                'group_id'      => $group->id,
+                'player_name'   => $state['name'],
+                'score'         => $state['score'],
+                'correct'       => $state['correct'],
+                'total'         => count($state['ids']),
+                'wrong_answers' => $snapshot,
             ]);
 
             $response['total']       = count($state['ids']);
