@@ -553,7 +553,7 @@
             }
         }
 
-        @yield('styles')
+        @yield('styles');
     </style>
 </head>
 
@@ -565,34 +565,43 @@
         </div>
 
         <div class="nav-eyebrow">Umumiy</div>
-        <a href="{{ route('student_dashboard') }}" class="nav-link {{ request()->routeIs('student_dashboard') ? 'active' : '' }}">
+        <a href="{{ route('student_dashboard') }}"
+            class="nav-link {{ request()->routeIs('student_dashboard') ? 'active' : '' }}">
             <i class="bi bi-grid-1x2-fill"></i> Bosh sahifa
         </a>
         @if (config('features.lessons_enabled'))
-            <a href="{{ route('student-lessons.index') }}" class="nav-link {{ request()->routeIs('student-lessons.*') ? 'active' : '' }}">
+            <a href="{{ route('student-lessons.index') }}"
+                class="nav-link {{ request()->routeIs('student-lessons.*') ? 'active' : '' }}">
                 <i class="bi bi-camera-reels"></i> Darslarim
             </a>
         @endif
-        <a href="{{ route('student-tests.index') }}" class="nav-link {{ request()->routeIs('student-tests.*') ? 'active' : '' }}">
+        <a href="{{ route('student-tests.index') }}"
+            class="nav-link {{ request()->routeIs('student-tests.*') ? 'active' : '' }}">
             <i class="bi bi-patch-question"></i> Testlarim
         </a>
-        <a href="{{ route('student-books.index') }}" class="nav-link {{ request()->routeIs('student-books.*') ? 'active' : '' }}">
+        <a href="{{ route('student-books.index') }}"
+            class="nav-link {{ request()->routeIs('student-books.*') ? 'active' : '' }}">
             <i class="bi bi-journal-bookmark-fill"></i> Kitoblarim
         </a>
-        <a href="{{ route('student-statistics.index') }}" class="nav-link {{ request()->routeIs('student-statistics.*') ? 'active' : '' }}">
+        <a href="{{ route('student-statistics.index') }}"
+            class="nav-link {{ request()->routeIs('student-statistics.*') ? 'active' : '' }}">
             <i class="bi bi-graph-up"></i> Progressim
         </a>
         @if (config('features.live_lessons_enabled'))
-            <a href="{{ route('student-groups.index') }}" class="nav-link {{ request()->routeIs(['student-groups.*', 'groups.show']) ? 'active' : '' }}">
+            <a href="{{ route('student-groups.index') }}"
+                class="nav-link {{ request()->routeIs(['student-groups.*', 'groups.show']) ? 'active' : '' }}">
                 <i class="bi bi-camera-video-fill"></i> Guruhlarim
             </a>
         @endif
 
         <div class="nav-eyebrow">Hisob</div>
-        <a href="{{ route('student-payments.index') }}" class="nav-link {{ request()->routeIs('student-payments.*') ? 'active' : '' }}">
+        <a href="{{ route('student-payments.index') }}"
+            class="nav-link {{ request()->routeIs('student-payments.*') ? 'active' : '' }}">
             <i class="bi bi-wallet2"></i> To'lovlarim
         </a>
-        <a href="{{ route('profile.edit') }}" class="nav-link {{ request()->routeIs('profile.*') ? 'active' : '' }}"><i class="bi bi-gear"></i> Sozlamalar</a>
+        <a href="{{ route('profile.edit') }}"
+            class="nav-link {{ request()->routeIs('profile.*') ? 'active' : '' }}"><i class="bi bi-gear"></i>
+            Sozlamalar</a>
 
         <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display:none;">
             @csrf
@@ -651,21 +660,26 @@
     </div>
 
     <nav class="bottom-nav">
-        <a href="{{ route('student_dashboard') }}" class="bn-link {{ request()->routeIs('student_dashboard') ? 'active' : '' }}">
+        <a href="{{ route('student_dashboard') }}"
+            class="bn-link {{ request()->routeIs('student_dashboard') ? 'active' : '' }}">
             <i class="bi bi-grid-1x2-fill"></i><span>Bosh</span>
         </a>
         @if (config('features.lessons_enabled'))
-            <a href="{{ route('student-lessons.index') }}" class="bn-link {{ request()->routeIs('student-lessons.*') ? 'active' : '' }}">
+            <a href="{{ route('student-lessons.index') }}"
+                class="bn-link {{ request()->routeIs('student-lessons.*') ? 'active' : '' }}">
                 <i class="bi bi-camera-reels"></i><span>Darslar</span>
             </a>
         @endif
-        <a href="{{ route('student-tests.index') }}" class="bn-link {{ request()->routeIs('student-tests.*') ? 'active' : '' }}">
+        <a href="{{ route('student-tests.index') }}"
+            class="bn-link {{ request()->routeIs('student-tests.*') ? 'active' : '' }}">
             <i class="bi bi-patch-question"></i><span>Testlar</span>
         </a>
-        <a href="{{ route('student-books.index') }}" class="bn-link {{ request()->routeIs('student-books.*') ? 'active' : '' }}">
+        <a href="{{ route('student-books.index') }}"
+            class="bn-link {{ request()->routeIs('student-books.*') ? 'active' : '' }}">
             <i class="bi bi-journal-bookmark-fill"></i><span>Kitoblar</span>
         </a>
-        <a href="{{ route('student-statistics.index') }}" class="bn-link {{ request()->routeIs('student-statistics.*') ? 'active' : '' }}">
+        <a href="{{ route('student-statistics.index') }}"
+            class="bn-link {{ request()->routeIs('student-statistics.*') ? 'active' : '' }}">
             <i class="bi bi-graph-up"></i><span>Progress</span>
         </a>
         <button type="button" class="bn-link" id="moreBtn"><i
@@ -677,17 +691,24 @@
         <div class="sheet-handle"></div>
         <div class="sheet-title">Barcha bo'limlar</div>
         <a href="#" class="sheet-link"><i class="bi bi-bell"></i> Bildirishnomalar</a>
-        <a href="{{ route('student_dashboard') }}" class="sheet-link"><i class="bi bi-grid-1x2-fill"></i> Bosh sahifa</a>
+        <a href="{{ route('student_dashboard') }}" class="sheet-link"><i class="bi bi-grid-1x2-fill"></i> Bosh
+            sahifa</a>
         @if (config('features.lessons_enabled'))
-            <a href="{{ route('student-lessons.index') }}" class="sheet-link"><i class="bi bi-camera-reels"></i> Darslarim</a>
+            <a href="{{ route('student-lessons.index') }}" class="sheet-link"><i class="bi bi-camera-reels"></i>
+                Darslarim</a>
         @endif
-        <a href="{{ route('student-tests.index') }}" class="sheet-link"><i class="bi bi-patch-question"></i> Testlarim</a>
-        <a href="{{ route('student-books.index') }}" class="sheet-link"><i class="bi bi-journal-bookmark-fill"></i> Kitoblarim</a>
-        <a href="{{ route('student-statistics.index') }}" class="sheet-link"><i class="bi bi-graph-up"></i> Progressim</a>
+        <a href="{{ route('student-tests.index') }}" class="sheet-link"><i class="bi bi-patch-question"></i>
+            Testlarim</a>
+        <a href="{{ route('student-books.index') }}" class="sheet-link"><i class="bi bi-journal-bookmark-fill"></i>
+            Kitoblarim</a>
+        <a href="{{ route('student-statistics.index') }}" class="sheet-link"><i class="bi bi-graph-up"></i>
+            Progressim</a>
         @if (config('features.live_lessons_enabled'))
-            <a href="{{ route('student-groups.index') }}" class="sheet-link"><i class="bi bi-camera-video-fill"></i> Guruhlarim</a>
+            <a href="{{ route('student-groups.index') }}" class="sheet-link"><i class="bi bi-camera-video-fill"></i>
+                Guruhlarim</a>
         @endif
-        <a href="{{ route('student-payments.index') }}" class="sheet-link"><i class="bi bi-wallet2"></i> To'lovlarim</a>
+        <a href="{{ route('student-payments.index') }}" class="sheet-link"><i class="bi bi-wallet2"></i>
+            To'lovlarim</a>
         <a href="{{ route('profile.edit') }}" class="sheet-link"><i class="bi bi-gear"></i> Sozlamalar</a>
         <div class="sheet-divider"></div>
         <a href="{{ route('logout') }}" class="sheet-link logout-link"

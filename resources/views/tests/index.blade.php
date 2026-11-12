@@ -34,7 +34,7 @@
                 </div>
             </div>
 
-            <div class="form-grid form-grid-2 mb-16">
+            <div class="mb-16 form-grid form-grid-2">
                 <div class="field">
                     <label class="field-label">Mavzu</label>
                     @if ($topics->count())
@@ -70,8 +70,8 @@
                 </div>
             </div>
 
-            <div class="form-grid mb-16">
-                <div class="field mb-12">
+            <div class="mb-16 form-grid">
+                <div class="mb-12 field">
                     <label class="field-label">Test nomi</label>
                     <input type="text" name="title" class="text-control" placeholder="Masalan: Kvadrat tenglamalar — 1-nazorat"
                         required>
@@ -105,7 +105,7 @@
                 </div>
             </div>
 
-            <div class="form-grid form-grid-3 mb-16">
+            <div class="mb-16 form-grid form-grid-3">
                 <div class="field">
                     <label class="field-label">1-blok fani <span class="optional-tag">3.1 ball, 30 savol</span></label>
                     <select name="block1_science_id" class="select-control" required>
@@ -131,17 +131,17 @@
                 </div>
             </div>
 
-            <div class="form-grid form-grid-2 mb-16">
+            <div class="mb-16 form-grid form-grid-2">
                 @include('tests.partials.pricing-toggle', ['prefix' => 'dtm_test'])
             </div>
 
-            <div class="empty-hint mb-16">
+            <div class="mb-16 empty-hint">
                 <i class="bi bi-info-circle"></i>
                 3-blok majburiy fanlar (Ona tili, Matematika, Tarix) avtomatik qo'shiladi — har biridan 10 tadan savol, 1.1 balldan.
             </div>
 
-            <div class="form-grid mb-16">
-                <div class="field mb-12">
+            <div class="mb-16 form-grid">
+                <div class="mb-12 field">
                     <label class="field-label">Test nomi</label>
                     <input type="text" name="title" class="text-control" placeholder="Masalan: DTM — 2026-yil, 1-variant"
                         required>
@@ -175,7 +175,7 @@
                 </div>
             </div>
 
-            <div class="form-grid form-grid-3 mb-16">
+            <div class="mb-16 form-grid form-grid-3">
                 <div class="field">
                     <label class="field-label">Fan</label>
                     <select name="science_id" class="select-control" required>
@@ -196,12 +196,12 @@
                 </div>
             </div>
 
-            <div class="form-grid form-grid-2 mb-16">
+            <div class="mb-16 form-grid form-grid-2">
                 @include('tests.partials.pricing-toggle', ['prefix' => 'sertifikat_test'])
             </div>
 
-            <div class="form-grid mb-16">
-                <div class="field mb-12">
+            <div class="mb-16 form-grid">
+                <div class="mb-12 field">
                     <label class="field-label">Test nomi</label>
                     <input type="text" name="title" class="text-control" placeholder="Masalan: Ingliz tili sertifikati — B1"
                         required>
@@ -222,7 +222,7 @@
                     </div>
                 </div>
                 <div class="wq-list"></div>
-                <button type="button" class="btn-ghost wq-add-question mb-16">
+                <button type="button" class="mb-16 btn-ghost wq-add-question">
                     <i class="bi bi-plus-lg"></i> Yozma savol qo'shish
                 </button>
             </div>
@@ -248,7 +248,7 @@
                 </div>
             </div>
 
-            <div class="form-grid form-grid-3 mb-16">
+            <div class="mb-16 form-grid form-grid-3">
                 <div class="field">
                     <label class="field-label">Til</label>
                     <select name="science_id" class="select-control" required>
@@ -273,7 +273,7 @@
                 </div>
             </div>
 
-            <div class="form-grid form-grid-2 mb-16">
+            <div class="mb-16 form-grid form-grid-2">
                 <div class="field">
                     <label class="field-label">Davomiylik (daqiqa)</label>
                     <input type="number" name="duration_minutes" class="text-control" min="1" max="240" value="60"
@@ -281,12 +281,12 @@
                 </div>
             </div>
 
-            <div class="form-grid form-grid-2 mb-16">
+            <div class="mb-16 form-grid form-grid-2">
                 @include('tests.partials.pricing-toggle', ['prefix' => 'language_exam_test'])
             </div>
 
-            <div class="form-grid mb-16">
-                <div class="field mb-12">
+            <div class="mb-16 form-grid">
+                <div class="mb-12 field">
                     <label class="field-label">Test nomi</label>
                     <input type="text" name="title" class="text-control" placeholder="Masalan: IELTS Academic — Reading"
                         required>
@@ -307,7 +307,7 @@
                     </div>
                 </div>
                 <div class="wq-list"></div>
-                <button type="button" class="btn-ghost wq-add-question mb-16">
+                <button type="button" class="mb-16 btn-ghost wq-add-question">
                     <i class="bi bi-plus-lg"></i> Yozma savol qo'shish
                 </button>
             </div>
@@ -477,7 +477,7 @@
                     <button type="button" class="modal-close" data-modal-close="editTopicTestModal"><i class="bi bi-x-lg"></i></button>
                 </div>
                 <div class="modal-body">
-                    <div class="form-grid form-grid-2 mb-16">
+                    <div class="mb-16 form-grid form-grid-2">
                         <div class="field">
                             <label class="field-label">Mavzu</label>
                             <select name="topic_id" class="select-control" id="edit_topic_test_topic_id" required>
@@ -499,8 +499,8 @@
                                 id="edit_topic_test_duration">
                         </div>
                     </div>
-                    <div class="form-grid mb-16">
-                        <div class="field mb-12">
+                    <div class="mb-16 form-grid">
+                        <div class="mb-12 field">
                             <label class="field-label">Test nomi</label>
                             <input type="text" name="title" class="text-control" required id="edit_topic_test_title">
                         </div>
@@ -532,7 +532,7 @@
                     <button type="button" class="modal-close" data-modal-close="editDtmTestModal"><i class="bi bi-x-lg"></i></button>
                 </div>
                 <div class="modal-body">
-                    <div class="form-grid form-grid-3 mb-16">
+                    <div class="mb-16 form-grid form-grid-3">
                         <div class="field">
                             <label class="field-label">1-blok fani <span class="optional-tag">3.1 ball</span></label>
                             <select name="block1_science_id" class="select-control" required id="edit_dtm_test_block1_science_id">
@@ -556,11 +556,11 @@
                         </div>
                     </div>
 
-                    <div class="form-grid form-grid-2 mb-16">
+                    <div class="mb-16 form-grid form-grid-2">
                         @include('tests.partials.pricing-toggle', ['prefix' => 'edit_dtm_test'])
                     </div>
-                    <div class="form-grid mb-16">
-                        <div class="field mb-12">
+                    <div class="mb-16 form-grid">
+                        <div class="mb-12 field">
                             <label class="field-label">Test nomi</label>
                             <input type="text" name="title" class="text-control" required id="edit_dtm_test_title">
                         </div>
@@ -599,7 +599,7 @@
                     <button type="button" class="modal-close" data-modal-close="editSertifikatTestModal"><i class="bi bi-x-lg"></i></button>
                 </div>
                 <div class="modal-body">
-                    <div class="form-grid form-grid-3 mb-16">
+                    <div class="mb-16 form-grid form-grid-3">
                         <div class="field">
                             <label class="field-label">Fan</label>
                             <select name="science_id" class="select-control" required id="edit_sertifikat_test_science_id">
@@ -619,11 +619,11 @@
                         </div>
                     </div>
 
-                    <div class="form-grid form-grid-2 mb-16">
+                    <div class="mb-16 form-grid form-grid-2">
                         @include('tests.partials.pricing-toggle', ['prefix' => 'edit_sertifikat_test'])
                     </div>
-                    <div class="form-grid mb-16">
-                        <div class="field mb-12">
+                    <div class="mb-16 form-grid">
+                        <div class="mb-12 field">
                             <label class="field-label">Test nomi</label>
                             <input type="text" name="title" class="text-control" required id="edit_sertifikat_test_title">
                         </div>
@@ -633,7 +633,7 @@
                         </div>
                     </div>
                     <div class="qb-list"></div>
-                    <button type="button" class="btn-ghost qb-add-question mb-16">
+                    <button type="button" class="mb-16 btn-ghost qb-add-question">
                         <i class="bi bi-plus-lg"></i> Savol qo'shish
                     </button>
                     <div class="wq-section">
@@ -664,7 +664,7 @@
                     <button type="button" class="modal-close" data-modal-close="editLanguageExamTestModal"><i class="bi bi-x-lg"></i></button>
                 </div>
                 <div class="modal-body">
-                    <div class="form-grid form-grid-3 mb-16">
+                    <div class="mb-16 form-grid form-grid-3">
                         <div class="field">
                             <label class="field-label">Til</label>
                             <select name="science_id" class="select-control" required id="edit_language_exam_test_science_id">
@@ -686,7 +686,7 @@
                             <input type="text" name="level" class="text-control" id="edit_language_exam_test_level">
                         </div>
                     </div>
-                    <div class="form-grid form-grid-2 mb-16">
+                    <div class="mb-16 form-grid form-grid-2">
                         <div class="field">
                             <label class="field-label">Davomiylik (daqiqa)</label>
                             <input type="number" name="duration_minutes" class="text-control" min="1" max="240" required
@@ -694,11 +694,11 @@
                         </div>
                     </div>
 
-                    <div class="form-grid form-grid-2 mb-16">
+                    <div class="mb-16 form-grid form-grid-2">
                         @include('tests.partials.pricing-toggle', ['prefix' => 'edit_language_exam_test'])
                     </div>
-                    <div class="form-grid mb-16">
-                        <div class="field mb-12">
+                    <div class="mb-16 form-grid">
+                        <div class="mb-12 field">
                             <label class="field-label">Test nomi</label>
                             <input type="text" name="title" class="text-control" required id="edit_language_exam_test_title">
                         </div>
@@ -708,7 +708,7 @@
                         </div>
                     </div>
                     <div class="qb-list"></div>
-                    <button type="button" class="btn-ghost qb-add-question mb-16">
+                    <button type="button" class="mb-16 btn-ghost qb-add-question">
                         <i class="bi bi-plus-lg"></i> Savol qo'shish
                     </button>
                     <div class="wq-section">
@@ -738,7 +738,7 @@
                 <span class="qb-question-num">Savol</span>
                 <button type="button" class="qb-remove-question" title="Savolni o'chirish"><i class="bi bi-trash3"></i></button>
             </div>
-            <div class="field mb-12">
+            <div class="mb-12 field">
                 <textarea class="text-control qb-question-text" rows="2" placeholder="Savol matnini kiriting" required></textarea>
             </div>
             <div class="qb-options"></div>
@@ -761,7 +761,7 @@
                 <button type="button" class="wq-remove-question" title="Savolni o'chirish"><i class="bi bi-trash3"></i></button>
             </div>
             <div class="form-grid form-grid-wq">
-                <div class="field mb-12">
+                <div class="mb-12 field">
                     <textarea class="text-control wq-question-text" rows="2" placeholder="Yozma savol matnini kiriting" required></textarea>
                 </div>
                 <div class="field">

@@ -23,6 +23,7 @@ use App\Http\Controllers\LanguageExamTestController;
 use App\Http\Controllers\LessonController;
 use App\Http\Controllers\LessonFileController;
 use App\Http\Controllers\LiveSessionController;
+use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SectionController;
 use App\Http\Controllers\SertifikatTestController;
@@ -190,6 +191,10 @@ Route::middleware(['auth'])->group(function () {
 
     Route::controller(StudentPaymentController::class)->middleware('auth')->group(function () {
         Route::get('/student/payments', 'index')->name('student-payments.index');
+    });
+
+    Route::controller(PaymentController::class)->middleware('auth')->group(function () {
+        Route::get('/payments', 'index')->name('payments.index');
     });
 
     Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(function () {
